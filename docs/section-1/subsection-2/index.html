@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="
+  The ML Compiler Stack
+  
+  #
+  
+
+Modern AI systems sit on top of a deep stack: Python model code, graph capture, compiler intermediate representations (IR), kernel libraries, device runtimes, and finally, accelerator machine code. When we talk about teaching LLMs to write system kernels for AI accelerators, we need to understand where those kernels live in this stack, what existing compilers already do well, and where AI-generated kernels can make things more efficient.">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
+<meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/teaching_llm_write_kernels/docs/section-1/subsection-2/">
+  <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
+  <meta property="og:title" content="1.2 The ML Compiler Stack">
+  <meta property="og:description" content="The ML Compiler Stack # Modern AI systems sit on top of a deep stack: Python model code, graph capture, compiler intermediate representations (IR), kernel libraries, device runtimes, and finally, accelerator machine code. When we talk about teaching LLMs to write system kernels for AI accelerators, we need to understand where those kernels live in this stack, what existing compilers already do well, and where AI-generated kernels can make things more efficient.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="website">
+<title>1.2 The ML Compiler Stack | Teaching LLMs to Write System Kernels</title>
+<link rel="icon" href="/teaching_llm_write_kernels/favicon.png" >
+<link rel="manifest" href="/teaching_llm_write_kernels/manifest.json">
+<link rel="canonical" href="https://neuron-science.github.io/teaching_llm_write_kernels/docs/section-1/subsection-2/">
+<link rel="stylesheet" href="/teaching_llm_write_kernels/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
+  <script defer src="/teaching_llm_write_kernels/fuse.min.js"></script>
+  <script defer src="/teaching_llm_write_kernels/en.search.min.75a765f0e627b3069749c01388d4b364359279d6764a5a24610729b27596d6b7.js" integrity="sha256-dadl8OYnswaXScATiNSzZDWSedZ2SlokYQcpsnWW1rc=" crossorigin="anonymous"></script>
+<link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/teaching_llm_write_kernels/docs/section-1/subsection-2/index.xml" title="Teaching LLMs to Write System Kernels" />
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+  
+</head>
+<body dir="ltr" class="book-kind-section book-type-docs book-layout-">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    
+<aside class="book-menu">
+  <div class="book-menu-content">
+    
+  <nav>
+<h2 class="book-brand">
+  <a class="flex align-center" href="/teaching_llm_write_kernels/"><span>Teaching LLMs to Write System Kernels</span>
+  </a>
+</h2>
+
+
+<div class="book-search hidden">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+<script>document.querySelector(".book-search").classList.remove("hidden")</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-1/" class="">Foundations: Kernels, Accelerators, and LLM Code Generation</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-1/subsection-1/" class="">1.1 AI Accelerators and the Kernel Programming Model</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-1/subsection-2/" class="active">1.2 The ML Compiler Stack</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-1/subsection-3/" class="">1.3 LLMs for Code Generation: Background</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-1/subsection-4/" class="">1.4 Benchmarks and Evaluation for Kernel Generation</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-2/" class="">Post-Training LLMs for Kernel Generation</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-2/subsection-1/" class="">2.1 Supervised Fine-Tuning on Kernel Corpora</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-2/subsection-2/" class="">2.2 Reinforcement Learning from Execution Feedback</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-2/subsection-3/" class="">2.3 Reward Design: Correctness and Performance</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-3/" class="">Reasoning for Kernel Optimization</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-3/subsection-1/" class="">3.1 Chain-of-Thought and Inference-Time Reasoning</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-3/subsection-2/" class="">3.2 Self-Reflection and Iterative Refinement</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-3/subsection-3/" class="">3.3 Test-Time Scaling and Search</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-4/" class="">Agentic Optimization and Systems</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-4/subsection-1/" class="">4.1 Agent Architectures for Kernel Generation</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-4/subsection-2/" class="">4.2 Tool Use: Compilers, Profilers, and Autotuners</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-4/subsection-3/" class="">4.3 End-to-End Frameworks and Case Studies</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+
+  </div>
+</aside>
+ 
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/teaching_llm_write_kernels/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <h3>1.2 The ML Compiler Stack</h3>
+
+  <label for="toc-control">
+    
+    <img src="/teaching_llm_write_kernels/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#custom-kernels-for-longer-tail-cases">Custom kernels for longer tail cases</a></li>
+    <li><a href="#pytorch-eager-mode">PyTorch eager mode</a></li>
+    <li><a href="#default-torchcompile-stack">Default torch.compile() stack</a></li>
+    <li><a href="#vendor-libraries-cublas-cudnn-cublaslt-and-cutlass">Vendor libraries: cuBLAS, cuDNN, cuBLASLt, and CUTLASS</a></li>
+    <li><a href="#other-libraries-fbgemm-fbgemm_gpu-deepgemm">Other libraries: FBGEMM, FBGEMM_GPU, DeepGEMM</a></li>
+    <li><a href="#tvm-relay-and-tir">TVM Relay and TIR</a></li>
+    <li><a href="#mlir-and-dialects">MLIR and dialects</a></li>
+    <li><a href="#xla-hlo-stablehlo-and-pytorchxla">XLA, HLO, StableHLO, and PyTorch/XLA</a></li>
+    <li><a href="#summary-and-where-agents-fit">Summary and Where Agents Fit</a></li>
+  </ul>
+</nav>
+
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown book-article"><h1 id="the-ml-compiler-stack">
+  The ML Compiler Stack
+  
+  <a class="anchor" href="#the-ml-compiler-stack">#</a>
+  
+</h1>
+<p>Modern AI systems sit on top of a deep stack: Python model code, graph capture, compiler intermediate representations (IR), kernel libraries, device runtimes, and finally, accelerator machine code. When we talk about teaching LLMs to write system kernels for AI accelerators, we need to understand where those kernels live in this stack, what existing compilers already do well, and where AI-generated kernels can make things more efficient.</p>
+<p>This section builds a mental model of that stack. We will use PyTorch, TorchDynamo, TorchInductor, Triton, XLA, HLO, CUDA, CUTLASS, cuBLAS, FBGEMM, and related systems as concrete examples. The goal is not to memorize every compiler component, but to understand the interfaces between them: where a model becomes a computation graph, where a graph becomes a compiler IR, and where hand-written or agent-written kernels become necessary.</p>
+<h2 id="custom-kernels-for-longer-tail-cases">
+  Custom kernels for longer tail cases
+  
+  <a class="anchor" href="#custom-kernels-for-longer-tail-cases">#</a>
+  
+</h2>
+<p>Most ML compilers cover the common cases. For example, PyTorch&rsquo;s <code>torch.compile()</code> stack can capture many models, fuse common tensor operations, and generate efficient GPU kernels, XLA can compile large graph computations, and TVM can auto-schedule dense kernels. Vendor libraries like cuBLAS, cuDNN, etc., provide extremely optimized primitives which act as reusable building blocks that compilers may reuse.</p>
+<p>However, ML workloads have a &ldquo;long tail&rdquo;. This refers to the large number of uncommon, irregular, model-specific, or hardware-specific patterns that are not handled optimally by general-purpose compiler. Examples include tensor layouts, dynamic control flow, custom normalization variants, quantization/dequantization patterns, MoE routing, gather/scatter-heavy operators, dynamic shapes, heterogeneous fusion patterns, and accelerator-specific memory movement.</p>
+<p>ML compilers are very good at common, regular patterns. For instance, a compiler may do very well on the common transformer path:</p>
+<pre tabindex="0"><code>x = x + residual 
+x = layernorm(x) 
+y = x @ W 
+y = gelu(y)
+</code></pre><p>but struggles when the computation becomes:</p>
+<pre tabindex="0"><code>tokens = route_tokens_to_experts(x, topk_indices) 
+expert_outputs = grouped_expert_gemm(tokens, expert_weights) 
+out = combine_expert_outputs(expert_outputs, routing_weights)
+</code></pre><p>The first pattern is mostly regular dense computation, whereas the second involves dynamic routing and irregular indexing, which is exactly the kind of regime where specialized kernels remain important. Hence, it becomes important to understand <code>torch.compile()</code> to identify what it can already do well, which we will look at next.</p>
+<h2 id="pytorch-eager-mode">
+  PyTorch eager mode
+  
+  <a class="anchor" href="#pytorch-eager-mode">#</a>
+  
+</h2>
+<p>Before discussing <code>torch.compile()</code>, it is important to understand PyTorch eager mode. In normal PyTorch eager execution, when you write: <code>y = model(x)</code>, Python executes the model line-by-line. Each operation dispatches immediately. For example,</p>
+<pre tabindex="0"><code>y = torch.matmul(x, W)
+z = torch.relu(y + b)
+</code></pre><p>In eager mode, this typically means: <code>torch.matmul</code> dispatches to an implementation (eg., from cuBLAS), and so do <code>y + b</code> and <code>torch.relu</code> which get dispatch to their own elementwise kernels. There is no ahead-of-time graph construction. Note that PyTorch still uses highly optimized libraries such as cuBLAS, depending on the operator and backend; the key point is that eager mode executes operations one at a time.</p>
+<p>A simplified eager-mode stack lowering looks like:</p>
+<pre tabindex="0"><code>PyTorch Python code 
+        ↓ 
+ATen operator dispatch 
+        ↓ 
+Backend kernel implementation 
+        ├─ CUDA kernel 
+        ├─ cuBLAS / cuDNN call 
+        ├─ CPU kernel └─ other backend-specific implementation 
+       ...
+        ↓ 
+Device execution
+</code></pre><p>An <strong>ATen operator</strong> is one of PyTorch&rsquo;s core tensor operations &ndash; they are the fundamental operations that PyTorch dispatches internally. For example, when you write <code>y = torch.relu(x + b)</code>, PyTorch internally sees something closer to: <code>aten::add, aten::relu</code>. The Aten operator is the logical operation, and is mapped to a backend kernel, which is the actual implementation for a device. To &ldquo;write a kernel for an ATen operator&rdquo; means implementing the backend code that executes the operator on a particular device (e.g., a CPU implementation, a CUDA implementation, a quantized CPU implementation, a TRN implementation, etc.).</p>
+<h2 id="default-torchcompile-stack">
+  Default torch.compile() stack
+  
+  <a class="anchor" href="#default-torchcompile-stack">#</a>
+  
+</h2>
+<p>When we call <code>compiled_model = torch.compile(model)</code>, PyTorch enters a different execution path. By default, <code>torch.compile()</code> uses TorchInductor as its backend. A simplified <code>torch.compile()</code> stack lowering would look like:</p>
+<pre tabindex="0"><code>PyTorch Python model
+    ↓
+TorchDynamo
+    ↓
+FX graph (usually ATen-level)
+        ↓
+AOTAutograd (mainly for training)
+        ↓
+TorchInductor
+   ├─ generated Triton kernels
+   │     ↓
+   │   Triton IR
+   │     ↓
+   │   LLVM IR
+   │     ↓
+   │    PTX
+   │     ↓
+   │   SASS (executed on GPU)
+   │
+   ├─ external library calls
+   │     ├─ cuBLAS / cuBLASLt
+   │     ├─ cuDNN
+   │     └─ FlashAttention-style kernels
+   │
+   ├─ ATen fallback kernels 
+   └─ custom backend kernels
+</code></pre><p>In what follows, we describe each level of this stack briefly.</p>
+<ol>
+<li>
+<p><strong>TorchDynamo</strong>: TorchDynamo captures Python execution into graphs. It does not replace Python with a completely static graph compiler at the outset. Instead, Python still runs line-by-line (as in eager mode), but TorchDynamo observes and intercepts PyTorch operations. The regions that can be represented as graphs are captured. If Dynamo encounters unsupported Python behavior, data-dependent control-flow, or operations it cannot safely capture, it may introduce a graph break. A graph break means that compilation stops for that region, and execution may fall back to eager mode before resuming capture later.</p>
+</li>
+<li>
+<p><strong>FX graph</strong>: The captured graph is represented as an FX graph. FX is a Python-friendly graph representation used widely in PyTorch tooling. An FX graph is often composed of ATen operators. For example, a Python expression like <code>y = torch.relu(x + b)</code> may become an FX graph with nodes corresponding to ATen-level operations such as <code>aten::add</code> and <code>aten::relu</code>. FX is higher-level and more readable than traditional compiler IRs. It is still close to PyTorch semantics and is therefore easier to inspect, transform, and debug. Contrary to FX graphs, <em>TorchScript</em> was the older PyTorch graph compiler, which was not as readable.</p>
+</li>
+<li>
+<p><strong>AOTAutograd</strong>: This is mostly relevant for training. In eager PyTorch, autograd works dynamically &ndash; in forward pass, PyTorch builds a tape of operations and saves tensors needed for backward. This is flexible, but not ideal for a compiler. AOTAutograd rewrites autograd into explicit forward and backward graphs. Conceptually, it transforms training into:
+<code>ForwardGraph(inputs, params) --&gt; outputs, saved_tensors</code> and <code>BackwardGraph(grad_outputs, saved_tensors, params) --&gt; gradients</code>. This gives the compiler explicit graphs for both forward and backward computation. TorchInductor (discussed next) can then optimize and compile these graphs.</p>
+</li>
+<li>
+<p><strong>TorchInductor</strong>: TorchInductor is the default backend for <code>torch.compile()</code>. It takes the FX graph and decides how to lower it. Its main responsibilities include analyzing the FX/ATen graph, identifying fusion opportunities, generating code for fused regions, calling external libraries for large primitives, and producing executable code. For many elementwise and reduction-heavy subgraphs, Inductor generates Triton kernels. For large GEMMs, convolutions, and other vendor-optimized primitives, it often calls external libraries like cuBLAS or cuDNN.</p>
+<p>TorchInductor can be especially effective in fusing regular, compiler-friendly patterns (e.g., pointwise and elementwise fusion). For instance, the operation <code>out = torch.relu(x * a + b)</code> in eager mode might be multiple kernels like <code>multiply kernel</code>, <code>add kernel</code> and <code>relu kernel</code>, but TorchInductor can often fuse this into one Triton kernel: <code>out[i] = relu(x[i] * a + b)</code> &ndash; which improves performance by reducing kernel launches and avoiding intermediate writes to GPU memory. Similarly, Inductor can fuse broadcasted add and multiply operations into one kernel if the memory access pattern is regular. It can also remove or simplify redundant views, reshapes, and transposes. These are not always <em>fusion</em> in the strictest sense, but they can eliminate unnecessary work and enable better fusion later.</p>
+<p>However, TorchInductor has limits and often struggles when fusion crosses the boundary of highly-optimized library primitives, irregular execution patterns, or hardware-specific schedules. Some examples are as follows:</p>
+<ul>
+<li>
+<p><strong>Arbitrary epilogue logic</strong> a computation such as <code>y = x @ W; out = silu(y + b)</code> may be lowered into a cuBLAS GEMM followed by a separate Triton kernel for bias and activation; however, because cuBLAS is an opaque black box that TorchInductor cannot freely modify to inject arbitrary epilogue logic, fused GEMM epilogues often require a custom kernel.</p>
+</li>
+<li>
+<p><strong>Online fusion</strong> Similarly, Flash-Attention style full attention fusion requires avoiding materialization of the attention matrix through careful tiling, online softmax, shared-memory use, and warp-level scheduling, which are usually not discovered automatically.</p>
+</li>
+<li>
+<p><strong>Dynamic control flow</strong> includes Python branches or loops that depend on runtime values:</p>
+<pre><code>   if x.shape[1] &gt; 1024: 
+       y = long_context_path(x) 
+   else: 
+       y = short_context_path(x)
+</code></pre>
+<p>Dynamo may handle some shape-dependent branching with guards and recompilation, but arbitrary data-dependent control can cause graph breaks.</p>
+</li>
+<li>
+<p><strong>Mixture-of-Experts routing</strong>: MoE workloads involve top-k routing, token dispatch to experts, grouped GEMMs, gathering outputs back, and possible cross-device communication. This is difficult because it combines irregular indexing, variable expert loads, dynamic shapes, many small or grouped GEMMs, and often distributed communication. MoE remains a canonical example where custom kernels remain important.</p>
+</li>
+<li>
+<p><strong>Quantization and heterogeneous fusion</strong>: Quantized inference adds further complexity through mixed dtypes, scale handling, dequantization/requantization, packed layouts, and formats such as FP8, INT8, INT4, MX, or blockwise scaling.</p>
+</li>
+</ul>
+<p>Due to these limitations of generic ML compilers, specialized kernels are often required.</p>
+</li>
+<li>
+<p><strong>Triton</strong>: Triton is a Python-based language and compiler for writing GPU kernels. In the <code>torch.compile()</code> stack, TorchInductor relies heavily on Triton as a code generation target for many fused kernels. When a user writes Triton kernels directly, they essentially start at the Triton-level and skip TorchDynamo, FX, AOTAutograd, and TorchInductor&rsquo;s fusion analysis. Triton is often a good fit for custom RMSNorm, fused elementwise chains, packing/unpacking kernels, layout transforms, etc. However, for peak-performance GEMM, for example, one may still need CUDA, CUTLASS, cuBLASLt, or specialized libraries.</p>
+</li>
+<li>
+<p><strong>LLVM, CUDA, PTX, SASS</strong>: At the bottom of the NVIDIA GPU stack, we encounter lower-level compilation artifacts. LLVM IR is a low-level compiler <em>intermediate-representation</em>. It is target-independent compared to PTX (described later). Many compilers lower into LLVM IR because LLVM provides mature optimization passes and code generation infrastructure (e.g., dead code elimination, instruction simplification, eliminating duplicate computations, loop optimizations, etc.).  On the other hand, a CUDA kernel is a GPU function written in CUDA C++, which is typically compiled using <code>nvcc</code> and lowered through NVIDIA’s CUDA compilation toolchain toward PTX and/or architecture-specific GPU code.</p>
+<p>PTX is NVIDIA&rsquo;s virtual assembly language &ndash; it is GPU-specific, but not yet the final machine code for a particular GPU architecture. PTX can be thought of as a portable GPU assembly representation that can be compiled for different NVIDIA generations, such as <code>sm_80</code>, <code>sm_90</code>, or later targets. It is further lowered into SASS (<strong>Streaming Assembler</strong>), which is the actual GPU machine code. This is the final architecture-specific machine code executed by the GPU&rsquo;s streaming multiprocessors. In practice, PTX may be compiled to SASS ahead-of-time by NVIDIA&rsquo;s tools or just-in-time by the NVIDIA driver when the program runs on a particular GPU.</p>
+</li>
+</ol>
+<h2 id="vendor-libraries-cublas-cudnn-cublaslt-and-cutlass">
+  Vendor libraries: cuBLAS, cuDNN, cuBLASLt, and CUTLASS
+  
+  <a class="anchor" href="#vendor-libraries-cublas-cudnn-cublaslt-and-cutlass">#</a>
+  
+</h2>
+<p>As one would obviously expect, not all kernels are generated by TorchInductor or go through Triton. Many operations still fall back to highly-optimized vendor libraries, some of which are described below:</p>
+<ol>
+<li>
+<p><strong>cuBLAS</strong>: This is NVIDIA&rsquo;s production BLAS library, providing highly optimized dense linear algebra routines, especially GEMM. When PyTorch or Inductor needs to do a large matrix multiplication, it often calls cuBLAS under the hood, rather than generating a GEMM kernel from scratch. cuBLAS kernels are shipped as precompiled binaries, and may include native SASS for specific GPU architectures and PTX for compatibility. At runtime, cuBLAS chooses an appropriate kernel variant based on shapes, datatypes, layouts, and hardware. This is why TorchInductor cannot easily fuse arbitrary code inside a cuBLAS GEMM, as it is an opaque library call boundary.</p>
+</li>
+<li>
+<p><strong>cuBLASLt</strong>: Contrary to above, it is a more flexible matmul API, and provides more control over layouts, algorithm selection, and some epilogue fusion options. If one wants GEMM plus bias or activation fusion while still using an NVIDIA library, cuBLASLt may be more appropriate than classical cuBLAS.</p>
+</li>
+<li>
+<p><strong>cuDNN</strong>: cuDNN is NVIDIA&rsquo;s deep neural network primitives library. It is commonly used for convolutions, pooling, normalization, and related DNN operations. In a compiler stack, cuDNN sits at the same general layer as cuBLAS: an optimized library backend called by higher-level frameworks.</p>
+</li>
+<li>
+<p><strong>CUTLASS</strong>: CUTLASS is not a runtime library in quite the same sense as cuBLAS. It is an open-source C++ template library for building high-performance GEMM, convolution, and related kernels. It is used when one wants high performance GEMM-like kernels with custom epilogues, layouts, datatypes, or fusion behavior. Modern CUTLASS, especially CUTLASS 3.x, uses <strong>CuTe</strong> as a core internal abstraction for describing tensor layouts, tiling, and thread/data partitioning. CuTe is especially useful because high-performance GEMM and attention kernels are largely about layout and schedule. The math is simple; the hard part is mapping that math efficiently onto registers, shared memory, warps, and tensor cores. Since CuTe is a C++ template DSL, it is not lowered like Triton. CuTe C++ templates are lowered to CUTLASS CUDA C++ kernel code, which is subsequently lowered further by <code>nvcc</code> to PTX and SASS.</p>
+</li>
+</ol>
+<h2 id="other-libraries-fbgemm-fbgemm_gpu-deepgemm">
+  Other libraries: FBGEMM, FBGEMM_GPU, DeepGEMM
+  
+  <a class="anchor" href="#other-libraries-fbgemm-fbgemm_gpu-deepgemm">#</a>
+  
+</h2>
+<p>These libraries live at the kernel/library layer, similar to cuBLAS, cuDNN, CUTLASS, etc. FBGEMM (from Facebook), was historically associated with CPU inference, quantized GEMM, and recommendation workloads. On the PyTorch side, FBGEMM can act as an ATen backend kernel provider. FBGEMM_GPU also has GPU components. Similarly, DeepGEMM (from DeepSeek-AI) also has specialized GEMM kernels for a variety of modern transformer shapes.</p>
+<h2 id="tvm-relay-and-tir">
+  TVM Relay and TIR
+  
+  <a class="anchor" href="#tvm-relay-and-tir">#</a>
+  
+</h2>
+<p>Apache TVM (Tensor Virtual Machine) is another compiler stack for ML. The reason we should care, even if we already discussed the PyTorch stack, is that TVM gives useful vocabulary for explaining why kernel-writing agents are needed. A graph compiler can decide that some ops should be fused, but then someone or something still has to produce a good low-level schedule: tiling, vectorization, memory layout, shared-memory staging, thread mapping, and so on. TVM&rsquo;s Relay-to-TIR split makes that distinction very concrete. In addition to being useful for compiler research, TVM is still used in edge and embedded deployment, along with custom/emerging accelerators. TVM has multiple IRs, two of which are useful to compare with PyTorch and XLA (discussed later).</p>
+<ol>
+<li>
+<p><strong>TVM Relay</strong> is a higher-level graph IR. It represents tensor computations such as <code>matmul</code>, <code>relu</code>, <code>conv</code>, <code>reshape</code>, and is used for graph-level optimization, operator fusion decisions, layout rewriting, constant folding, and other transformations.</p>
+</li>
+<li>
+<p><strong>TensorIR (TIR)</strong>: On the other hand, TIR is lower level. It represents how to compute tensor programs using loops, memory accesses, tiling, vectorization, and parallelization.</p>
+</li>
+</ol>
+<p>A simplified TVM lowering path would be:</p>
+<p><code>Model graph --&gt; Relay --&gt; TIR --&gt; Target code</code></p>
+<p>For example, suppose the model does <code>Y = relu(X @ W + b)</code>. At the Relay level, it may look like a graph of high-level tensor ops (specifying what to compute: dense matmul, add bias, apply ReLU):</p>
+<pre tabindex="0"><code>def @main(%X, %W, %b) {
+  %0 = nn.dense(%X, %W)
+  %1 = add(%0, %b)
+  %2 = nn.relu(%1)
+  return %2
+}
+</code></pre><p>Relay can reason that these operators form a producer-consumer chain and decided to fuse them into one fused primitive fusion/computation region. After relay fusion, TVM may rewrite the above into something like:</p>
+<pre tabindex="0"><code>def @main(%X, %W, %b) {
+  %fused = fn (%p0, %p1, %p2, Primitive=1) {
+    %0 = nn.dense(%p0, %p1)
+    %1 = nn.bias_add(%0, %p2)
+    %2 = nn.relu(%1)
+    return %2
+  }
+
+  %fused(%X, %W, %b)
+}
+</code></pre><p>However, that decision alone does not specify how the fused computation should run on hardware. When further lowered to TIR, the same computation becomes explicit loop nests over the output matrix etc., as follows:</p>
+<pre tabindex="0"><code>@T.prim_func
+def fused_dense_bias_relu(X, W, b, Y):
+    for i, j, k in T.grid(M, N, K):
+        with T.block(&#34;matmul&#34;):
+            vi, vj, vk = T.axis.remap(&#34;SSR&#34;, [i, j, k])
+            Y[vi, vj] += X[vi, vk] * W[vj, vk]
+
+    for i, j in T.grid(M, N):
+        with T.block(&#34;bias_relu&#34;):
+            vi, vj = T.axis.remap(&#34;SS&#34;, [i, j])
+            Y[vi, vj] = T.max(Y[vi, vj] + b[vj], 0.0)
+</code></pre><p>This says how to compute it: loop over rows, columns, and reduction dimension. A compiler schedule might then transform the TIR into something more hardware-aware (e.g., tiling <code>i/j/k</code> mapping loops to CUDA blocks/threads, etc.).</p>
+<p>TVM&rsquo;s Relay-to-TIR split makes the distinction between graph-level and tiling-level abstractions explicitly concrete. In the PyTorch stack, the corresponding distinction is less obvious, but still exists. For instance, one can think the FX/ATen graph as analogous to TVM Relay, and TorchInductor/Triton kernels/Other library calls, as playing the role of TIR.</p>
+<h2 id="mlir-and-dialects">
+  MLIR and dialects
+  
+  <a class="anchor" href="#mlir-and-dialects">#</a>
+  
+</h2>
+<p>We saw above that the PyTorch and TVM stacks show the same basic pattern: a high-level model is progressively lowered through intermediate representations until it becomes executable kernels. MLIR (Multi-Level Intermediate Representation) provides a broader compiler framework for expressing this kind of multi-level lowering, where each abstraction level is represented by a different &ldquo;dialect&rdquo;.</p>
+<p>For kernel-writing agents, MLIR is relevant because it makes the optimization hierarchy explicit: an agent may reason effectively at one level of abstraction, such as tensor graphs or loop schedules, but struggle at another, such as hardware-specific instruction selection or memory-space management. Dialects therefore provide both structure and degrees of freedom: they let us ask where an agent should interfere in the lowering stack, what information should be exposed at that level, etc.</p>
+<p>An example of MLIR dialects for <code>Y = relu(A @ B)</code> is as follows:</p>
+<ol>
+<li>
+<p><strong>High-level tensor/graph dialect</strong>: At the top, the compiler may represent the computation as something which is still close to the model meaning:</p>
+<pre tabindex="0"><code>%0 = stablehlo.dot_general %A, %B
+%1 = stablehlo.maximum %0, %zero
+return %1
+</code></pre></li>
+<li>
+<p><strong>Structured linear algebra dialect</strong>: Then it may lower into something like the <code>linalg</code> dialect:</p>
+<pre tabindex="0"><code>%0 = linalg.matmul ins(%A, %B : tensor&lt;MxKxf32&gt;, tensor&lt;KxNxf32&gt;)
+              outs(%C : tensor&lt;MxNxf32&gt;)
+
+%1 = linalg.generic ins(%0 : tensor&lt;MxNxf32&gt;)
+                    outs(%Y : tensor&lt;MxNxf32&gt;) {
+^bb0(%x: f32, %out: f32):
+    %z = arith.constant 0.0 : f32
+    %r = arith.maximumf %x, %z : f32
+    linalg.yield %r : f32
+}
+</code></pre><p>The structure is now clear: <code>linalg.matmul = structured matrix multiplication</code> and <code>linalg.generic = elementwise ReLU</code>. This is still not raw loops, but it is more schedule-friendly.</p>
+</li>
+<li>
+<p><strong>Loop + memory dialects</strong>: Next, the compiler may lower to explicit loops and memory buffers using dialects:</p>
+<pre tabindex="0"><code>scf.for %i = 0 to %M {
+scf.for %j = 0 to %N {
+    %sum = arith.constant 0.0 : f32
+
+    scf.for %k = 0 to %K {
+    %a = memref.load %A[%i, %k]
+    %b = memref.load %B[%k, %j]
+    %prod = arith.mulf %a, %b
+    %sum_next = arith.addf %sum, %prod
+    }
+
+    %zero = arith.constant 0.0 : f32
+    %relu = arith.maximumf %sum, %zero
+    memref.store %relu, %Y[%i, %j]
+}
+}
+</code></pre><p>At this level, the computation is described in terms of <code>loops</code>, <code>loads</code>, <code>stores</code>, <code>scalar arithmetic</code>, and <code>memory buffers</code>. Now, the compiler can reason about tiling, loop interchange, vectorization, memory reuse, and buffer allocation.</p>
+</li>
+<li>
+<p><strong>GPU/LLVM-level lowering</strong>: Near the bottom, the compiler may lower into GPU or LLVM-level dialects:</p>
+<pre tabindex="0"><code>gpu.launch blocks(%bx, %by, %bz) threads(%tx, %ty, %tz) {
+// compute tile of Y using GPU threads
+// load A/B tiles
+// multiply-accumulate
+// apply ReLU
+// store result
+}
+</code></pre><p>Here, LLVM IR refers to a low-level, compiler-friendly, representation with explicit control flow, scalar arithmetic, memory operations, and function calls. Subsequently, for GPUs, it is further lowered toward PTX and SASS. The key motivation in MLIR is that each dialect exposes the right details for that stage.</p>
+</li>
+</ol>
+<h2 id="xla-hlo-stablehlo-and-pytorchxla">
+  XLA, HLO, StableHLO, and PyTorch/XLA
+  
+  <a class="anchor" href="#xla-hlo-stablehlo-and-pytorchxla">#</a>
+  
+</h2>
+<p>So far, we have looked at two compiler views of AI workloads: The PyTorch <code>torch.compile()</code> stack shows how a Python model can be captured into an FX graph and lowered by TorchInductor into Triton kernels, vendor-library calls, or backend fallbacks. TVM shows a more explicit separation between graph-level optimization in Relay and low-level scheduling in TIR.</p>
+<p>XLA introduces a third important view: whole-graph compilation for accelerators. This matters because not every AI accelerator is programmed by writing CUDA-style kernels. Google TPUs, for example, are commonly reached from PyTorch through PyTorch/XLA, which connects PyTorch models to the XLA compiler and XLA devices (TPUs). AWS Trainium similarly uses the AWS Neuron compiler stack, where the Neuron graph compiler can transform models from frameworks such as PyTorch or XLA HLO into optimized executable code. In these settings, the compiler interface is often not &ldquo;write a kernel directly&rdquo;, but rather &ldquo;lower a model or graph into a tensor-level IR that the accelerator compiler can optimize.&rdquo; This is where HLO and Stable HLO become important.</p>
+<p>HLO is XLA&rsquo;s tensor-level compiler representation, while StableHLO is a portable operation set intended to sit between ML frameworks and ML compilers. For kernel-writing agents, this broadens the question: the agent may not always emit Triton or CUDA; it may instead need to rewrite PyTorch code so that it lowers cleanly to HLO, expose fusion opportunities to the accelerator compiler, or reason about where a lower-level custom kernel is actually needed.</p>
+<p>A simplified PyTorch/XLA path is:</p>
+<pre tabindex="0"><code>PyTorch model 
+    ↓ 
+PyTorch/XLA lazy capture 
+    ↓ 
+XLA Op IR / lazy graph 
+    ↓ 
+HLO / StableHLO 
+    ↓ 
+XLA compiler 
+    ↓ 
+XLA runtime interface (often PJRT) 
+    ↓ 
+Device runtime 
+    ↓ 
+TPU / accelerator execution
+</code></pre><p>We next briefly overview each step in this lowering stack. As an illustrative example, suppose we write:</p>
+<pre tabindex="0"><code>def f(x, w, b):
+    y = x @ w
+    y = y + b
+    y = torch.relu(y)
+    return y
+</code></pre><p><strong>Lazy graph capture and XLA Op IR</strong>: On a normal CUDA tensor in eager mode, PyTorch may execute this as separate operations: matmul, add and ReLU. Moreover, TorchDynamo tracing in <code>torch.compile()</code> will run Python normally and capture graph regions as Python executes. On the other hand, PyTorch/XLA lazy capture will record the operations instead of executing them immediately. Only at a synchronization point, XLA will compile and execute the graph. Synchronization points include printing a tensor value, calling <code>.item()</code>, moving a tensor to CPU, explicit <code>xm.mark_step()</code>. Lazy capture exposes larger fusion opportunities, reducing the launch overhead. The frontend recording format of the lazy graph is also referred to as the <strong>XLA Op IR</strong> &ndash; it represents the pending tensor operations, and is not yet the final normalized compiler representation.</p>
+<p><strong>HLO and StableHLO</strong>: The next level, i.e., HLO, stands for <strong>High-level Optimizer</strong>. It is XLA&rsquo;s main tensor-level compiler IR. HLO is lower-level than PyTorch code, but still much higher-level than LLVM IR, PTX or machine code. Conceptually, the HLO for the above example may look like:</p>
+<pre tabindex="0"><code>%0 = dot(%x, %w)
+%1 = broadcast(%b)
+%2 = add(%0, %1)
+%3 = maximum(%2, 0)
+return %3
+</code></pre><p>This is where XLA can run graph-level optimizations such as fusion, algebraic simplification, common subexpression elimination, layout assignment, buffer assignment, and backend-specific rewrites. For instance, XLA may decide:</p>
+<pre tabindex="0"><code>matmul remains a target-specific dot/GEMM primitive
+add + relu may be fused
+layouts may be chosen to avoid unnecessary transposes
+buffers may be reused to reduce memory usage
+</code></pre><p>On the same note, StableHLO is a standardized, portable version of HLO. It exists because internal HLO can evolve over time, while frameworks and compiler backends need a stable interchange format. Once a model is lowered into Stable HLO, different accelerator compilers can consume that representation.</p>
+<p>Note: Sometimes people say <em>XLA IR</em> loosely. It may refer to either the frontend lazy graph or the HLO itself.</p>
+<p><strong>XLA runtime interface and Device runtime</strong>: After XLA compiles an HLO program, the result is a device executable. Something then has to manage that executable: load it, cache it, bind input/output buffers, launch it, and collect results. This is done by the XLA runtime interface (often called <em>PJRT</em>: Portable JIT Runtime). OpenXLA describes PJRT as a uniform device API: frameworks call PJRT, and device-specific implementations sit behind that interface. In other words, the framework does not need to know all hardware details; it talks to a PJRT client/plugin for any accelerator. The device runtime is below PJRT, which is hardware-facing and actually knows how to operate the accelerator.</p>
+<p>This separation is what lets frameworks and compilers target multiple devices through a common runtime interface, while still allowing each hardware vendor or backend to implement the low-level details differently. For kernel-writing agents, this matters because an agent optimizing an XLA-style accelerator stack may need to reason not only about HLO fusion, but also about runtime behavior: avoiding unnecessary sync points, avoiding repeated recompilation, keeping tensors resident on device, and respecting the execution model of PJRT/device runtimes.</p>
+<h2 id="summary-and-where-agents-fit">
+  Summary and Where Agents Fit
+  
+  <a class="anchor" href="#summary-and-where-agents-fit">#</a>
+  
+</h2>
+<p>Across every system in this section — PyTorch <code>torch.compile()</code>, TVM, MLIR, and XLA — the same pattern recurs: a model description is <strong>progressively lowered</strong> through a series of intermediate representations, from a high-level graph, to a tensor-level IR, to a schedule/kernel, to a virtual ISA, and finally to machine code driven by a runtime. The names differ per stack (FX vs. Relay vs. StableHLO at the graph level; Triton IR vs. TIR vs. <code>linalg</code>/<code>scf</code> at the schedule level), but the layering is the same. A useful unifying mental model is as follows:</p>
+<pre tabindex="0"><code>Model source           PyTorch nn.Module / model.forward
+       ↓
+Graph capture          TorchDynamo FX graph · PyTorch/XLA lazy graph · (TorchScript, older)
+       ↓
+Tensor compiler IR     Inductor IR · HLO / StableHLO · TVM Relay · MLIR tensor/linalg
+       ↓
+Kernel / schedule IR   Triton IR · TVM TIR · MLIR scf/memref/gpu · CUDA C++ / CUTLASS / CuTe
+       ↓
+Low-level IR / ISA      LLVM IR · PTX
+       ↓
+Machine code           SASS (NVIDIA) · TPU executable · Trainium executable
+       ↓
+Runtime                CUDA driver · PJRT / XLA runtime · Neuron runtime · device runtime
+       ↓
+Hardware               GPU / TPU / Trainium / other AI accelerator
+</code></pre><p>The central takeaway is a division of labor: <strong>compilers own the regular, common-case path</strong> (dense transformer blocks, pointwise/reduction fusion, standard GEMMs), while <strong>hand-written or agent-written kernels exist for the long tail</strong> — fused GEMM epilogues, FlashAttention-style online softmax, MoE routing, quantized/heterogeneous fusion, and accelerator-specific memory movement — where general-purpose fusion does not find a good schedule.</p>
+<p><strong>A kernel-writing agent therefore does not live at a single level.</strong> Given a slow region, the right action might be to:</p>
+<ul>
+<li>leave it to TorchInductor,</li>
+<li>rewrite PyTorch source to expose a fusion the compiler can already take,</li>
+<li>emit a Triton kernel (elementwise/reduction/layout-bound work),</li>
+<li>drop to CUDA / CUTLASS / cuBLASLt for GEMM epilogues, tensor-core scheduling, or attention,</li>
+<li>select an existing specialized kernel (FlashAttention, FBGEMM, DeepGEMM),</li>
+<li>or lower the graph to HLO/StableHLO for a TPU or Trainium backend.</li>
+</ul>
+<p>A strong agentic kernel-optimization system should understand this stack well enough to choose the correct intervention point. Choosing correctly requires reasoning across the whole stack at once — model semantics, operator graphs, compiler IRs, memory layouts, hardware execution, and the runtime. This is precisely why post-training, reasoning, and agentic optimization matter for kernel generation. The goal is not to replace compilers but to <strong>complement</strong> them: compilers for the common case, tuned libraries for known-hard primitives, and LLM-driven synthesis or search for the long tail that still escapes optimal compilation.</p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+
+
+
+
+  
+  
+  
+  <div class="flex flex-wrap justify-between">
+    <span>
+    
+      <a href="/teaching_llm_write_kernels/docs/section-1/subsection-1/" class="flex align-center book-icon">
+        <img src="/teaching_llm_write_kernels/svg/backward.svg" class="book-icon" alt="Previous" title="1.1 AI Accelerators and the Kernel Programming Model" />
+        <span>1.1 AI Accelerators and the Kernel Programming Model</span>
+      </a>
+    
+    </span>
+    <span>
+    
+      <a href="/teaching_llm_write_kernels/docs/section-1/subsection-3/" class="flex align-center book-icon">
+        <span>1.3 LLMs for Code Generation: Background</span>
+        <img src="/teaching_llm_write_kernels/svg/forward.svg" class="book-icon" alt="Next" title="1.3 LLMs for Code Generation: Background" />
+      </a>
+    
+    </span>
+  </div>
+  
+
+
+
+
+  <script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script>
+
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+
+<aside class="book-toc">
+  <div class="book-toc-content">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#custom-kernels-for-longer-tail-cases">Custom kernels for longer tail cases</a></li>
+    <li><a href="#pytorch-eager-mode">PyTorch eager mode</a></li>
+    <li><a href="#default-torchcompile-stack">Default torch.compile() stack</a></li>
+    <li><a href="#vendor-libraries-cublas-cudnn-cublaslt-and-cutlass">Vendor libraries: cuBLAS, cuDNN, cuBLASLt, and CUTLASS</a></li>
+    <li><a href="#other-libraries-fbgemm-fbgemm_gpu-deepgemm">Other libraries: FBGEMM, FBGEMM_GPU, DeepGEMM</a></li>
+    <li><a href="#tvm-relay-and-tir">TVM Relay and TIR</a></li>
+    <li><a href="#mlir-and-dialects">MLIR and dialects</a></li>
+    <li><a href="#xla-hlo-stablehlo-and-pytorchxla">XLA, HLO, StableHLO, and PyTorch/XLA</a></li>
+    <li><a href="#summary-and-where-agents-fit">Summary and Where Agents Fit</a></li>
+  </ul>
+</nav>
+
+
+
+  </div>
+</aside>
+
+ 
+  </main>
+
+  
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,15 @@
+{
+  "name": "Teaching LLMs to Write System Kernels",
+  "short_name": "Teaching LLMs to Write System Kernels",
+  "start_url": "/teaching_llm_write_kernels/",
+  "scope": "/teaching_llm_write_kernels/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/teaching_llm_write_kernels/favicon.svg",
+      "sizes": "512x512"
+    }
+  ]
+}

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="
+  Post-Training LLMs for Kernel Generation
+  
+  #
+  
+
+
+  Overview
+  
+  #
+  
+
+[Placeholder overview for Section 2. This section covers how base language models are
+adapted into capable kernel generators through post-training: supervised fine-tuning on
+kernel corpora, dataset construction and curation, and reinforcement learning driven by
+execution feedback and performance signals.]
+
+  Contents of this section
+  
+  #
+  
+
+
+  2.1 Supervised Fine-Tuning on Kernel Corpora
+  
+  #
+  
+
+[Placeholder description.]
+
+  2.2 Reinforcement Learning from Execution Feedback
+  
+  #
+  
+
+[Placeholder description.]">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
+<meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/teaching_llm_write_kernels/docs/section-2/">
+  <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
+  <meta property="og:title" content="Post-Training LLMs for Kernel Generation">
+  <meta property="og:description" content="Post-Training LLMs for Kernel Generation # Overview # [Placeholder overview for Section 2. This section covers how base language models are adapted into capable kernel generators through post-training: supervised fine-tuning on kernel corpora, dataset construction and curation, and reinforcement learning driven by execution feedback and performance signals.]
+Contents of this section # 2.1 Supervised Fine-Tuning on Kernel Corpora # [Placeholder description.]
+2.2 Reinforcement Learning from Execution Feedback # [Placeholder description.]">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="website">
+<title>Post-Training LLMs for Kernel Generation | Teaching LLMs to Write System Kernels</title>
+<link rel="icon" href="/teaching_llm_write_kernels/favicon.png" >
+<link rel="manifest" href="/teaching_llm_write_kernels/manifest.json">
+<link rel="canonical" href="https://neuron-science.github.io/teaching_llm_write_kernels/docs/section-2/">
+<link rel="stylesheet" href="/teaching_llm_write_kernels/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
+  <script defer src="/teaching_llm_write_kernels/fuse.min.js"></script>
+  <script defer src="/teaching_llm_write_kernels/en.search.min.75a765f0e627b3069749c01388d4b364359279d6764a5a24610729b27596d6b7.js" integrity="sha256-dadl8OYnswaXScATiNSzZDWSedZ2SlokYQcpsnWW1rc=" crossorigin="anonymous"></script>
+<link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/teaching_llm_write_kernels/docs/section-2/index.xml" title="Teaching LLMs to Write System Kernels" />
+<!--
+Made with Book Theme
+https://github.com/alex-shpak/hugo-book
+-->
+  
+</head>
+<body dir="ltr" class="book-kind-section book-type-docs book-layout-">
+  <input type="checkbox" class="hidden toggle" id="menu-control" />
+  <input type="checkbox" class="hidden toggle" id="toc-control" />
+  <main class="container flex">
+    
+<aside class="book-menu">
+  <div class="book-menu-content">
+    
+  <nav>
+<h2 class="book-brand">
+  <a class="flex align-center" href="/teaching_llm_write_kernels/"><span>Teaching LLMs to Write System Kernels</span>
+  </a>
+</h2>
+
+
+<div class="book-search hidden">
+  <input type="text" id="book-search-input" placeholder="Search" aria-label="Search" maxlength="64" data-hotkeys="s/" />
+  <div class="book-search-spinner hidden"></div>
+  <ul id="book-search-results"></ul>
+</div>
+<script>document.querySelector(".book-search").classList.remove("hidden")</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-1/" class="">Foundations: Kernels, Accelerators, and LLM Code Generation</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-1/subsection-1/" class="">1.1 AI Accelerators and the Kernel Programming Model</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-1/subsection-2/" class="">1.2 The ML Compiler Stack</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-1/subsection-3/" class="">1.3 LLMs for Code Generation: Background</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-1/subsection-4/" class="">1.4 Benchmarks and Evaluation for Kernel Generation</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-2/" class="active">Post-Training LLMs for Kernel Generation</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-2/subsection-1/" class="">2.1 Supervised Fine-Tuning on Kernel Corpora</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-2/subsection-2/" class="">2.2 Reinforcement Learning from Execution Feedback</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-2/subsection-3/" class="">2.3 Reward Design: Correctness and Performance</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-3/" class="">Reasoning for Kernel Optimization</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-3/subsection-1/" class="">3.1 Chain-of-Thought and Inference-Time Reasoning</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-3/subsection-2/" class="">3.2 Self-Reflection and Iterative Refinement</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-3/subsection-3/" class="">3.3 Test-Time Scaling and Search</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-4/" class="">Agentic Optimization and Systems</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-4/subsection-1/" class="">4.1 Agent Architectures for Kernel Generation</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-4/subsection-2/" class="">4.2 Tool Use: Compilers, Profilers, and Autotuners</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/teaching_llm_write_kernels/docs/section-4/subsection-3/" class="">4.3 End-to-End Frameworks and Case Studies</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</nav>
+
+
+
+
+  <script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script>
+
+
+
+  </div>
+</aside>
+ 
+
+    <div class="book-page">
+      <header class="book-header">
+        
+  <div class="flex align-center justify-between">
+  <label for="menu-control">
+    <img src="/teaching_llm_write_kernels/svg/menu.svg" class="book-icon" alt="Menu" />
+  </label>
+
+  <h3>Post-Training LLMs for Kernel Generation</h3>
+
+  <label for="toc-control">
+    
+    <img src="/teaching_llm_write_kernels/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    
+  </label>
+</div>
+
+
+  
+  <aside class="hidden clearfix">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#overview"><strong>Overview</strong></a></li>
+    <li><a href="#contents-of-this-section"><strong>Contents of this section</strong></a>
+      <ul>
+        <li><a href="#21-supervised-fine-tuning-on-kernel-corpora">2.1 Supervised Fine-Tuning on Kernel Corpora</a></li>
+        <li><a href="#22-reinforcement-learning-from-execution-feedback">2.2 Reinforcement Learning from Execution Feedback</a></li>
+        <li><a href="#23-reward-design-correctness-and-performance">2.3 Reward Design: Correctness and Performance</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+
+  </aside>
+  
+ 
+      </header>
+
+      
+      
+  <article class="markdown book-article"><h1 id="post-training-llms-for-kernel-generation">
+  <strong>Post-Training LLMs for Kernel Generation</strong>
+  
+  <a class="anchor" href="#post-training-llms-for-kernel-generation">#</a>
+  
+</h1>
+<h2 id="overview">
+  <strong>Overview</strong>
+  
+  <a class="anchor" href="#overview">#</a>
+  
+</h2>
+<p>[Placeholder overview for Section 2. This section covers how base language models are
+adapted into capable kernel generators through post-training: supervised fine-tuning on
+kernel corpora, dataset construction and curation, and reinforcement learning driven by
+execution feedback and performance signals.]</p>
+<h2 id="contents-of-this-section">
+  <strong>Contents of this section</strong>
+  
+  <a class="anchor" href="#contents-of-this-section">#</a>
+  
+</h2>
+<h3 id="21-supervised-fine-tuning-on-kernel-corpora">
+  <a href="/teaching_llm_write_kernels/docs/section-2/subsection-1/">2.1 Supervised Fine-Tuning on Kernel Corpora</a>
+  
+  <a class="anchor" href="#21-supervised-fine-tuning-on-kernel-corpora">#</a>
+  
+</h3>
+<p>[Placeholder description.]</p>
+<h3 id="22-reinforcement-learning-from-execution-feedback">
+  <a href="/teaching_llm_write_kernels/docs/section-2/subsection-2/">2.2 Reinforcement Learning from Execution Feedback</a>
+  
+  <a class="anchor" href="#22-reinforcement-learning-from-execution-feedback">#</a>
+  
+</h3>
+<p>[Placeholder description.]</p>
+<h3 id="23-reward-design-correctness-and-performance">
+  <a href="/teaching_llm_write_kernels/docs/section-2/subsection-3/">2.3 Reward Design: Correctness and Performance</a>
+  
+  <a class="anchor" href="#23-reward-design-correctness-and-performance">#</a>
+  
+</h3>
+<p>[Placeholder description.]</p>
+</article>
+ 
+      
+
+      <footer class="book-footer">
+        
+  <div class="flex flex-wrap justify-between">
+
+
+
+
+
+</div>
+
+
+
+
+
+  
+  
+  
+  <div class="flex flex-wrap justify-between">
+    <span>
+    
+      <a href="/teaching_llm_write_kernels/docs/section-1/subsection-4/" class="flex align-center book-icon">
+        <img src="/teaching_llm_write_kernels/svg/backward.svg" class="book-icon" alt="Previous" title="1.4 Benchmarks and Evaluation for Kernel Generation" />
+        <span>1.4 Benchmarks and Evaluation for Kernel Generation</span>
+      </a>
+    
+    </span>
+    <span>
+    
+      <a href="/teaching_llm_write_kernels/docs/section-2/subsection-1/" class="flex align-center book-icon">
+        <span>2.1 Supervised Fine-Tuning on Kernel Corpora</span>
+        <img src="/teaching_llm_write_kernels/svg/forward.svg" class="book-icon" alt="Next" title="2.1 Supervised Fine-Tuning on Kernel Corpora" />
+      </a>
+    
+    </span>
+  </div>
+  
+
+
+
+
+  <script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script>
+
+
+ 
+        
+      </footer>
+
+      
+  
+  <div class="book-comments">
+
+</div>
+  
+ 
+      <label for="menu-control" class="hidden book-menu-overlay"></label>
+    </div>
+
+    
+
+<aside class="book-toc">
+  <div class="book-toc-content">
+    
+  
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#overview"><strong>Overview</strong></a></li>
+    <li><a href="#contents-of-this-section"><strong>Contents of this section</strong></a>
+      <ul>
+        <li><a href="#21-supervised-fine-tuning-on-kernel-corpora">2.1 Supervised Fine-Tuning on Kernel Corpora</a></li>
+        <li><a href="#22-reinforcement-learning-from-execution-feedback">2.2 Reinforcement Learning from Execution Feedback</a></li>
+        <li><a href="#23-reward-design-correctness-and-performance">2.3 Reward Design: Correctness and Performance</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+
+
+  </div>
+</aside>
+
+ 
+  </main>
+
+  
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
