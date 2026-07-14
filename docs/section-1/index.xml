@@ -2,10 +2,10 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Foundations: Kernels, Accelerators, and LLM Code Generation on Teaching LLMs to Write System Kernels</title>
-    <link>https://neuron-science.github.io/teaching_llm_write_kernels/docs/section-1/</link>
+    <link>https://neuron-science.github.io/llm_kernel_writing/docs/section-1/</link>
     <description>Recent content in Foundations: Kernels, Accelerators, and LLM Code Generation on Teaching LLMs to Write System Kernels</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <atom:link href="https://neuron-science.github.io/teaching_llm_write_kernels/docs/section-1/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>

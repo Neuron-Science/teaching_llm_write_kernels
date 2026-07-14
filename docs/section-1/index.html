@@ -35,7 +35,7 @@ used throughout the tutorial.]
 [Placeholder description.]">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
-<meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/teaching_llm_write_kernels/docs/section-1/">
+<meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/">
   <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
   <meta property="og:title" content="Foundations: Kernels, Accelerators, and LLM Code Generation">
   <meta property="og:description" content="Foundations: Kernels, Accelerators, and LLM Code Generation # Overview # [Placeholder overview for Section 1. This section establishes the background needed to understand the rest of the tutorial: what system kernels are, how AI accelerators execute them, the programming interfaces used to write them, and how large language models are applied to code generation. It also introduces the benchmarks and evaluation methodology used throughout the tutorial.]
@@ -43,13 +43,13 @@ Contents of this section # 1.1 AI Accelerators and the Kernel Programming Model 
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
 <title>Foundations: Kernels, Accelerators, and LLM Code Generation | Teaching LLMs to Write System Kernels</title>
-<link rel="icon" href="/teaching_llm_write_kernels/favicon.png" >
-<link rel="manifest" href="/teaching_llm_write_kernels/manifest.json">
-<link rel="canonical" href="https://neuron-science.github.io/teaching_llm_write_kernels/docs/section-1/">
-<link rel="stylesheet" href="/teaching_llm_write_kernels/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
-  <script defer src="/teaching_llm_write_kernels/fuse.min.js"></script>
-  <script defer src="/teaching_llm_write_kernels/en.search.min.75a765f0e627b3069749c01388d4b364359279d6764a5a24610729b27596d6b7.js" integrity="sha256-dadl8OYnswaXScATiNSzZDWSedZ2SlokYQcpsnWW1rc=" crossorigin="anonymous"></script>
-<link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/teaching_llm_write_kernels/docs/section-1/index.xml" title="Teaching LLMs to Write System Kernels" />
+<link rel="icon" href="/llm_kernel_writing/favicon.png" >
+<link rel="manifest" href="/llm_kernel_writing/manifest.json">
+<link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/">
+<link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
+  <script defer src="/llm_kernel_writing/fuse.min.js"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.65e03c35da3b38f8b2a8052f76cde7098ba374a4d7fe386da17512fc7c17beba.js" integrity="sha256-ZeA8Ndo7OPiyqAUvds3nCYujdKTX/jhtoXUS/HwXvro=" crossorigin="anonymous"></script>
+<link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
 https://github.com/alex-shpak/hugo-book
@@ -66,7 +66,7 @@ https://github.com/alex-shpak/hugo-book
     
   <nav>
 <h2 class="book-brand">
-  <a class="flex align-center" href="/teaching_llm_write_kernels/"><span>Teaching LLMs to Write System Kernels</span>
+  <a class="flex align-center" href="/llm_kernel_writing/"><span>Teaching LLMs to Write System Kernels</span>
   </a>
 </h2>
 
@@ -102,7 +102,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/teaching_llm_write_kernels/docs/section-1/" class="active">Foundations: Kernels, Accelerators, and LLM Code Generation</a>
+    <a href="/llm_kernel_writing/docs/section-1/" class="active">Foundations: Kernels, Accelerators, and LLM Code Generation</a>
   
 
           
@@ -115,25 +115,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/teaching_llm_write_kernels/docs/section-1/subsection-1/" class="">1.1 AI Accelerators and the Kernel Programming Model</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/teaching_llm_write_kernels/docs/section-1/subsection-2/" class="">1.2 The ML Compiler Stack</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-1/" class="">1.1 AI Accelerators and the Kernel Programming Model</a>
   
 
           
@@ -151,7 +133,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/teaching_llm_write_kernels/docs/section-1/subsection-3/" class="">1.3 LLMs for Code Generation: Background</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-2/" class="">1.2 The ML Compiler Stack</a>
   
 
           
@@ -169,43 +151,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/teaching_llm_write_kernels/docs/section-1/subsection-4/" class="">1.4 Benchmarks and Evaluation for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/teaching_llm_write_kernels/docs/section-2/" class="">Post-Training LLMs for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/teaching_llm_write_kernels/docs/section-2/subsection-1/" class="">2.1 Supervised Fine-Tuning on Kernel Corpora</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-3/" class="">1.3 LLMs for Code Generation: Background</a>
   
 
           
@@ -223,25 +169,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/teaching_llm_write_kernels/docs/section-2/subsection-2/" class="">2.2 Reinforcement Learning from Execution Feedback</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/teaching_llm_write_kernels/docs/section-2/subsection-3/" class="">2.3 Reward Design: Correctness and Performance</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-4/" class="">1.4 Benchmarks and Evaluation for Kernel Generation</a>
   
 
           
@@ -264,7 +192,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/teaching_llm_write_kernels/docs/section-3/" class="">Reasoning for Kernel Optimization</a>
+    <a href="/llm_kernel_writing/docs/section-2/" class="">Post-Training LLMs for Kernel Generation</a>
   
 
           
@@ -277,25 +205,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/teaching_llm_write_kernels/docs/section-3/subsection-1/" class="">3.1 Chain-of-Thought and Inference-Time Reasoning</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/teaching_llm_write_kernels/docs/section-3/subsection-2/" class="">3.2 Self-Reflection and Iterative Refinement</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-1/" class="">2.1 Supervised Fine-Tuning on Kernel Corpora</a>
   
 
           
@@ -313,7 +223,25 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/teaching_llm_write_kernels/docs/section-3/subsection-3/" class="">3.3 Test-Time Scaling and Search</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-2/" class="">2.2 Reinforcement Learning from Execution Feedback</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-2/subsection-3/" class="">2.3 Reward Design: Correctness and Performance</a>
   
 
           
@@ -336,7 +264,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/teaching_llm_write_kernels/docs/section-4/" class="">Agentic Optimization and Systems</a>
+    <a href="/llm_kernel_writing/docs/section-3/" class="">Reasoning for Kernel Optimization</a>
   
 
           
@@ -349,25 +277,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/teaching_llm_write_kernels/docs/section-4/subsection-1/" class="">4.1 Agent Architectures for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/teaching_llm_write_kernels/docs/section-4/subsection-2/" class="">4.2 Tool Use: Compilers, Profilers, and Autotuners</a>
+    <a href="/llm_kernel_writing/docs/section-3/subsection-1/" class="">3.1 Chain-of-Thought and Inference-Time Reasoning</a>
   
 
           
@@ -385,7 +295,97 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/teaching_llm_write_kernels/docs/section-4/subsection-3/" class="">4.3 End-to-End Frameworks and Case Studies</a>
+    <a href="/llm_kernel_writing/docs/section-3/subsection-2/" class="">3.2 Self-Reflection and Iterative Refinement</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-3/subsection-3/" class="">3.3 Test-Time Scaling and Search</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/" class="">Agentic Optimization and Systems</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-1/" class="">4.1 Agent Architectures for Kernel Generation</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-2/" class="">4.2 Tool Use: Compilers, Profilers, and Autotuners</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-3/" class="">4.3 End-to-End Frameworks and Case Studies</a>
   
 
           
@@ -434,14 +434,14 @@ https://github.com/alex-shpak/hugo-book
         
   <div class="flex align-center justify-between">
   <label for="menu-control">
-    <img src="/teaching_llm_write_kernels/svg/menu.svg" class="book-icon" alt="Menu" />
+    <img src="/llm_kernel_writing/svg/menu.svg" class="book-icon" alt="Menu" />
   </label>
 
   <h3>Foundations: Kernels, Accelerators, and LLM Code Generation</h3>
 
   <label for="toc-control">
     
-    <img src="/teaching_llm_write_kernels/svg/toc.svg" class="book-icon" alt="Table of Contents" />
+    <img src="/llm_kernel_writing/svg/toc.svg" class="book-icon" alt="Table of Contents" />
     
   </label>
 </div>
@@ -498,14 +498,14 @@ used throughout the tutorial.]</p>
   
 </h2>
 <h3 id="11-ai-accelerators-and-the-kernel-programming-model">
-  <a href="/teaching_llm_write_kernels/docs/section-1/subsection-1/">1.1 AI Accelerators and the Kernel Programming Model</a>
+  <a href="/llm_kernel_writing/docs/section-1/subsection-1/">1.1 AI Accelerators and the Kernel Programming Model</a>
   
   <a class="anchor" href="#11-ai-accelerators-and-the-kernel-programming-model">#</a>
   
 </h3>
 <p>[Placeholder description.]</p>
 <h3 id="12-the-ml-compiler-stack">
-  <a href="/teaching_llm_write_kernels/docs/section-1/subsection-2/">1.2 The ML Compiler Stack</a>
+  <a href="/llm_kernel_writing/docs/section-1/subsection-2/">1.2 The ML Compiler Stack</a>
   
   <a class="anchor" href="#12-the-ml-compiler-stack">#</a>
   
@@ -514,14 +514,14 @@ used throughout the tutorial.]</p>
 capture, compiler IRs, and kernel libraries down to accelerator machine code — and shows
 where hand-written or agent-written kernels become necessary.</p>
 <h3 id="13-llms-for-code-generation-background">
-  <a href="/teaching_llm_write_kernels/docs/section-1/subsection-3/">1.3 LLMs for Code Generation: Background</a>
+  <a href="/llm_kernel_writing/docs/section-1/subsection-3/">1.3 LLMs for Code Generation: Background</a>
   
   <a class="anchor" href="#13-llms-for-code-generation-background">#</a>
   
 </h3>
 <p>[Placeholder description.]</p>
 <h3 id="14-benchmarks-and-evaluation-for-kernel-generation">
-  <a href="/teaching_llm_write_kernels/docs/section-1/subsection-4/">1.4 Benchmarks and Evaluation for Kernel Generation</a>
+  <a href="/llm_kernel_writing/docs/section-1/subsection-4/">1.4 Benchmarks and Evaluation for Kernel Generation</a>
   
   <a class="anchor" href="#14-benchmarks-and-evaluation-for-kernel-generation">#</a>
   
@@ -554,9 +554,9 @@ where hand-written or agent-written kernels become necessary.</p>
     </span>
     <span>
     
-      <a href="/teaching_llm_write_kernels/docs/section-1/subsection-1/" class="flex align-center book-icon">
+      <a href="/llm_kernel_writing/docs/section-1/subsection-1/" class="flex align-center book-icon">
         <span>1.1 AI Accelerators and the Kernel Programming Model</span>
-        <img src="/teaching_llm_write_kernels/svg/forward.svg" class="book-icon" alt="Next" title="1.1 AI Accelerators and the Kernel Programming Model" />
+        <img src="/llm_kernel_writing/svg/forward.svg" class="book-icon" alt="Next" title="1.1 AI Accelerators and the Kernel Programming Model" />
       </a>
     
     </span>
