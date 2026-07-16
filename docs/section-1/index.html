@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="
-  Foundations: Kernels, Accelerators, and LLM Code Generation
+  Hardware, Kernels, and LLMs
   
   #
   
@@ -15,40 +15,28 @@
   #
   
 
-[Placeholder overview for Section 1. This section establishes the background needed to
-understand the rest of the tutorial: what system kernels are, how AI accelerators execute
-them, the programming interfaces used to write them, and how large language models are
-applied to code generation. It also introduces the benchmarks and evaluation methodology
-used throughout the tutorial.]
-
-  Contents of this section
-  
-  #
-  
-
-
-  1.1 AI Accelerators and the Kernel Programming Model
-  
-  #
-  
-
-[Placeholder description.]">
+This section establishes the background needed for the rest of the tutorial. We survey the
+landscape of AI accelerators — GPUs, TPUs, and AWS Trainium — build a mental model of the
+software stacks that turn model code into executable kernels, and introduce the main kernel
+programming interfaces (CUDA, Triton, and NKI). We then turn to the language models
+themselves: how they decode and how inference-time scaling works, followed by the two
+pillars of post-training used throughout the tutorial — supervised fine-tuning (SFT) for
+code generation and reinforcement learning (PPO and GRPO variants).">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
 <meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/">
   <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
-  <meta property="og:title" content="Foundations: Kernels, Accelerators, and LLM Code Generation">
-  <meta property="og:description" content="Foundations: Kernels, Accelerators, and LLM Code Generation # Overview # [Placeholder overview for Section 1. This section establishes the background needed to understand the rest of the tutorial: what system kernels are, how AI accelerators execute them, the programming interfaces used to write them, and how large language models are applied to code generation. It also introduces the benchmarks and evaluation methodology used throughout the tutorial.]
-Contents of this section # 1.1 AI Accelerators and the Kernel Programming Model # [Placeholder description.]">
+  <meta property="og:title" content="Hardware, Kernels, and LLMs">
+  <meta property="og:description" content="Hardware, Kernels, and LLMs # Overview # This section establishes the background needed for the rest of the tutorial. We survey the landscape of AI accelerators — GPUs, TPUs, and AWS Trainium — build a mental model of the software stacks that turn model code into executable kernels, and introduce the main kernel programming interfaces (CUDA, Triton, and NKI). We then turn to the language models themselves: how they decode and how inference-time scaling works, followed by the two pillars of post-training used throughout the tutorial — supervised fine-tuning (SFT) for code generation and reinforcement learning (PPO and GRPO variants).">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
-<title>Foundations: Kernels, Accelerators, and LLM Code Generation | Teaching LLMs to Write System Kernels</title>
+<title>Hardware, Kernels, and LLMs | Teaching LLMs to Write System Kernels</title>
 <link rel="icon" href="/llm_kernel_writing/favicon.png" >
 <link rel="manifest" href="/llm_kernel_writing/manifest.json">
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.65e03c35da3b38f8b2a8052f76cde7098ba374a4d7fe386da17512fc7c17beba.js" integrity="sha256-ZeA8Ndo7OPiyqAUvds3nCYujdKTX/jhtoXUS/HwXvro=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.41280eb55d0faef48301899da71029e8681649ce2850953ac2af8f8cdc3e1631.js" integrity="sha256-QSgOtV0PrvSDAYmdpxAp6GgWSc4oUJU6wq&#43;PjNw&#43;FjE=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -102,7 +90,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/" class="active">Foundations: Kernels, Accelerators, and LLM Code Generation</a>
+    <a href="/llm_kernel_writing/docs/section-1/" class="active">Hardware, Kernels, and LLMs</a>
   
 
           
@@ -115,25 +103,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/subsection-1/" class="">1.1 AI Accelerators and the Kernel Programming Model</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-1/subsection-2/" class="">1.2 The ML Compiler Stack</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-1/" class="">1.1 Overview of AI Hardware: GPUs, TPUs, and AWS Trainium</a>
   
 
           
@@ -151,7 +121,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/subsection-3/" class="">1.3 LLMs for Code Generation: Background</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-2/" class="">1.2 Overview of AI Software Stacks</a>
   
 
           
@@ -169,43 +139,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/subsection-4/" class="">1.4 Benchmarks and Evaluation for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-2/" class="">Post-Training LLMs for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-2/subsection-1/" class="">2.1 Supervised Fine-Tuning on Kernel Corpora</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-3/" class="">1.3 Overview of System Kernels: CUDA, Triton, and NKI</a>
   
 
           
@@ -223,7 +157,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/subsection-2/" class="">2.2 Reinforcement Learning from Execution Feedback</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-4/" class="">1.4 LLM Decoding and Inference-Time Scaling</a>
   
 
           
@@ -241,7 +175,25 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/subsection-3/" class="">2.3 Reward Design: Correctness and Performance</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-5/" class="">1.5 Supervised Fine-Tuning (SFT) for Code Generation</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-1/subsection-6/" class="">1.6 RL Post-Training: PPO and GRPO Variants</a>
   
 
           
@@ -264,7 +216,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-3/" class="">Reasoning for Kernel Optimization</a>
+    <a href="/llm_kernel_writing/docs/section-2/" class="">LLM-Driven Kernel Generation</a>
   
 
           
@@ -277,25 +229,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-3/subsection-1/" class="">3.1 Chain-of-Thought and Inference-Time Reasoning</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-3/subsection-2/" class="">3.2 Self-Reflection and Iterative Refinement</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-1/" class="">2.1 Problem Definition of LLM-Assisted Kernel Generation</a>
   
 
           
@@ -313,7 +247,43 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-3/subsection-3/" class="">3.3 Test-Time Scaling and Search</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-2/" class="">2.2 Data Preparation and Curation Strategies</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-2/subsection-3/" class="">2.3 Evaluation Benchmarking for Generated Kernels</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-2/subsection-4/" class="">2.4 Reward Hacking Behaviors and Mitigation</a>
   
 
           
@@ -336,7 +306,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-4/" class="">Agentic Optimization and Systems</a>
+    <a href="/llm_kernel_writing/docs/section-3/" class="">Advanced Agentic Systems</a>
   
 
           
@@ -349,25 +319,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-4/subsection-1/" class="">4.1 Agent Architectures for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-4/subsection-2/" class="">4.2 Tool Use: Compilers, Profilers, and Autotuners</a>
+    <a href="/llm_kernel_writing/docs/section-3/subsection-1/" class="">3.1 Single-Turn and Multi-Turn RL for Kernel Optimization</a>
   
 
           
@@ -385,7 +337,97 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-4/subsection-3/" class="">4.3 End-to-End Frameworks and Case Studies</a>
+    <a href="/llm_kernel_writing/docs/section-3/subsection-2/" class="">3.2 Evolution-Based Approaches for Iterative Kernel Refinement</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-3/subsection-3/" class="">3.3 Inference-Time Scaling for Kernel Code Reasoning</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/" class="">Hands-On Demo</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-1/" class="">4.1 Triton Kernel Generation Using LLM Agents</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-2/" class="">4.2 NKI Kernel Generation Using LLM Agents</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-3/" class="">4.3 Interactive Walkthrough and Q&amp;A</a>
   
 
           
@@ -437,7 +479,7 @@ https://github.com/alex-shpak/hugo-book
     <img src="/llm_kernel_writing/svg/menu.svg" class="book-icon" alt="Menu" />
   </label>
 
-  <h3>Foundations: Kernels, Accelerators, and LLM Code Generation</h3>
+  <h3>Hardware, Kernels, and LLMs</h3>
 
   <label for="toc-control">
     
@@ -456,10 +498,12 @@ https://github.com/alex-shpak/hugo-book
     <li><a href="#overview"><strong>Overview</strong></a></li>
     <li><a href="#contents-of-this-section"><strong>Contents of this section</strong></a>
       <ul>
-        <li><a href="#11-ai-accelerators-and-the-kernel-programming-model">1.1 AI Accelerators and the Kernel Programming Model</a></li>
-        <li><a href="#12-the-ml-compiler-stack">1.2 The ML Compiler Stack</a></li>
-        <li><a href="#13-llms-for-code-generation-background">1.3 LLMs for Code Generation: Background</a></li>
-        <li><a href="#14-benchmarks-and-evaluation-for-kernel-generation">1.4 Benchmarks and Evaluation for Kernel Generation</a></li>
+        <li><a href="#11-overview-of-ai-hardware-gpus-tpus-and-aws-trainium">1.1 Overview of AI Hardware: GPUs, TPUs, and AWS Trainium</a></li>
+        <li><a href="#12-overview-of-ai-software-stacks">1.2 Overview of AI Software Stacks</a></li>
+        <li><a href="#13-overview-of-system-kernels-cuda-triton-and-nki">1.3 Overview of System Kernels: CUDA, Triton, and NKI</a></li>
+        <li><a href="#14-llm-decoding-and-inference-time-scaling">1.4 LLM Decoding and Inference-Time Scaling</a></li>
+        <li><a href="#15-supervised-fine-tuning-sft-for-code-generation">1.5 Supervised Fine-Tuning (SFT) for Code Generation</a></li>
+        <li><a href="#16-rl-post-training-ppo-and-grpo-variants">1.6 RL Post-Training: PPO and GRPO Variants</a></li>
       </ul>
     </li>
   </ul>
@@ -474,10 +518,10 @@ https://github.com/alex-shpak/hugo-book
 
       
       
-  <article class="markdown book-article"><h1 id="foundations-kernels-accelerators-and-llm-code-generation">
-  <strong>Foundations: Kernels, Accelerators, and LLM Code Generation</strong>
+  <article class="markdown book-article"><h1 id="hardware-kernels-and-llms">
+  <strong>Hardware, Kernels, and LLMs</strong>
   
-  <a class="anchor" href="#foundations-kernels-accelerators-and-llm-code-generation">#</a>
+  <a class="anchor" href="#hardware-kernels-and-llms">#</a>
   
 </h1>
 <h2 id="overview">
@@ -486,47 +530,68 @@ https://github.com/alex-shpak/hugo-book
   <a class="anchor" href="#overview">#</a>
   
 </h2>
-<p>[Placeholder overview for Section 1. This section establishes the background needed to
-understand the rest of the tutorial: what system kernels are, how AI accelerators execute
-them, the programming interfaces used to write them, and how large language models are
-applied to code generation. It also introduces the benchmarks and evaluation methodology
-used throughout the tutorial.]</p>
+<p>This section establishes the background needed for the rest of the tutorial. We survey the
+landscape of AI accelerators — GPUs, TPUs, and AWS Trainium — build a mental model of the
+software stacks that turn model code into executable kernels, and introduce the main kernel
+programming interfaces (CUDA, Triton, and NKI). We then turn to the language models
+themselves: how they decode and how inference-time scaling works, followed by the two
+pillars of post-training used throughout the tutorial — supervised fine-tuning (SFT) for
+code generation and reinforcement learning (PPO and GRPO variants).</p>
 <h2 id="contents-of-this-section">
   <strong>Contents of this section</strong>
   
   <a class="anchor" href="#contents-of-this-section">#</a>
   
 </h2>
-<h3 id="11-ai-accelerators-and-the-kernel-programming-model">
-  <a href="/llm_kernel_writing/docs/section-1/subsection-1/">1.1 AI Accelerators and the Kernel Programming Model</a>
+<h3 id="11-overview-of-ai-hardware-gpus-tpus-and-aws-trainium">
+  <a href="/llm_kernel_writing/docs/section-1/subsection-1/">1.1 Overview of AI Hardware: GPUs, TPUs, and AWS Trainium</a>
   
-  <a class="anchor" href="#11-ai-accelerators-and-the-kernel-programming-model">#</a>
-  
-</h3>
-<p>[Placeholder description.]</p>
-<h3 id="12-the-ml-compiler-stack">
-  <a href="/llm_kernel_writing/docs/section-1/subsection-2/">1.2 The ML Compiler Stack</a>
-  
-  <a class="anchor" href="#12-the-ml-compiler-stack">#</a>
+  <a class="anchor" href="#11-overview-of-ai-hardware-gpus-tpus-and-aws-trainium">#</a>
   
 </h3>
-<p>Builds a mental model of the ML compiler stack — from PyTorch programs through graph
-capture, compiler IRs, and kernel libraries down to accelerator machine code — and shows
-where hand-written or agent-written kernels become necessary.</p>
-<h3 id="13-llms-for-code-generation-background">
-  <a href="/llm_kernel_writing/docs/section-1/subsection-3/">1.3 LLMs for Code Generation: Background</a>
+<p>Surveys modern AI accelerators — GPUs, TPUs, and AWS Trainium — and the hardware features
+(compute engines, memory hierarchies, and interconnects) that kernels must target.</p>
+<h3 id="12-overview-of-ai-software-stacks">
+  <a href="/llm_kernel_writing/docs/section-1/subsection-2/">1.2 Overview of AI Software Stacks</a>
   
-  <a class="anchor" href="#13-llms-for-code-generation-background">#</a>
-  
-</h3>
-<p>[Placeholder description.]</p>
-<h3 id="14-benchmarks-and-evaluation-for-kernel-generation">
-  <a href="/llm_kernel_writing/docs/section-1/subsection-4/">1.4 Benchmarks and Evaluation for Kernel Generation</a>
-  
-  <a class="anchor" href="#14-benchmarks-and-evaluation-for-kernel-generation">#</a>
+  <a class="anchor" href="#12-overview-of-ai-software-stacks">#</a>
   
 </h3>
-<p>[Placeholder description.]</p>
+<p>Builds a mental model of the AI software / ML compiler stack — from PyTorch programs through
+graph capture, compiler IRs, and kernel libraries down to accelerator machine code — and
+shows where hand-written or agent-written kernels become necessary.</p>
+<h3 id="13-overview-of-system-kernels-cuda-triton-and-nki">
+  <a href="/llm_kernel_writing/docs/section-1/subsection-3/">1.3 Overview of System Kernels: CUDA, Triton, and NKI</a>
+  
+  <a class="anchor" href="#13-overview-of-system-kernels-cuda-triton-and-nki">#</a>
+  
+</h3>
+<p>Introduces the kernel programming interfaces used in the tutorial — CUDA for NVIDIA GPUs,
+Triton for portable GPU kernels, and the Neuron Kernel Interface (NKI) for AWS Trainium.</p>
+<h3 id="14-llm-decoding-and-inference-time-scaling">
+  <a href="/llm_kernel_writing/docs/section-1/subsection-4/">1.4 LLM Decoding and Inference-Time Scaling</a>
+  
+  <a class="anchor" href="#14-llm-decoding-and-inference-time-scaling">#</a>
+  
+</h3>
+<p>Reviews how LLMs generate text through autoregressive decoding and how inference-time
+compute can be scaled to trade extra computation for higher-quality outputs.</p>
+<h3 id="15-supervised-fine-tuning-sft-for-code-generation">
+  <a href="/llm_kernel_writing/docs/section-1/subsection-5/">1.5 Supervised Fine-Tuning (SFT) for Code Generation</a>
+  
+  <a class="anchor" href="#15-supervised-fine-tuning-sft-for-code-generation">#</a>
+  
+</h3>
+<p>Covers supervised fine-tuning as the first stage of adapting base language models into
+capable code and kernel generators.</p>
+<h3 id="16-rl-post-training-ppo-and-grpo-variants">
+  <a href="/llm_kernel_writing/docs/section-1/subsection-6/">1.6 RL Post-Training: PPO and GRPO Variants</a>
+  
+  <a class="anchor" href="#16-rl-post-training-ppo-and-grpo-variants">#</a>
+  
+</h3>
+<p>Introduces reinforcement learning-based post-training — including PPO and GRPO variants —
+that aligns models toward generating correct and performant code.</p>
 </article>
  
       
@@ -555,8 +620,8 @@ where hand-written or agent-written kernels become necessary.</p>
     <span>
     
       <a href="/llm_kernel_writing/docs/section-1/subsection-1/" class="flex align-center book-icon">
-        <span>1.1 AI Accelerators and the Kernel Programming Model</span>
-        <img src="/llm_kernel_writing/svg/forward.svg" class="book-icon" alt="Next" title="1.1 AI Accelerators and the Kernel Programming Model" />
+        <span>1.1 Overview of AI Hardware: GPUs, TPUs, and AWS Trainium</span>
+        <img src="/llm_kernel_writing/svg/forward.svg" class="book-icon" alt="Next" title="1.1 Overview of AI Hardware: GPUs, TPUs, and AWS Trainium" />
       </a>
     
     </span>
@@ -594,10 +659,12 @@ where hand-written or agent-written kernels become necessary.</p>
     <li><a href="#overview"><strong>Overview</strong></a></li>
     <li><a href="#contents-of-this-section"><strong>Contents of this section</strong></a>
       <ul>
-        <li><a href="#11-ai-accelerators-and-the-kernel-programming-model">1.1 AI Accelerators and the Kernel Programming Model</a></li>
-        <li><a href="#12-the-ml-compiler-stack">1.2 The ML Compiler Stack</a></li>
-        <li><a href="#13-llms-for-code-generation-background">1.3 LLMs for Code Generation: Background</a></li>
-        <li><a href="#14-benchmarks-and-evaluation-for-kernel-generation">1.4 Benchmarks and Evaluation for Kernel Generation</a></li>
+        <li><a href="#11-overview-of-ai-hardware-gpus-tpus-and-aws-trainium">1.1 Overview of AI Hardware: GPUs, TPUs, and AWS Trainium</a></li>
+        <li><a href="#12-overview-of-ai-software-stacks">1.2 Overview of AI Software Stacks</a></li>
+        <li><a href="#13-overview-of-system-kernels-cuda-triton-and-nki">1.3 Overview of System Kernels: CUDA, Triton, and NKI</a></li>
+        <li><a href="#14-llm-decoding-and-inference-time-scaling">1.4 LLM Decoding and Inference-Time Scaling</a></li>
+        <li><a href="#15-supervised-fine-tuning-sft-for-code-generation">1.5 Supervised Fine-Tuning (SFT) for Code Generation</a></li>
+        <li><a href="#16-rl-post-training-ppo-and-grpo-variants">1.6 RL Post-Training: PPO and GRPO Variants</a></li>
       </ul>
     </li>
   </ul>

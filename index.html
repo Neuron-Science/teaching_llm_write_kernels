@@ -25,14 +25,12 @@ Tutorial Abstract
 Writing high-performance system kernels for AI accelerators requires deep hardware expertise and low-level programming skill—a significant barrier for many researchers and engineers. This tutorial presents emerging methods that leverage large language models (LLMs) to automate kernel generation for GPUs and custom accelerators such as AWS Trainium. We cover the full pipeline: supervised fine-tuning on kernel corpora, reinforcement learning-based post-training (PPO, GRPO) with hardware-aware rewards, inference-time scaling for code reasoning, and multi-turn agentic systems for iterative kernel refinement. We also discuss key challenges unique to this domain, including reward hacking in compilation metrics, designing effective evaluation benchmarks for generated kernels, and strategies for data curation across heterogeneous hardware targets. The tutorial bridges the gap between LLM post-training research and systems programming, offering both foundational understanding and practical experience. We demonstrate how recent advances in reinforcement learning and inference-time compute scaling can be adapted to produce correct and performant kernels across diverse hardware backends. Attendees will gain hands-on experience generating Triton and NKI kernels using agentic LLM systems.
 
 
-Speakers&#39; Bio
+Contributors
 
 
   
     
-  
-  
-    Rajarshi Saha is an Applied Scientist at Amazon Annapurna Labs where he focuses on developing algorithms for resource-efficient training and inference of large foundation models. His research broadly explores theoretical approaches to challenges in this space, with an emphasis on investigating optimality and developing theoretically-backed system-aware algorithms. Before joining AWS, he earned a PhD in Electrical Engineering from Stanford University. Prior to that, he completed his Bachelors’ and Masters’ from IIT Kharagpur, where he received the Prime Minister of India Gold Medal as the class valedictorian.">
+    Youngsuk Park">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
 <meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/llm_kernel_writing/">
@@ -40,7 +38,7 @@ Speakers&#39; Bio
   <meta property="og:title" content="Teaching LLMs to Write System Kernels">
   <meta property="og:description" content="Teaching LLMs to Write System Kernels for AI Accelerators:
 Post-Training, Reasoning, and Agentic Optimization August 9, 2026 · 1:00 PM – 5:00 PM Venue: Jeju International Convention Center (ICC)
-224 Jungmungwangwang-ro, Seogwipo-si, Jeju-do, South Korea Room: [Room TBD] Tutorial Abstract Writing high-performance system kernels for AI accelerators requires deep hardware expertise and low-level programming skill—a significant barrier for many researchers and engineers. This tutorial presents emerging methods that leverage large language models (LLMs) to automate kernel generation for GPUs and custom accelerators such as AWS Trainium. We cover the full pipeline: supervised fine-tuning on kernel corpora, reinforcement learning-based post-training (PPO, GRPO) with hardware-aware rewards, inference-time scaling for code reasoning, and multi-turn agentic systems for iterative kernel refinement. We also discuss key challenges unique to this domain, including reward hacking in compilation metrics, designing effective evaluation benchmarks for generated kernels, and strategies for data curation across heterogeneous hardware targets. The tutorial bridges the gap between LLM post-training research and systems programming, offering both foundational understanding and practical experience. We demonstrate how recent advances in reinforcement learning and inference-time compute scaling can be adapted to produce correct and performant kernels across diverse hardware backends. Attendees will gain hands-on experience generating Triton and NKI kernels using agentic LLM systems. Speakers&#39; Bio Rajarshi Saha is an Applied Scientist at Amazon Annapurna Labs where he focuses on developing algorithms for resource-efficient training and inference of large foundation models. His research broadly explores theoretical approaches to challenges in this space, with an emphasis on investigating optimality and developing theoretically-backed system-aware algorithms. Before joining AWS, he earned a PhD in Electrical Engineering from Stanford University. Prior to that, he completed his Bachelors’ and Masters’ from IIT Kharagpur, where he received the Prime Minister of India Gold Medal as the class valedictorian.">
+224 Jungmungwangwang-ro, Seogwipo-si, Jeju-do, South Korea Room: [Room TBD] Tutorial Abstract Writing high-performance system kernels for AI accelerators requires deep hardware expertise and low-level programming skill—a significant barrier for many researchers and engineers. This tutorial presents emerging methods that leverage large language models (LLMs) to automate kernel generation for GPUs and custom accelerators such as AWS Trainium. We cover the full pipeline: supervised fine-tuning on kernel corpora, reinforcement learning-based post-training (PPO, GRPO) with hardware-aware rewards, inference-time scaling for code reasoning, and multi-turn agentic systems for iterative kernel refinement. We also discuss key challenges unique to this domain, including reward hacking in compilation metrics, designing effective evaluation benchmarks for generated kernels, and strategies for data curation across heterogeneous hardware targets. The tutorial bridges the gap between LLM post-training research and systems programming, offering both foundational understanding and practical experience. We demonstrate how recent advances in reinforcement learning and inference-time compute scaling can be adapted to produce correct and performant kernels across diverse hardware backends. Attendees will gain hands-on experience generating Triton and NKI kernels using agentic LLM systems. Contributors Youngsuk Park">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
 <title> | Teaching LLMs to Write System Kernels</title>
@@ -49,7 +47,7 @@ Post-Training, Reasoning, and Agentic Optimization August 9, 2026 · 1:00 PM –
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.65e03c35da3b38f8b2a8052f76cde7098ba374a4d7fe386da17512fc7c17beba.js" integrity="sha256-ZeA8Ndo7OPiyqAUvds3nCYujdKTX/jhtoXUS/HwXvro=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.41280eb55d0faef48301899da71029e8681649ce2850953ac2af8f8cdc3e1631.js" integrity="sha256-QSgOtV0PrvSDAYmdpxAp6GgWSc4oUJU6wq&#43;PjNw&#43;FjE=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -103,7 +101,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/" class="">Foundations: Kernels, Accelerators, and LLM Code Generation</a>
+    <a href="/llm_kernel_writing/docs/section-1/" class="">Hardware, Kernels, and LLMs</a>
   
 
           
@@ -116,25 +114,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/subsection-1/" class="">1.1 AI Accelerators and the Kernel Programming Model</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-1/subsection-2/" class="">1.2 The ML Compiler Stack</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-1/" class="">1.1 Overview of AI Hardware: GPUs, TPUs, and AWS Trainium</a>
   
 
           
@@ -152,7 +132,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/subsection-3/" class="">1.3 LLMs for Code Generation: Background</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-2/" class="">1.2 Overview of AI Software Stacks</a>
   
 
           
@@ -170,43 +150,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/subsection-4/" class="">1.4 Benchmarks and Evaluation for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-2/" class="">Post-Training LLMs for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-2/subsection-1/" class="">2.1 Supervised Fine-Tuning on Kernel Corpora</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-3/" class="">1.3 Overview of System Kernels: CUDA, Triton, and NKI</a>
   
 
           
@@ -224,7 +168,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/subsection-2/" class="">2.2 Reinforcement Learning from Execution Feedback</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-4/" class="">1.4 LLM Decoding and Inference-Time Scaling</a>
   
 
           
@@ -242,7 +186,25 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/subsection-3/" class="">2.3 Reward Design: Correctness and Performance</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-5/" class="">1.5 Supervised Fine-Tuning (SFT) for Code Generation</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-1/subsection-6/" class="">1.6 RL Post-Training: PPO and GRPO Variants</a>
   
 
           
@@ -265,7 +227,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-3/" class="">Reasoning for Kernel Optimization</a>
+    <a href="/llm_kernel_writing/docs/section-2/" class="">LLM-Driven Kernel Generation</a>
   
 
           
@@ -278,25 +240,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-3/subsection-1/" class="">3.1 Chain-of-Thought and Inference-Time Reasoning</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-3/subsection-2/" class="">3.2 Self-Reflection and Iterative Refinement</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-1/" class="">2.1 Problem Definition of LLM-Assisted Kernel Generation</a>
   
 
           
@@ -314,7 +258,43 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-3/subsection-3/" class="">3.3 Test-Time Scaling and Search</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-2/" class="">2.2 Data Preparation and Curation Strategies</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-2/subsection-3/" class="">2.3 Evaluation Benchmarking for Generated Kernels</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-2/subsection-4/" class="">2.4 Reward Hacking Behaviors and Mitigation</a>
   
 
           
@@ -337,7 +317,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-4/" class="">Agentic Optimization and Systems</a>
+    <a href="/llm_kernel_writing/docs/section-3/" class="">Advanced Agentic Systems</a>
   
 
           
@@ -350,25 +330,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-4/subsection-1/" class="">4.1 Agent Architectures for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-4/subsection-2/" class="">4.2 Tool Use: Compilers, Profilers, and Autotuners</a>
+    <a href="/llm_kernel_writing/docs/section-3/subsection-1/" class="">3.1 Single-Turn and Multi-Turn RL for Kernel Optimization</a>
   
 
           
@@ -386,7 +348,97 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-4/subsection-3/" class="">4.3 End-to-End Frameworks and Case Studies</a>
+    <a href="/llm_kernel_writing/docs/section-3/subsection-2/" class="">3.2 Evolution-Based Approaches for Iterative Kernel Refinement</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-3/subsection-3/" class="">3.3 Inference-Time Scaling for Kernel Code Reasoning</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/" class="">Hands-On Demo</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-1/" class="">4.1 Triton Kernel Generation Using LLM Agents</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-2/" class="">4.2 NKI Kernel Generation Using LLM Agents</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-3/" class="">4.3 Interactive Walkthrough and Q&amp;A</a>
   
 
           
@@ -482,17 +534,6 @@ Tutorial Abstract
 Writing high-performance system kernels for AI accelerators requires deep hardware expertise and low-level programming skill—a significant barrier for many researchers and engineers. This tutorial presents emerging methods that leverage large language models (LLMs) to automate kernel generation for GPUs and custom accelerators such as AWS Trainium. We cover the full pipeline: supervised fine-tuning on kernel corpora, reinforcement learning-based post-training (PPO, GRPO) with hardware-aware rewards, inference-time scaling for code reasoning, and multi-turn agentic systems for iterative kernel refinement. We also discuss key challenges unique to this domain, including reward hacking in compilation metrics, designing effective evaluation benchmarks for generated kernels, and strategies for data curation across heterogeneous hardware targets. The tutorial bridges the gap between LLM post-training research and systems programming, offering both foundational understanding and practical experience. We demonstrate how recent advances in reinforcement learning and inference-time compute scaling can be adapted to produce correct and performant kernels across diverse hardware backends. Attendees will gain hands-on experience generating Triton and NKI kernels using agentic LLM systems.
 </div>
 <div style="text-align: center; font-weight: bold; font-size: 2em; margin: 2.5em 0 1em 0;">
-Speakers' Bio
-</div>
-<div style="display: flex; align-items: flex-start; margin: 2em 0 2em 4em; gap: 2em;">
-  <div style="flex: 0 0 200px; margin-top: 1.5em;">
-    <img src="images/contributors/rajarshi_saha.png" alt="Rajarshi Saha" style="width: 180px; height: 180px; object-fit: cover; object-position: center 30%; border-radius: 8px;">
-  </div>
-  <div style="flex: 1; text-align: justify;">
-    <p><strong>Rajarshi Saha</strong> is an Applied Scientist at Amazon Annapurna Labs where he focuses on developing algorithms for resource-efficient training and inference of large foundation models. His research broadly explores theoretical approaches to challenges in this space, with an emphasis on investigating optimality and developing theoretically-backed system-aware algorithms. Before joining AWS, he earned a PhD in Electrical Engineering from Stanford University. Prior to that, he completed his Bachelors’ and Masters’ from IIT Kharagpur, where he received the Prime Minister of India Gold Medal as the class valedictorian.</p>
-  </div>
-</div>
-<div style="text-align: center; font-weight: bold; font-size: 2em; margin: 2.5em 0 1em 0;">
 Contributors
 </div>
 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2em; margin: 2em 4em; justify-items: center;">
@@ -500,6 +541,12 @@ Contributors
     <img src="images/contributors/youngsuk_park.png" alt="Youngsuk Park" style="width: 200px; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 0.5em;">
     <p style="margin: 0.3em 0; font-weight: bold;">Youngsuk Park</p>
     <p style="margin: 0.3em 0; font-size: 0.9em;">Senior Applied Scientist</p>
+    <p style="margin: 0.3em 0; font-size: 0.9em;">Amazon Annapurna Labs</p>
+  </div>
+  <div style="text-align: center;">
+    <img src="images/contributors/rajarshi_saha.png" alt="Rajarshi Saha" style="width: 200px; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 0.5em;">
+    <p style="margin: 0.3em 0; font-weight: bold;">Rajarshi Saha</p>
+    <p style="margin: 0.3em 0; font-size: 0.9em;">Applied Scientist</p>
     <p style="margin: 0.3em 0; font-size: 0.9em;">Amazon Annapurna Labs</p>
   </div>
   <div style="text-align: center;">
@@ -517,7 +564,7 @@ Contributors
   <div style="text-align: center;">
     <img src="images/contributors/jiin_woo.png" alt="Jiin Woo" style="width: 200px; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 0.5em;">
     <p style="margin: 0.3em 0; font-weight: bold;">Jiin Woo</p>
-    <p style="margin: 0.3em 0; font-size: 0.9em;">PhD Student, Carnegie Mellon University</p>
+    <p style="margin: 0.3em 0; font-size: 0.9em;">Applied Scientist</p>
     <p style="margin: 0.3em 0; font-size: 0.9em;">Amazon Annapurna Labs</p>
   </div>
   <div style="text-align: center;">

@@ -4,46 +4,27 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="
-  AI Accelerators and the Kernel Programming Model
+  Overview of AI Hardware: GPUs, TPUs, and AWS Trainium
   
   #
   
 
-
-
-
-
-  
-
-
-[Placeholder content for subsection 1.1 AI Accelerators and the Kernel Programming Model.]
-
-
-
-  References
-  
-  #
-  
-
-
-[Placeholder reference.]
-">
+Before we can talk about teaching an LLM to write system kernels, we have to be precise about what a kernel runs on. Every kernel targets a specific piece of silicon with a specific set of compute units, a specific on-chip memory layout, and a specific way of moving data around. This section builds a mental model of the hardware that the rest of the tutorial assumes. We will look at three representative tensor accelerators — NVIDIA GPUs, Google TPUs, and AWS Trainium. Despite different vendors and programming models, they share the same three architectural ingredients. Those three ingredients are exactly what a kernel has to reason about, which is why understanding them here sets up the kernel-programming discussion in Section 1.3.">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
 <meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-1/">
   <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
-  <meta property="og:title" content="1.1 AI Accelerators and the Kernel Programming Model">
-  <meta property="og:description" content="AI Accelerators and the Kernel Programming Model # [Placeholder content for subsection 1.1 AI Accelerators and the Kernel Programming Model.]
-References # [Placeholder reference.]">
+  <meta property="og:title" content="1.1 Overview of AI Hardware: GPUs, TPUs, and AWS Trainium">
+  <meta property="og:description" content="Overview of AI Hardware: GPUs, TPUs, and AWS Trainium # Before we can talk about teaching an LLM to write system kernels, we have to be precise about what a kernel runs on. Every kernel targets a specific piece of silicon with a specific set of compute units, a specific on-chip memory layout, and a specific way of moving data around. This section builds a mental model of the hardware that the rest of the tutorial assumes. We will look at three representative tensor accelerators — NVIDIA GPUs, Google TPUs, and AWS Trainium. Despite different vendors and programming models, they share the same three architectural ingredients. Those three ingredients are exactly what a kernel has to reason about, which is why understanding them here sets up the kernel-programming discussion in Section 1.3.">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
-<title>1.1 AI Accelerators and the Kernel Programming Model | Teaching LLMs to Write System Kernels</title>
+<title>1.1 Overview of AI Hardware: GPUs, TPUs, and AWS Trainium | Teaching LLMs to Write System Kernels</title>
 <link rel="icon" href="/llm_kernel_writing/favicon.png" >
 <link rel="manifest" href="/llm_kernel_writing/manifest.json">
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-1/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.65e03c35da3b38f8b2a8052f76cde7098ba374a4d7fe386da17512fc7c17beba.js" integrity="sha256-ZeA8Ndo7OPiyqAUvds3nCYujdKTX/jhtoXUS/HwXvro=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.41280eb55d0faef48301899da71029e8681649ce2850953ac2af8f8cdc3e1631.js" integrity="sha256-QSgOtV0PrvSDAYmdpxAp6GgWSc4oUJU6wq&#43;PjNw&#43;FjE=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-1/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -97,7 +78,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/" class="">Foundations: Kernels, Accelerators, and LLM Code Generation</a>
+    <a href="/llm_kernel_writing/docs/section-1/" class="">Hardware, Kernels, and LLMs</a>
   
 
           
@@ -110,25 +91,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/subsection-1/" class="active">1.1 AI Accelerators and the Kernel Programming Model</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-1/subsection-2/" class="">1.2 The ML Compiler Stack</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-1/" class="active">1.1 Overview of AI Hardware: GPUs, TPUs, and AWS Trainium</a>
   
 
           
@@ -146,7 +109,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/subsection-3/" class="">1.3 LLMs for Code Generation: Background</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-2/" class="">1.2 Overview of AI Software Stacks</a>
   
 
           
@@ -164,43 +127,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/subsection-4/" class="">1.4 Benchmarks and Evaluation for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-2/" class="">Post-Training LLMs for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-2/subsection-1/" class="">2.1 Supervised Fine-Tuning on Kernel Corpora</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-3/" class="">1.3 Overview of System Kernels: CUDA, Triton, and NKI</a>
   
 
           
@@ -218,7 +145,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/subsection-2/" class="">2.2 Reinforcement Learning from Execution Feedback</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-4/" class="">1.4 LLM Decoding and Inference-Time Scaling</a>
   
 
           
@@ -236,7 +163,25 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/subsection-3/" class="">2.3 Reward Design: Correctness and Performance</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-5/" class="">1.5 Supervised Fine-Tuning (SFT) for Code Generation</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-1/subsection-6/" class="">1.6 RL Post-Training: PPO and GRPO Variants</a>
   
 
           
@@ -259,7 +204,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-3/" class="">Reasoning for Kernel Optimization</a>
+    <a href="/llm_kernel_writing/docs/section-2/" class="">LLM-Driven Kernel Generation</a>
   
 
           
@@ -272,25 +217,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-3/subsection-1/" class="">3.1 Chain-of-Thought and Inference-Time Reasoning</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-3/subsection-2/" class="">3.2 Self-Reflection and Iterative Refinement</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-1/" class="">2.1 Problem Definition of LLM-Assisted Kernel Generation</a>
   
 
           
@@ -308,7 +235,43 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-3/subsection-3/" class="">3.3 Test-Time Scaling and Search</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-2/" class="">2.2 Data Preparation and Curation Strategies</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-2/subsection-3/" class="">2.3 Evaluation Benchmarking for Generated Kernels</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-2/subsection-4/" class="">2.4 Reward Hacking Behaviors and Mitigation</a>
   
 
           
@@ -331,7 +294,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-4/" class="">Agentic Optimization and Systems</a>
+    <a href="/llm_kernel_writing/docs/section-3/" class="">Advanced Agentic Systems</a>
   
 
           
@@ -344,25 +307,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-4/subsection-1/" class="">4.1 Agent Architectures for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-4/subsection-2/" class="">4.2 Tool Use: Compilers, Profilers, and Autotuners</a>
+    <a href="/llm_kernel_writing/docs/section-3/subsection-1/" class="">3.1 Single-Turn and Multi-Turn RL for Kernel Optimization</a>
   
 
           
@@ -380,7 +325,97 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-4/subsection-3/" class="">4.3 End-to-End Frameworks and Case Studies</a>
+    <a href="/llm_kernel_writing/docs/section-3/subsection-2/" class="">3.2 Evolution-Based Approaches for Iterative Kernel Refinement</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-3/subsection-3/" class="">3.3 Inference-Time Scaling for Kernel Code Reasoning</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/" class="">Hands-On Demo</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-1/" class="">4.1 Triton Kernel Generation Using LLM Agents</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-2/" class="">4.2 NKI Kernel Generation Using LLM Agents</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-3/" class="">4.3 Interactive Walkthrough and Q&amp;A</a>
   
 
           
@@ -432,7 +467,7 @@ https://github.com/alex-shpak/hugo-book
     <img src="/llm_kernel_writing/svg/menu.svg" class="book-icon" alt="Menu" />
   </label>
 
-  <h3>1.1 AI Accelerators and the Kernel Programming Model</h3>
+  <h3>1.1 Overview of AI Hardware: GPUs, TPUs, and AWS Trainium</h3>
 
   <label for="toc-control">
     
@@ -448,6 +483,13 @@ https://github.com/alex-shpak/hugo-book
   
 <nav id="TableOfContents">
   <ul>
+    <li><a href="#why-specialized-ai-hardware-and-why-it-is-hard">Why specialized AI hardware, and why it is hard</a></li>
+    <li><a href="#a-unifying-mental-model-of-a-tensor-accelerator">A unifying mental model of a tensor accelerator</a></li>
+    <li><a href="#gpus-nvidia">GPUs (NVIDIA)</a></li>
+    <li><a href="#tpus-google">TPUs (Google)</a></li>
+    <li><a href="#aws-trainium">AWS Trainium</a></li>
+    <li><a href="#scaling-out-from-chip-to-server-to-datacenter">Scaling out: from chip to server to datacenter</a></li>
+    <li><a href="#synthesis-what-a-kernel-actually-targets">Synthesis: what a kernel actually targets</a></li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>
@@ -461,30 +503,270 @@ https://github.com/alex-shpak/hugo-book
 
       
       
-  <article class="markdown book-article"><h1 id="ai-accelerators-and-the-kernel-programming-model">
-  <strong>AI Accelerators and the Kernel Programming Model</strong>
+  <article class="markdown book-article"><h1 id="overview-of-ai-hardware-gpus-tpus-and-aws-trainium">
+  <strong>Overview of AI Hardware: GPUs, TPUs, and AWS Trainium</strong>
   
-  <a class="anchor" href="#ai-accelerators-and-the-kernel-programming-model">#</a>
+  <a class="anchor" href="#overview-of-ai-hardware-gpus-tpus-and-aws-trainium">#</a>
   
 </h1>
+<p>Before we can talk about <em>teaching an LLM to write system kernels</em>, we have to be precise about what a kernel runs on. Every kernel targets a specific piece of silicon with a specific set of compute units, a specific on-chip memory layout, and a specific way of moving data around. This section builds a mental model of the hardware that the rest of the tutorial assumes. We will look at three representative tensor accelerators — NVIDIA GPUs, Google TPUs, and AWS Trainium. Despite different vendors and programming models, they share the <em>same three architectural ingredients</em>. Those three ingredients are exactly what a kernel has to reason about, which is why understanding them here sets up the kernel-programming discussion in Section 1.3.</p>
+<h2 id="why-specialized-ai-hardware-and-why-it-is-hard">
+  Why specialized AI hardware, and why it is hard
+  
+  <a class="anchor" href="#why-specialized-ai-hardware-and-why-it-is-hard">#</a>
+  
+</h2>
+<p>The bulk of the work in deep neural networks is dense linear algebra (matrix multiplications and convolutions) over a small, repetitive set of operators (matmul, elementwise activations, normalization, reductions), often in reduced precision (FP16, BF16, FP8, INT8). This regularity is what makes specialization pay off: instead of a general-purpose CPU that spends most of its transistors and energy on control logic, branch prediction, and caches to run arbitrary code fast, an AI accelerator can pour its silicon into wide arrays of multiply-accumulate units that do one thing — tensor math — extremely efficiently per watt.</p>
+<p>This opportunity has produced a crowded AI landscape, and a recurring theme today is that most of the participants are <strong>&ldquo;hardware rich, software poor&rdquo;</strong>. A chip can be genuinely superior on paper — more FLOPs, better performance per watt, lower cost — and still fail to realize these gains because it does not have effective <em>software and tooling</em>. Along with the hardware, there should also be a way to give programmers a way to actually extract performance from the chip.</p>
+<p>Writing that software is hard for reasons that are structural, not incidental:</p>
+<ol>
+<li><strong>Both software and hardware are evolving</strong>: The dominant model family is evolving: MLPs, then CNNs, then Transformers/LLMs; and each shift stresses the hardware differently. Moreover, vendors ship new architectures on a fast cadence (for NVIDIA, Ampere → Hopper → Blackwell), each adding new compute units, datatypes, and memory features.</li>
+<li><strong>Hardware/software co-design is common.</strong> Techniques like quantization and sparsity blur the line between the algorithm and the silicon, so the software cannot treat the hardware as an opaque black box.</li>
+</ol>
+<p>As a consequence, high-level languages and AI frameworks (PyTorch, JAX, HuggingFace Transformers, and others) must be lowered onto a different low-level, performance-oriented programming interface for each backend, and code written for one rarely ports cleanly to another. That software-lowering story is the subject of Section 1.2, and the per-backend kernel-programming interfaces are the subject of Section 1.3. Here we stay focused on the silicon itself.</p>
+<h2 id="a-unifying-mental-model-of-a-tensor-accelerator">
+  A unifying mental model of a tensor accelerator
+  
+  <a class="anchor" href="#a-unifying-mental-model-of-a-tensor-accelerator">#</a>
+  
+</h2>
+<p>Under the hood, most tensor accelerators are built to exploit the same regular, tensor-based math over a limited operator set. Vendor-specific details become variations of the following:</p>
+<p><strong>1. Compute engines.</strong> At the heart of the chip is a <strong>matrix/tensor unit</strong> — frequently a <em>systolic array</em> — that performs matrix-multiply-accumulate on fixed-size tiles (common tile granularities are on the order of 16×16 or 128×128). Around it sit a <strong>vector unit</strong> for reductions and elementwise operations, and a <strong>scalar unit</strong> for the remaining scalar/control work and activation functions. Almost every DNN kernel is ultimately a schedule that keeps the matrix unit fed while the vector and scalar units handle the epilogue and glue.</p>
+<p><strong>2. An explicitly-managed memory hierarchy.</strong> Off-chip memory is large but far away (high-bandwidth memory, HBM, or DRAM). On-chip memory is small but fast: a software-managed <strong>scratchpad SRAM</strong>, plus an <strong>accumulator</strong> (or register file) where partial sums from the matrix unit are collected. Crucially, on accelerators this hierarchy is often <em>explicitly managed</em> rather than governed by a hardware cache: the program (or compiler, or kernel author) decides what to stage on-chip and when. The central performance concern is therefore <strong>minimizing data movement</strong> — reusing data while it is resident in fast memory — and <strong>overlapping computation with data movement</strong> so the compute engines never stall waiting for HBM.</p>
+<p><strong>3. Interconnects for multi-chip scaling.</strong> A single chip is rarely enough for large models, so accelerators are wired together with <strong>high-bandwidth interconnects</strong> into larger systems, letting many chips cooperate on one computation.</p>
+<p>A schematic view of a single accelerator chip:</p>
+<pre tabindex="0"><code>        ┌───────────────────────────────────────────────┐
+        │                Off-chip HBM / DRAM            │   large, slow
+        └───────────────────────────────────────────────┘
+                     ▲                     │
+        data movement│                     │ (explicitly managed)
+                     │                     ▼
+        ┌───────────────────────────────────────────────┐
+        │            On-chip scratchpad SRAM            │   small, fast
+        └───────────────────────────────────────────────┘
+                     ▲            ▲             ▲
+                     │            │             │
+             ┌───────────┐ ┌────────────┐ ┌────────────┐
+             │  Matrix / │ │   Vector   │ │   Scalar   │   compute
+             │  Tensor   │ │    unit    │ │    unit    │   engines
+             │   unit    │ │(reductions,│ │(activations│
+             │ (GEMM /   │ │ elementwise│ │  control)  │
+             │ systolic) │ │    ops)    │ │            │
+             └───────────┘ └────────────┘ └────────────┘
+                     │
+                     ▼
+             ┌───────────────┐
+             │  Accumulator  │   partial sums
+             └───────────────┘
 
-<link rel="stylesheet" href="/llm_kernel_writing/katex/katex.min.css" />
-<script defer src="/llm_kernel_writing/katex/katex.min.js"></script>
-
-  <script defer src="/llm_kernel_writing/katex/auto-render.min.js" onload="renderMathInElement(document.body, {
-  &#34;delimiters&#34;: [
-    {&#34;left&#34;: &#34;$$&#34;, &#34;right&#34;: &#34;$$&#34;, &#34;display&#34;: true},
-    {&#34;left&#34;: &#34;$&#34;, &#34;right&#34;: &#34;$&#34;, &#34;display&#34;: false},
-    {&#34;left&#34;: &#34;\\(&#34;, &#34;right&#34;: &#34;\\)&#34;, &#34;display&#34;: false},
-    {&#34;left&#34;: &#34;\\[&#34;, &#34;right&#34;: &#34;\\]&#34;, &#34;display&#34;: true}
-  ]
-}
-);"></script>
-
-
-<p>[Placeholder content for subsection 1.1 AI Accelerators and the Kernel Programming Model.]</p>
-
-
+  ... and chip ⇄ chip over a high-bandwidth interconnect (scale-out)
+</code></pre><p>The explicitly-managed memory hierarchy is worth visualizing as a <em>pyramid</em>, because the trade-off it encodes is the same on every accelerator. Memories closer to the compute engines offer far higher bandwidth and lower latency but hold far less; memories farther away hold the whole working set but are slow to reach. The figure below draws this pyramid for a Trainium NeuronCore, but the <em>shape</em> is what matters and it generalizes to GPUs and TPUs alike. Since compute is usually cheap relative to moving data, keeping the working set high in the pyramid — through tiling, reuse, and fusion — is the single most important lever a kernel has.</p>
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="pm-memory.png"
+       alt="Accelerator memory hierarchy pyramid"
+       style="width: 62%; height: auto; object-fit: contain;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.4rem;">
+    The memory pyramid, drawn here for a Trainium NeuronCore but representative of the pattern on GPUs and TPUs alike: moving closer to the compute engines buys higher bandwidth and lower latency at the cost of much smaller capacity. The numbers are illustrative, not exact (credit: AWS Neuron Docs).
+  </p>
+</div>
+<p>Designs differ enormously in <em>size</em> (edge NPU vs. datacenter GPU vs. wafer-scale part), in <em>dataflow</em> (how tiles stream through the matrix unit), and in <em>programming model</em> (hand-written kernels vs. whole-graph compilation). But the three ingredients — engines, memory hierarchy, interconnect — recur. We now instantiate this model for each of the three systems.</p>
+<h2 id="gpus-nvidia">
+  GPUs (NVIDIA)
+  
+  <a class="anchor" href="#gpus-nvidia">#</a>
+  
+</h2>
+<p>A modern NVIDIA GPU is built from many <strong>Streaming Multiprocessors (SMs)</strong>. Each SM contains two kinds of compute engines that map onto our model:</p>
+<ol>
+<li><strong>CUDA cores</strong>: scalar/vector ALUs that execute general-purpose arithmetic — the &ldquo;vector + scalar unit&rdquo; side of the picture.</li>
+<li><strong>Tensor Cores</strong>: dedicated matrix-multiply-accumulate units for GEMM. These are the GPU&rsquo;s &ldquo;matrix unit,&rdquo; operating on small tiles in reduced precision.</li>
+</ol>
+<p>Execution follows the <strong>SIMT (Single Instruction, Multiple Threads)</strong> model. The programmer writes the code for a <em>single</em> thread — a scalar-looking program such as &ldquo;compute one output element&rdquo; — and the GPU runs that same program across a huge number of threads at once, each with its own registers and its own slice of the data. This gives the convenience of scalar per-thread code with the throughput of massive parallelism, and it is the key distinction from pure SIMD, where one instead writes vector instructions over vector registers explicitly. Those threads are not a flat pool, but instead, are organized into a three-level hierarchy, each level of which corresponds to a physical or scheduling reality on the chip.</p>
+<p><strong>Warps (32 threads, one instruction stream).</strong> The hardware does not schedule threads individually. It bundles them into fixed groups of 32 called <strong>warps</strong>, and the warp (not the thread) is the true unit of execution. All 32 threads in a warp share a single <em>instruction stream</em>: the ordered flow of machine instructions driven by one program counter. The GPU fetches and decodes one instruction and issues it to all 32 lanes together (&ldquo;lockstep&rdquo;), so each lane runs the same instruction on its own data. Sharing the stream is what makes SIMT efficient — the cost of fetching and decoding an instruction is paid once and amortized across 32 threads — and it is also the source of a classic performance pitfall. If threads in the same warp take different sides of an <code>if</code>/<code>else</code>, there is still only one program counter to go around, so the hardware must run <em>both</em> paths, masking off the non-participating threads on each. This <strong>warp divergence</strong> serializes what looked like parallel branches, which is why keeping the 32 threads of a warp on the same control-flow path (and, touching contiguous addresses) matters for performance.</p>
+<p><strong>Thread blocks / CTAs (cooperating warps on one SM).</strong> Warps are grouped into <strong>thread blocks</strong>, also called <strong>CTAs (cooperative thread arrays)</strong>. The &ldquo;cooperative&rdquo; is the point: an entire block is guaranteed to be scheduled onto a <em>single</em> SM, and because its threads all live on the same SM they can genuinely work together — sharing that SM&rsquo;s fast, software-managed on-chip shared memory and synchronizing at barriers. A block cannot span two SMs, which is exactly what makes the single-SM placement a hard guarantee. This is the level at which a kernel author chooses tile sizes: how large a chunk of the problem one block should stage into shared memory and process cooperatively.</p>
+<p><strong>Grid (independent blocks covering the problem).</strong> All the thread blocks together form a <strong>grid</strong>, sized so that the blocks collectively cover the entire problem. Different blocks are largely <em>independent</em> — they do not cheaply share memory or synchronize with one another — so the GPU is free to run them in any order, across whatever SMs are available, even sequentially if there are more blocks than SMs. That independence is precisely what lets the same kernel scale unchanged from a small GPU to a large one.</p>
+<p>A kernel author reasons explicitly about this hierarchy when deciding how to partition work: how many threads per block and how many blocks to launch, how each thread&rsquo;s index maps to the data it owns, what to stage into a block&rsquo;s shared memory, and where to synchronize while avoiding divergence. Mapping the computation onto warps, blocks, and the grid <em>is</em> a large part of what writing a GPU kernel means.</p>
+<p>The GPU memory hierarchy is a concrete instance of the explicitly-managed hierarchy above:</p>
+<pre tabindex="0"><code>per-thread registers            (fastest, private)
+        ↓
+per-SM shared memory / L1       (software-managed, shared within a block)
+        ↓
+shared L2 cache                 (across SMs)
+        ↓
+global memory (HBM)             (largest, slowest, off-chip)
+</code></pre><p>Getting performance means keeping working data in registers and shared memory, and issuing <strong>coalesced</strong> global-memory accesses so that the threads of a warp touch contiguous addresses. Shared memory in particular is <em>software-managed</em>: the kernel decides what tiles to stage there, mirroring the scratchpad in our general model. GPUs support a wide range of precisions — FP32, TF32, FP16, BF16, FP8, INT8, and more — which the Tensor Cores exploit for throughput.</p>
+<p>For multi-GPU scaling, NVIDIA uses <strong>NVLink</strong> and <strong>NVSwitch</strong> to provide high-bandwidth GPU-to-GPU communication (with PCIe as the more general host/device interconnect). Across generations — <strong>Ampere → Hopper → Blackwell</strong> — the recurring story is more and faster Tensor Cores, new datatypes, larger and higher-bandwidth on-chip and off-chip memory, and faster interconnect. Each generation shifts the performance sweet spot, which is part of why kernels must be re-tuned over time.</p>
+<h2 id="tpus-google">
+  TPUs (Google)
+  
+  <a class="anchor" href="#tpus-google">#</a>
+  
+</h2>
+<p>Google&rsquo;s <strong>Tensor Processing Unit (TPU)</strong> is a domain-specific accelerator built around a large <strong>systolic-array Matrix Multiply Unit (MXU)</strong>. In a systolic array, data flows rhythmically through a grid of multiply-accumulate cells, so a large matrix multiply is performed with very high arithmetic density and minimal control overhead. Alongside the MXU sit a <strong>vector unit</strong> for elementwise and reduction work and a <strong>scalar unit</strong> for control — again matching the matrix/vector/scalar decomposition of our model. Explicitly-managed on-chip memory (a scratchpad, e.g. VMEM) is fed from off-chip HBM, and the MXU accumulates partial sums as tiles stream through.</p>
+<p>Where the TPU differs most sharply from the GPU is the <strong>programming model</strong>. TPUs are programmed primarily through <strong>whole-graph compilation</strong> rather than by hand-writing individual kernels. A model expressed in JAX, TensorFlow, or PyTorch/XLA is captured as a computation graph and handed to the <strong>XLA</strong> compiler, which fuses operations, assigns layouts, and emits an optimized executable for the whole graph at once. The programmer usually reasons at the level of tensor operations and lets the compiler own tiling and scheduling — a very different experience from writing SIMT kernels. (Section 1.2 covers this XLA/HLO path in detail.)</p>
+<p>For scale-out, TPUs are assembled into <strong>pods</strong> connected by a dedicated high-bandwidth <strong>inter-chip interconnect (ICI)</strong> arranged in a torus topology, so that many chips form a tightly-coupled machine for large training and inference jobs. TPUs have gone through multiple generations (v2, v3, v4, v5e/v5p, and newer), broadly trending toward more matrix throughput, larger memory, and larger, faster-connected pods.</p>
+<h2 id="aws-trainium">
+  AWS Trainium
+  
+  <a class="anchor" href="#aws-trainium">#</a>
+  
+</h2>
+<p><strong>AWS Trainium</strong> is a family of tensor accelerators designed by Annapurna Labs (AWS). Trainium chips are exposed to users through <strong>Trn</strong> EC2 instances (for example, a <code>trn1.2xlarge</code> instance exposes two NeuronCore-v2 cores). Each <strong>NeuronCore</strong> contains several heterogeneous compute engines that map cleanly onto the matrix/vector/scalar decomposition — plus a fully programmable &ldquo;catch-all&rdquo; engine:</p>
+<ol>
+<li><strong>Tensor Engine</strong>: the primary high-throughput unit. It is built around a large <strong>systolic array</strong> (a 128×128 grid of processing elements) and performs matrix multiplies, convolutions, and transposes at very high arithmetic intensity, in mixed precision (BF16, FP16, TF32, FP8, FP32, MXFP8/MXFP4). Because attention projections, feed-forward layers, and most other transformer work reduce to GEMMs, the Tensor Engine carries the vast majority of a model&rsquo;s FLOPs. It is the core&rsquo;s matrix unit.</li>
+<li><strong>Vector Engine</strong>: elementwise and vectorized operations in which each output element depends on <em>multiple</em> input elements — axpy (Z = aX + Y), LayerNorm, reductions, pooling. Offloading this non-matmul work to dedicated hardware lets it overlap with the Tensor Engine (avoids stalls).</li>
+<li><strong>Scalar Engine</strong>: per-element operations in which each output element depends on a <em>single</em> input element (activations, absolute value, and similar), with lightweight per-element control logic. Isolating this work onto its own pipeline keeps it from stalling the Tensor or Vector engines.</li>
+<li><strong>GPSIMD Engine</strong>: the flexible catch-all. It is a set of fully programmable wide vector processors (eight 512-bit-wide units) that can run general-purpose C code and access on-chip SRAM directly, which is what makes it possible to implement custom operators that do not map cleanly onto the tensor, vector, or scalar engines.</li>
+</ol>
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="NeuronCore_architecture.png"
+       alt="NeuronCore architecture"
+       style="width: 55%; height: auto; object-fit: contain;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.4rem;">
+    A single NeuronCore: the Tensor, Vector, Scalar, and GPSIMD engines arranged around software-managed on-chip SRAM (credit: AWS Neuron Docs).
+  </p>
+</div>
+<p>Feeding these engines is an explicitly-managed on-chip memory hierarchy with two named components: <strong>SBUF</strong>, a software-managed scratchpad SRAM fed from off-chip <strong>HBM</strong> via DMA, and <strong>PSUM</strong>, a dedicated accumulator buffer written by the Tensor Engine with matrix-multiply partial sums. The Vector, Scalar, and GPSIMD engines can read and write SBUF, while the Tensor Engine reads its inputs from SBUF and writes its outputs only to PSUM; inputs are explicitly loaded HBM→SBUF before compute and results written SBUF→HBM afterward, so managing tile lifetimes to avoid spills back to HBM is a central concern. PSUM is smaller and specialized: it lets the Tensor Engine accumulate partial results from many matmul tiles into the same output region, with completed tiles evicted to SBUF. A defining characteristic of the architecture is that it works efficiently on groups of <strong>128 partitions</strong>: SBUF and PSUM are organized as 128-partition memories, so tiling computations in units of 128 is central to mapping work onto the hardware, analogous to (but distinct from) the tile sizes seen on GPUs and TPUs.</p>
+<pre tabindex="0"><code>              HBM  (off-chip)
+                │        ▲
+    DMA load    ▼        │  store
+              SBUF  (on-chip scratchpad SRAM, 128 partitions)
+        ┌───────┼───────────────┬───────────────┐
+        ▼       ▼               ▼               ▼
+   Tensor    Vector          Scalar          GPSIMD
+   Engine    Engine          Engine          Engine
+   (matmul,  (reduce,        (activations)   (general SIMD)
+    systolic  elementwise)
+    array)
+        │
+        ▼
+      PSUM  (accumulator buffer for matmul partial sums)
+</code></pre><p>For multi-chip scaling, Trainium follows the same pattern as the GPU and TPU: chips are joined by a dedicated chip-to-chip interconnect (<strong>NeuronLink</strong>) so that the accelerators in and across instances can cooperate, and Trn instances scale out over the datacenter network using AWS&rsquo;s <strong>Elastic Fabric Adapter (EFA)</strong>. Because it is easy to underappreciate the importance of interchip communication from a single-chip view, we give it its own subsection below, using Trainium as a concrete case study.</p>
+<p>Trainium is programmed through the <strong>AWS Neuron SDK</strong>, which — like the other stacks — offers two levels of access:</p>
+<ul>
+<li><strong>A high-level, XLA-based graph-compiler path</strong>, reached from PyTorch or JAX via the framework integrations (<strong>torch-neuronx</strong> / <strong>jax-neuronx</strong>) and compiled by the Neuron graph compiler (<strong>neuronx-cc</strong>). This traces the model graph and fuses operations automatically, much like the TPU&rsquo;s whole-graph approach.</li>
+<li><strong>A lower-level kernel path, NKI (the Neuron Kernel Interface)</strong>, a Python-embedded DSL for hand-writing high-performance kernels with explicit control over the engines and the SBUF/PSUM/HBM hierarchy.</li>
+</ul>
+<h2 id="scaling-out-from-chip-to-server-to-datacenter">
+  Scaling out: from chip to server to datacenter
+  
+  <a class="anchor" href="#scaling-out-from-chip-to-server-to-datacenter">#</a>
+  
+</h2>
+<p>The interconnect is the one that a single-chip diagram makes easy to forget, yet it shapes what a large-model kernel and its collective operations can assume. It is cleanest to see as a <em>three-tier hierarchy</em>: on-chip execution within one accelerator, a <strong>scale-up</strong> fabric that binds several accelerators inside a server, and a <strong>scale-out</strong> network that binds many servers into a datacenter. We use Trainium as the concrete case study here, but the same three tiers appear on GPUs (NVLink/NVSwitch inside a node, InfiniBand/Ethernet across nodes) and TPUs (an ICI torus within a pod).</p>
+<p><strong>The physical chip.</strong> A Trn3 chip packages <strong>eight NeuronCores together with four banks of HBM</strong> on a single substrate. The compute die sits at the center with the HBM stacks placed close around it for bandwidth; inside the die the cores are laid out in a regular grid and joined by a high-bandwidth on-chip interconnect so data and synchronization move efficiently across the chip. The whole package is deployed as a PCIe card/module in a server, exposing high-speed links both to the host and to its neighbor chips.</p>
+<div style="display: flex; justify-content: center; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin: 2rem 0;">
+  <img src="Trn3_chip_real.jpg"
+       alt="Photo of a Trn3 chip package"
+       style="width: 44%; height: auto; object-fit: contain;" />
+  <img src="Trn3_chip_schematic.png"
+       alt="Schematic of a Trn3 chip: 8 NeuronCores and 4 HBM banks"
+       style="width: 40%; height: auto; object-fit: contain;" />
+</div>
+<p style="text-align: center; font-size: 0.9em; color: #666; margin-top: -1rem;">
+  A Trn3 chip: eight NeuronCores plus four banks of HBM on one package — photo (left) and schematic (right) (credit: SemiAnalysis &amp; AWS Neuron Docs).
+</p>
+<p><strong>Scale-up: aggregating accelerators inside a server.</strong> One chip is rarely enough, so a server wires several accelerators together with high-bandwidth, low-latency links, pooling their compute and memory.</p>
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="Trn3_server.png"
+       alt="A Trn3 ultraserver with several connected chips"
+       style="width: 70%; height: auto; object-fit: contain;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.4rem;">
+    A Trn3 ultraserver aggregating several Trn3 chips over a high-bandwidth scale-up interconnect (credit: AWS re:Invent 2025).
+  </p>
+</div>
+<p>There are two broad ways to wire that scale-up fabric, and the choice is a general trade-off between <em>structured</em> and <em>irregular</em> communication rather than anything specific to one workload:</p>
+<ul>
+<li><strong>Direct topology (torus / mesh).</strong> Each accelerator is wired to a small, fixed set of neighbors in a 2D or 3D grid with wrap-around links, and traffic to distant devices is routed hop by hop. This is hardware-efficient (no switches), cheap to scale, and gives predictable nearest-neighbor bandwidth, which suits <em>structured, regular</em> communication such as tensor- or pipeline-parallel exchanges between fixed groups of devices. The cost is that latency grows with distance and the aggregate bandwidth between arbitrary pairs of devices is limited by the topology.</li>
+</ul>
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="trn2_us_3d_torus.png"
+       alt="3D torus scale-up topology"
+       style="width: 68%; height: auto; object-fit: contain;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.4rem;">
+    Scaling up with a 3D torus: each accelerator links directly to a few neighbors with wrap-around edges (Trn2 ultraserver shown; credit: AWS).
+  </p>
+</div>
+<ul>
+<li><strong>Switched fabric.</strong> Each accelerator instead connects to one or more high-radix switches, so any device can reach any other in roughly a single hop. This delivers higher bisection bandwidth and lower, more uniform latency, and it handles <em>irregular or global</em> communication patterns far better — at the cost of extra switch hardware, cabling, and power, larger fault domains (one switch touches many devices), and more latency variability under contention. It is the same idea as NVSwitch on GPU servers.</li>
+</ul>
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="switched_fabric_zoomed_in.png"
+       alt="Compute trays connected to switching trays in a switched fabric"
+       style="width: 80%; height: auto; object-fit: contain;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.4rem;">
+    A switched fabric: compute trays connected through dedicated switching trays, giving any-to-any communication in about one hop (credit: AWS).
+  </p>
+</div>
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="Trn3_NL_32x2.png"
+       alt="Schematic of a Trn3 NL 32x2 server"
+       style="width: 80%; height: auto; object-fit: contain;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.4rem;">
+    Schematic of a Trn3 NL 32x2 server: two racks combining compute trays, switching trays, CPU, and power (credit: AWS Neuron Docs).
+  </p>
+</div>
+<p><strong>Scale-out: many servers into a datacenter.</strong> Once a model or a serving fleet outgrows a single server, servers are joined across the datacenter with high-speed Ethernet fabrics such as AWS&rsquo;s <strong>Elastic Fabric Adapter (EFA)</strong>. Latency here is orders of magnitude higher than on-chip or intra-server communication, so this tier is used for data-parallel replication, sharding, and coordination rather than for the tightest inner loops. At this scale, network latency, bandwidth, and tail behavior become first-class performance concerns, not just FLOPs and memory bandwidth.</p>
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="ProjectRainier.png"
+       alt="Datacenter-scale cluster of accelerator servers"
+       style="width: 78%; height: auto; object-fit: contain;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.4rem;">
+    Scale-out: many accelerator-equipped servers joined into a single datacenter-scale training and inference fabric (credit: AWS, Project Rainier).
+  </p>
+</div>
+<p>Taken together, the interconnect is best understood as this hierarchy — on-chip execution, a scale-up fabric inside the server, and a scale-out network across the datacenter. Kernels themselves live at the bottom tier, but the tiers above decide which collective operations are cheap and which are expensive, and that is exactly the kind of structure a kernel author (or an LLM writing kernels) has to keep in mind.</p>
+<h2 id="synthesis-what-a-kernel-actually-targets">
+  Synthesis: what a kernel actually targets
+  
+  <a class="anchor" href="#synthesis-what-a-kernel-actually-targets">#</a>
+  
+</h2>
+<p>Step back and the three systems tell one story. A GPU&rsquo;s Tensor Cores + CUDA cores + registers/shared memory/L2/HBM + NVLink; a TPU&rsquo;s MXU + vector/scalar units + VMEM/HBM + ICI; a Trainium NeuronCore&rsquo;s Tensor/Vector/Scalar/GPSIMD engines + SBUF/PSUM/HBM + NeuronLink — these are similar ingredients:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Ingredient</th>
+          <th>NVIDIA GPU</th>
+          <th>Google TPU</th>
+          <th>AWS Trainium</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Matrix unit</td>
+          <td>Tensor Cores</td>
+          <td>MXU (systolic array)</td>
+          <td>Tensor Engine</td>
+      </tr>
+      <tr>
+          <td>Vector / scalar</td>
+          <td>CUDA cores</td>
+          <td>vector + scalar unit</td>
+          <td>Vector/Scalar/GPSIMD</td>
+      </tr>
+      <tr>
+          <td>On-chip memory</td>
+          <td>registers, shared memory, L2</td>
+          <td>VMEM scratchpad</td>
+          <td>SBUF + PSUM</td>
+      </tr>
+      <tr>
+          <td>Off-chip memory</td>
+          <td>HBM (global)</td>
+          <td>HBM</td>
+          <td>HBM</td>
+      </tr>
+      <tr>
+          <td>Interconnect</td>
+          <td>NVLink / NVSwitch</td>
+          <td>ICI (torus, pods)</td>
+          <td>NeuronLink + EFA (scale-out)</td>
+      </tr>
+  </tbody>
+</table>
+<p>A high-performance kernel — whatever the backend — is fundamentally an answer to the same set of questions: <em>How do I tile the computation so the matrix unit stays busy? What do I stage in the on-chip scratchpad, and when? How do I map the elementwise/reduction epilogue onto the vector and scalar units? How do I overlap data movement with computation so the engines never stall?</em> The differences between CUDA, XLA, and NKI are, to a large degree, differences in <em>how much</em> of that reasoning the programmer does explicitly versus how much the compiler does for them.</p>
+<p>That is the bridge to the rest of Section 1. The hardware here defines the <em>targets</em>; Section 1.2 will build a mental model of the <em>software stacks</em> that lower models down toward this hardware; and Section 1.3 will turn to the kernel-programming interfaces — CUDA, Triton, and NKI — through which a person, a compiler, or an LLM actually writes the code that these engines run.</p>
 <h2 id="references">
   References
   
@@ -492,7 +774,24 @@ https://github.com/alex-shpak/hugo-book
   
 </h2>
 <ol>
-<li>[Placeholder reference.]</li>
+<li>NVIDIA, <em>CUDA C++ Programming Guide</em>. <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/">https://docs.nvidia.com/cuda/cuda-c-programming-guide/</a></li>
+<li>NVIDIA, <em>NVIDIA A100 Tensor Core GPU Architecture</em> (Ampere whitepaper). <a href="https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/nvidia-ampere-architecture-whitepaper.pdf">https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/nvidia-ampere-architecture-whitepaper.pdf</a></li>
+<li>NVIDIA, <em>NVIDIA H100 Tensor Core GPU Architecture</em> (Hopper whitepaper). <a href="https://resources.nvidia.com/en-us-tensor-core">https://resources.nvidia.com/en-us-tensor-core</a></li>
+<li>NVIDIA, <em>NVLink and NVSwitch</em> (high-speed GPU interconnect). <a href="https://www.nvidia.com/en-us/data-center/nvlink/">https://www.nvidia.com/en-us/data-center/nvlink/</a></li>
+<li>N. P. Jouppi et al., &ldquo;In-Datacenter Performance Analysis of a Tensor Processing Unit,&rdquo; <em>ISCA 2017</em>. <a href="https://arxiv.org/abs/1704.04760">https://arxiv.org/abs/1704.04760</a></li>
+<li>N. P. Jouppi et al., &ldquo;TPU v4: An Optically Reconfigurable Supercomputer for Machine Learning with Hardware Support for Embeddings,&rdquo; <em>ISCA 2023</em>. <a href="https://arxiv.org/abs/2304.01433">https://arxiv.org/abs/2304.01433</a></li>
+<li>Google Cloud, <em>TPU System Architecture</em>. <a href="https://cloud.google.com/tpu/docs/system-architecture-tpu-vm">https://cloud.google.com/tpu/docs/system-architecture-tpu-vm</a></li>
+<li>J. Austin et al., <em>How to Scale Your Model: A Systems View of LLMs on TPUs</em> (&ldquo;How to think about TPUs&rdquo;). <a href="https://jax-ml.github.io/scaling-book/tpus/">https://jax-ml.github.io/scaling-book/tpus/</a></li>
+<li>OpenXLA, <em>XLA Architecture</em>. <a href="https://openxla.org/xla/architecture">https://openxla.org/xla/architecture</a></li>
+<li>AWS, <em>Trainium/Inferentia2 Architecture Guide for NKI</em> (NeuronCore-v2 engines, SBUF/PSUM, 128 partitions). <a href="https://awsdocs-neuron.readthedocs-hosted.com/en/latest/nki/guides/architecture/trainium_inferentia2_arch.html">https://awsdocs-neuron.readthedocs-hosted.com/en/latest/nki/guides/architecture/trainium_inferentia2_arch.html</a></li>
+<li>AWS, <em>NeuronCore-v4 Architecture</em>. <a href="https://awsdocs-neuron.readthedocs-hosted.com/en/latest/about-neuron/arch/neuron-hardware/neuron-core-v4.html">https://awsdocs-neuron.readthedocs-hosted.com/en/latest/about-neuron/arch/neuron-hardware/neuron-core-v4.html</a></li>
+<li>AWS, <em>NKI (Neuron Kernel Interface) Documentation</em>. <a href="https://awsdocs-neuron.readthedocs-hosted.com/en/latest/general/nki/">https://awsdocs-neuron.readthedocs-hosted.com/en/latest/general/nki/</a></li>
+<li>AWS, <em>Amazon EC2 Trn1 Instances</em>. <a href="https://aws.amazon.com/ec2/instance-types/trn1/">https://aws.amazon.com/ec2/instance-types/trn1/</a></li>
+<li>SemiAnalysis, <em>AWS Trainium3 Deep Dive: A Potential Turning Point</em>. <a href="https://newsletter.semianalysis.com/p/aws-trainium3-deep-dive-a-potential">https://newsletter.semianalysis.com/p/aws-trainium3-deep-dive-a-potential</a></li>
+<li>AWS, <em>Project Rainier: AI Trainium Chips Compute Cluster</em>. <a href="https://www.aboutamazon.com/news/aws/aws-project-rainier-ai-trainium-chips-compute-cluster">https://www.aboutamazon.com/news/aws/aws-project-rainier-ai-trainium-chips-compute-cluster</a></li>
+<li>P. Tillet, H. T. Kung, and D. Cox, &ldquo;Triton: An Intermediate Language and Compiler for Tiled Neural Network Computations,&rdquo; <em>MAPL 2019</em>. <a href="https://dl.acm.org/doi/10.1145/3315508.3329973">https://dl.acm.org/doi/10.1145/3315508.3329973</a></li>
+<li>R. Saha, A. Manocha, Y. Park, et al., <em>Algorithms and Systems for Efficient Inference in Generative AI</em>, AAAI 2026 Tutorial (source of the NeuronCore, memory-hierarchy, and Trainium scaling figures). <a href="https://neuron-science.github.io/inference_optimization/">https://neuron-science.github.io/inference_optimization/</a></li>
+<li>C. Hong, S. Bhatia, A. Cheung, and Y. S. Shao, <em>AI-Driven Accelerator Programming with LLMLift and Autocomp</em>, ASPLOS 2026 Tutorial. <a href="https://charleshong3.github.io/research/asplos2026-tutorial/">https://charleshong3.github.io/research/asplos2026-tutorial/</a></li>
 </ol>
 </article>
  
@@ -519,16 +818,16 @@ https://github.com/alex-shpak/hugo-book
     <span>
     
       <a href="/llm_kernel_writing/docs/section-1/" class="flex align-center book-icon">
-        <img src="/llm_kernel_writing/svg/backward.svg" class="book-icon" alt="Previous" title="Foundations: Kernels, Accelerators, and LLM Code Generation" />
-        <span>Foundations: Kernels, Accelerators, and LLM Code Generation</span>
+        <img src="/llm_kernel_writing/svg/backward.svg" class="book-icon" alt="Previous" title="Hardware, Kernels, and LLMs" />
+        <span>Hardware, Kernels, and LLMs</span>
       </a>
     
     </span>
     <span>
     
       <a href="/llm_kernel_writing/docs/section-1/subsection-2/" class="flex align-center book-icon">
-        <span>1.2 The ML Compiler Stack</span>
-        <img src="/llm_kernel_writing/svg/forward.svg" class="book-icon" alt="Next" title="1.2 The ML Compiler Stack" />
+        <span>1.2 Overview of AI Software Stacks</span>
+        <img src="/llm_kernel_writing/svg/forward.svg" class="book-icon" alt="Next" title="1.2 Overview of AI Software Stacks" />
       </a>
     
     </span>
@@ -563,6 +862,13 @@ https://github.com/alex-shpak/hugo-book
   
 <nav id="TableOfContents">
   <ul>
+    <li><a href="#why-specialized-ai-hardware-and-why-it-is-hard">Why specialized AI hardware, and why it is hard</a></li>
+    <li><a href="#a-unifying-mental-model-of-a-tensor-accelerator">A unifying mental model of a tensor accelerator</a></li>
+    <li><a href="#gpus-nvidia">GPUs (NVIDIA)</a></li>
+    <li><a href="#tpus-google">TPUs (Google)</a></li>
+    <li><a href="#aws-trainium">AWS Trainium</a></li>
+    <li><a href="#scaling-out-from-chip-to-server-to-datacenter">Scaling out: from chip to server to datacenter</a></li>
+    <li><a href="#synthesis-what-a-kernel-actually-targets">Synthesis: what a kernel actually targets</a></li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>

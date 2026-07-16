@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="
-  LLMs for Code Generation: Background
+  Overview of System Kernels: CUDA, Triton, and NKI
   
   #
   
@@ -16,34 +16,22 @@
   
 
 
-[Placeholder content for subsection 1.3 LLMs for Code Generation: Background.]
-
-
-
-  References
-  
-  #
-  
-
-
-[Placeholder reference.]
-">
+In Section 1.2 we followed a model down through the software stack: framework code is captured into a graph, lowered through a tensor-level IR, and eventually turned into the kernels that actually run on a device. In Section 1.1 we saw what those devices look like underneath — GPUs, TPUs, and AWS Trainium all combine specialized matrix-multiply units, other compute engines, and an explicitly-managed on-chip memory hierarchy fed from off-chip HBM. This section connects the two views by looking closely at the layer where those pictures meet: the kernel, and the languages we use to write kernels by hand.">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
 <meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-3/">
   <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
-  <meta property="og:title" content="1.3 LLMs for Code Generation: Background">
-  <meta property="og:description" content="LLMs for Code Generation: Background # [Placeholder content for subsection 1.3 LLMs for Code Generation: Background.]
-References # [Placeholder reference.]">
+  <meta property="og:title" content="1.3 Overview of System Kernels: CUDA, Triton, and NKI">
+  <meta property="og:description" content="Overview of System Kernels: CUDA, Triton, and NKI # In Section 1.2 we followed a model down through the software stack: framework code is captured into a graph, lowered through a tensor-level IR, and eventually turned into the kernels that actually run on a device. In Section 1.1 we saw what those devices look like underneath — GPUs, TPUs, and AWS Trainium all combine specialized matrix-multiply units, other compute engines, and an explicitly-managed on-chip memory hierarchy fed from off-chip HBM. This section connects the two views by looking closely at the layer where those pictures meet: the kernel, and the languages we use to write kernels by hand.">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
-<title>1.3 LLMs for Code Generation: Background | Teaching LLMs to Write System Kernels</title>
+<title>1.3 Overview of System Kernels: CUDA, Triton, and NKI | Teaching LLMs to Write System Kernels</title>
 <link rel="icon" href="/llm_kernel_writing/favicon.png" >
 <link rel="manifest" href="/llm_kernel_writing/manifest.json">
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-3/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.65e03c35da3b38f8b2a8052f76cde7098ba374a4d7fe386da17512fc7c17beba.js" integrity="sha256-ZeA8Ndo7OPiyqAUvds3nCYujdKTX/jhtoXUS/HwXvro=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.41280eb55d0faef48301899da71029e8681649ce2850953ac2af8f8cdc3e1631.js" integrity="sha256-QSgOtV0PrvSDAYmdpxAp6GgWSc4oUJU6wq&#43;PjNw&#43;FjE=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-3/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -97,7 +85,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/" class="">Foundations: Kernels, Accelerators, and LLM Code Generation</a>
+    <a href="/llm_kernel_writing/docs/section-1/" class="">Hardware, Kernels, and LLMs</a>
   
 
           
@@ -110,25 +98,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/subsection-1/" class="">1.1 AI Accelerators and the Kernel Programming Model</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-1/subsection-2/" class="">1.2 The ML Compiler Stack</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-1/" class="">1.1 Overview of AI Hardware: GPUs, TPUs, and AWS Trainium</a>
   
 
           
@@ -146,7 +116,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/subsection-3/" class="active">1.3 LLMs for Code Generation: Background</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-2/" class="">1.2 Overview of AI Software Stacks</a>
   
 
           
@@ -164,43 +134,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-1/subsection-4/" class="">1.4 Benchmarks and Evaluation for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-2/" class="">Post-Training LLMs for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-2/subsection-1/" class="">2.1 Supervised Fine-Tuning on Kernel Corpora</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-3/" class="active">1.3 Overview of System Kernels: CUDA, Triton, and NKI</a>
   
 
           
@@ -218,7 +152,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/subsection-2/" class="">2.2 Reinforcement Learning from Execution Feedback</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-4/" class="">1.4 LLM Decoding and Inference-Time Scaling</a>
   
 
           
@@ -236,7 +170,25 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/subsection-3/" class="">2.3 Reward Design: Correctness and Performance</a>
+    <a href="/llm_kernel_writing/docs/section-1/subsection-5/" class="">1.5 Supervised Fine-Tuning (SFT) for Code Generation</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-1/subsection-6/" class="">1.6 RL Post-Training: PPO and GRPO Variants</a>
   
 
           
@@ -259,7 +211,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-3/" class="">Reasoning for Kernel Optimization</a>
+    <a href="/llm_kernel_writing/docs/section-2/" class="">LLM-Driven Kernel Generation</a>
   
 
           
@@ -272,25 +224,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-3/subsection-1/" class="">3.1 Chain-of-Thought and Inference-Time Reasoning</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-3/subsection-2/" class="">3.2 Self-Reflection and Iterative Refinement</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-1/" class="">2.1 Problem Definition of LLM-Assisted Kernel Generation</a>
   
 
           
@@ -308,7 +242,43 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-3/subsection-3/" class="">3.3 Test-Time Scaling and Search</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-2/" class="">2.2 Data Preparation and Curation Strategies</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-2/subsection-3/" class="">2.3 Evaluation Benchmarking for Generated Kernels</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-2/subsection-4/" class="">2.4 Reward Hacking Behaviors and Mitigation</a>
   
 
           
@@ -331,7 +301,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-4/" class="">Agentic Optimization and Systems</a>
+    <a href="/llm_kernel_writing/docs/section-3/" class="">Advanced Agentic Systems</a>
   
 
           
@@ -344,25 +314,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-4/subsection-1/" class="">4.1 Agent Architectures for Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-4/subsection-2/" class="">4.2 Tool Use: Compilers, Profilers, and Autotuners</a>
+    <a href="/llm_kernel_writing/docs/section-3/subsection-1/" class="">3.1 Single-Turn and Multi-Turn RL for Kernel Optimization</a>
   
 
           
@@ -380,7 +332,97 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-4/subsection-3/" class="">4.3 End-to-End Frameworks and Case Studies</a>
+    <a href="/llm_kernel_writing/docs/section-3/subsection-2/" class="">3.2 Evolution-Based Approaches for Iterative Kernel Refinement</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-3/subsection-3/" class="">3.3 Inference-Time Scaling for Kernel Code Reasoning</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/" class="">Hands-On Demo</a>
+  
+
+          
+  <ul>
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-1/" class="">4.1 Triton Kernel Generation Using LLM Agents</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-2/" class="">4.2 NKI Kernel Generation Using LLM Agents</a>
+  
+
+          
+  <ul>
+    
+  </ul>
+
+        </li>
+      
+    
+      
+        <li>
+          
+  
+  
+
+  
+    <a href="/llm_kernel_writing/docs/section-4/subsection-3/" class="">4.3 Interactive Walkthrough and Q&amp;A</a>
   
 
           
@@ -432,7 +474,7 @@ https://github.com/alex-shpak/hugo-book
     <img src="/llm_kernel_writing/svg/menu.svg" class="book-icon" alt="Menu" />
   </label>
 
-  <h3>1.3 LLMs for Code Generation: Background</h3>
+  <h3>1.3 Overview of System Kernels: CUDA, Triton, and NKI</h3>
 
   <label for="toc-control">
     
@@ -448,6 +490,14 @@ https://github.com/alex-shpak/hugo-book
   
 <nav id="TableOfContents">
   <ul>
+    <li><a href="#what-a-kernel-is-and-where-it-sits">What a kernel is, and where it sits</a></li>
+    <li><a href="#why-hand-written-kernels-matter-the-memory-wall">Why hand-written kernels matter: the memory wall</a></li>
+    <li><a href="#cuda">CUDA</a></li>
+    <li><a href="#triton">Triton</a></li>
+    <li><a href="#nki-neuron-kernel-interface">NKI (Neuron Kernel Interface)</a></li>
+    <li><a href="#synthesis-a-control-versus-productivity-spectrum">Synthesis: a control-versus-productivity spectrum</a></li>
+    <li><a href="#flash-attention-a-fused-kernel-in-practice">Flash Attention: a fused kernel in practice</a></li>
+    <li><a href="#takeaways-the-kernel-as-the-target-of-this-tutorial">Takeaways: the kernel as the target of this tutorial</a></li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>
@@ -461,10 +511,10 @@ https://github.com/alex-shpak/hugo-book
 
       
       
-  <article class="markdown book-article"><h1 id="llms-for-code-generation-background">
-  <strong>LLMs for Code Generation: Background</strong>
+  <article class="markdown book-article"><h1 id="overview-of-system-kernels-cuda-triton-and-nki">
+  <strong>Overview of System Kernels: CUDA, Triton, and NKI</strong>
   
-  <a class="anchor" href="#llms-for-code-generation-background">#</a>
+  <a class="anchor" href="#overview-of-system-kernels-cuda-triton-and-nki">#</a>
   
 </h1>
 
@@ -482,9 +532,255 @@ https://github.com/alex-shpak/hugo-book
 );"></script>
 
 
-<p>[Placeholder content for subsection 1.3 LLMs for Code Generation: Background.]</p>
-
-
+<p>In Section 1.2 we followed a model down through the software stack: framework code is captured into a graph, lowered through a tensor-level IR, and eventually turned into the kernels that actually run on a device. In Section 1.1 we saw what those devices look like underneath — GPUs, TPUs, and AWS Trainium all combine specialized matrix-multiply units, other compute engines, and an explicitly-managed on-chip memory hierarchy fed from off-chip HBM. This section connects the two views by looking closely at the layer where those pictures meet: the <strong>kernel</strong>, and the languages we use to write kernels by hand.</p>
+<h2 id="what-a-kernel-is-and-where-it-sits">
+  What a kernel is, and where it sits
+  
+  <a class="anchor" href="#what-a-kernel-is-and-where-it-sits">#</a>
+  
+</h2>
+<p>A <strong>kernel</strong> is the low-level function that actually executes an operator on a device. When PyTorch dispatches an ATen operator such as <code>aten::relu</code> or <code>aten::matmul</code> (Section 1.2), the thing on the other side of that dispatch — the code that runs on the CUDA cores of an SM, on a TPU&rsquo;s MXU, or on a Trainium NeuronCore — is a kernel. Often, an end user may not need to write a kernel. They write hardware-agnostic framework code (PyTorch, JAX, HuggingFace Transformers), and a compiler stack lowers it: <code>torch.compile()</code> fuses regular subgraphs into generated Triton kernels and routes big GEMMs to vendor libraries, while XLA compiles a whole HLO graph for a TPU or Trainium backend.</p>
+<p>That automatic path covers the common case very well. But as Section 1.2 emphasized, ML workloads have a <strong>long tail</strong>: fused GEMM epilogues, FlashAttention-style online softmax, mixture-of-experts routing, quantized/heterogeneous fusion, and accelerator-specific data movement — patterns where general-purpose fusion does not find a good schedule. It also covers only the hardware it has been taught about; a brand-new accelerator has no mature compiler behind it on day one. For both the long tail and new hardware, engineers drop below the framework and write kernels directly in a <strong>kernel language</strong>. Moreover, if one aims to extract peak performance from a chip, programming at the kernel-level is deemed necessary.</p>
+<p>There is no single kernel language, and there never was going to be one. CPUs enjoy a relatively stable ISA boundary (x86, Arm, RISC-V), but AI accelerators do not: the software is a moving target (MLPs → CNNs → LLMs → ?), the hardware is a moving target (e.g. Ampere → Hopper → Blackwell), and HW/SW co-design (quantization, sparsity, new datatypes) keeps blurring the boundary. The result is a many-to-many mapping problem — <strong>several sources and several targets</strong> — where high-level languages and frameworks (C/C++, Python, PyTorch, JAX, and others) must be lowered onto a zoo of low-level, hardware-specific interfaces.</p>
+<p>Each backend tends to bring its own DSL — CUDA and Triton for NVIDIA GPUs, NKI for Trainium, TPC-C for Intel Gaudi, the Gemmini ISA for an academic accelerator, and vector extensions like AVX (Intel CPUs) and RVV (RISC-V Vector) for CPUs. This fragmentation is exactly <em>why portability across backends is hard</em>, and it is the reason a kernel author has to understand not just an operator&rsquo;s math but the specific hardware it will run on. The rest of this section walks through three representative points on this landscape — <strong>CUDA</strong>, <strong>Triton</strong>, and <strong>NKI</strong> — and then places them on a common spectrum.</p>
+<h2 id="why-hand-written-kernels-matter-the-memory-wall">
+  Why hand-written kernels matter: the memory wall
+  
+  <a class="anchor" href="#why-hand-written-kernels-matter-the-memory-wall">#</a>
+  
+</h2>
+<p>Before we look at the languages themselves, it is worth being precise about <em>what</em> the long tail is fighting for. The naive intuition is that an accelerator&rsquo;s job is to do arithmetic, and that a faster chip is one that does more FLOPs per second. But on real deep-learning workloads the binding constraint is usually not compute at all — it is <strong>moving data</strong>. This is the <strong>memory wall</strong>: over the past two decades, compute throughput has scaled far faster than memory bandwidth, so a modern accelerator can finish the arithmetic for an operator long before its inputs and outputs have finished travelling to and from off-chip memory. Many operators — especially the small-batch, low-reuse ones that dominate LLM <em>decoding</em> — are therefore <strong>memory-bound</strong>: the compute engines sit idle waiting for HBM, and the kernel&rsquo;s real cost is bytes moved, not FLOPs computed.</p>
+<p>The tool that makes this quantitative is <strong>arithmetic intensity</strong>: the ratio of useful work to data traffic,</p>
+<p>$$\text{AI} = \frac{\text{FLOPs performed}}{\text{bytes transferred to/from memory}} \quad (\text{FLOPs/byte}).$$</p>
+<p>Whether an operator is memory-bound or compute-bound is decided by comparing its arithmetic intensity against a single property of the hardware, the <strong>roofline ridge point</strong> — peak compute divided by peak bandwidth:</p>
+<p>$$\text{ridge point} = \frac{\text{peak compute (FLOPs/s)}}{\text{peak bandwidth (bytes/s)}} \quad (\text{FLOPs/byte}).$$</p>
+<p>An operator whose arithmetic intensity falls <em>below</em> the ridge point cannot possibly saturate the compute units — it will run out of bandwidth first, and it is memory-bound; above the ridge point, it is compute-bound. As an example, an operator may have to do on the order of $\sim$200 floating-point operations for <em>every byte</em> it reads or writes just to keep that core&rsquo;s matrix unit busy — a bar that elementwise, normalization, and attention-style ops fall well short of. This is the same memory pyramid from Section 1.1 viewed through a performance lens: on-chip SRAM (the Trainium <strong>SBUF/PSUM</strong>, a GPU&rsquo;s shared memory) offers roughly an order of magnitude more bandwidth than HBM but holds only tens of MB, so the entire game is keeping the working set high in the pyramid and off the slow HBM tier.</p>
+<p><strong>Kernel fusion</strong> is the single most important lever for doing exactly that, and it is the central payoff of writing kernels by hand. Consider the unfused way a framework executes a chain of operators. Each op independently (1) reads its inputs from HBM into on-chip memory, (2) computes, and (3) writes its output back to HBM — so every <em>intermediate</em> result is spilled to HBM by the op that produces it and immediately refilled by the op that consumes it. For a chain of $k$ operators over $n$ bytes of data, that is roughly $2kn$ bytes of HBM traffic. Fusion combines the whole chain into <strong>one kernel</strong>: load the inputs once, keep every intermediate resident in on-chip SRAM, and write only the final result back — roughly $2n$ bytes, a $k$-fold reduction in the traffic that the memory wall makes precious. Take $y = \text{GELU}(Wx + b)$: unfused, it is three kernels (a matmul, a bias add, and an activation), each round-tripping its intermediates through HBM; fused, it is one kernel that computes $z = Wx + b$ and $y = \text{GELU}(z)$ while $z$ never leaves SBUF, paying for just one refill and one spill. A richer example is attention, whose large intermediates make the HBM round-trips even more punishing:</p>
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="kernel_fusion_standard.png"
+       alt="Standard (unfused) attention: every step round-trips through HBM"
+       style="width: 80%; height: auto; object-fit: contain;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.4rem;">
+    Standard, unfused attention: each step ($S = QK^\top$, $P = \text{softmax}(S)$, $O = PV$) reads its inputs from HBM and writes its outputs back, so every large intermediate makes an expensive HBM round-trip.
+  </p>
+</div>
+<p>Fusion has one hard constraint: every intermediate the fused kernel keeps resident must actually <em>fit</em> in on-chip SRAM. When a chain&rsquo;s intermediates are too large — as they are for attention over a long sequence — the escape hatch is <strong>tiling</strong>: partition the tensors into blocks small enough to fit on-chip, and apply fusion within each tile. Tiling only works when the computation is tileable, i.e. when each output tile depends only on input tiles that can be held on-chip together. That caveat is not a footnote; it is precisely where the interesting algorithmic work lives, and it is what the Flash Attention example at the end of this section is about. The broader point is the motivation for everything that follows: the long tail of operators is worth hand-writing kernels for because fusion and tiling — decisions a general-purpose compiler often cannot make on its own — are what turn a memory-bound operator into one that keeps the compute engines fed.</p>
+<h2 id="cuda">
+  CUDA
+  
+  <a class="anchor" href="#cuda">#</a>
+  
+</h2>
+<p><strong>CUDA</strong> is NVIDIA&rsquo;s C++-based programming model for its GPUs. A CUDA kernel is written in the <strong>SIMT</strong> (Single Instruction, Multiple Threads) style: the programmer writes the code for a <em>single thread</em>, and then launches a large grid of threads that all run that same code over different data. Following the hardware hierarchy from Section 1.1, threads are grouped into <strong>warps</strong> (32 threads executing in lockstep), warps into <strong>thread blocks</strong> (CTAs) that share an SM&rsquo;s on-chip shared memory, and blocks into a <strong>grid</strong>. The programmer is responsible for mapping work onto this hierarchy and for explicitly managing the memory hierarchy — deciding what lives in registers, staging reused data into software-managed shared memory, and coalescing global-memory (HBM) accesses so a warp&rsquo;s loads hit contiguous addresses.</p>
+<p>A minimal element-wise kernel shows the shape of the model: one thread computes one output element, and the host launches enough blocks to cover the array.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#75715e">// Device code: each thread computes one element of C = A + B.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>__global__ <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">vec_add</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">float</span><span style="color:#f92672">*</span> A, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">float</span><span style="color:#f92672">*</span> B, <span style="color:#66d9ef">float</span><span style="color:#f92672">*</span> C, <span style="color:#66d9ef">int</span> n) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> blockIdx.x <span style="color:#f92672">*</span> blockDim.x <span style="color:#f92672">+</span> threadIdx.x;  <span style="color:#75715e">// global thread index
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">&lt;</span> n) {                                     <span style="color:#75715e">// guard the tail
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        C[i] <span style="color:#f92672">=</span> A[i] <span style="color:#f92672">+</span> B[i];
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Host code: launch ceil(n / 256) blocks of 256 threads.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> threads <span style="color:#f92672">=</span> <span style="color:#ae81ff">256</span>;
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> blocks  <span style="color:#f92672">=</span> (n <span style="color:#f92672">+</span> threads <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">/</span> threads;
+</span></span><span style="display:flex;"><span>vec_add<span style="color:#f92672">&lt;&lt;&lt;</span>blocks, threads<span style="color:#f92672">&gt;&gt;&gt;</span>(dA, dB, dC, n);
+</span></span></code></pre></div><p>It is worth reading this snippet closely, because its handful of tokens is where the SIMT model becomes concrete. Taking the syntax in turn:</p>
+<ul>
+<li><strong><code>__global__</code></strong> marks <code>vec_add</code> as a <em>kernel</em>: a function that runs on the GPU but is launched from the CPU (its siblings are <code>__device__</code>, GPU-only, and <code>__host__</code>, CPU-only). A <code>__global__</code> function must return <code>void</code> — a kernel communicates only by writing to memory.</li>
+<li><strong>The parameters</strong> are <em>device pointers</em> into global memory (HBM): <code>dA</code>, <code>dB</code>, <code>dC</code> were allocated on the device and populated by a host→device copy, so they are not the CPU&rsquo;s arrays. <code>n</code> is a scalar passed by value to every thread. The <code>const</code> on <code>A</code> and <code>B</code> marks them as the <em>inputs</em>: <code>const float*</code> means a pointer to <code>float</code>s the kernel may read but not write (<code>A[i]</code> only ever appears on the right-hand side), whereas <code>C</code> is the mutable output. This is a convention rather than a requirement — the kernel would compile without it — but it is worth doing: the compiler <em>enforces</em> the read-only promise (an accidental <code>A[i] = …</code> becomes a compile error rather than a silently corrupted input, which matters when thousands of threads share these arrays), and knowing an input is read-only lets it reason about aliasing and route the loads through the GPU&rsquo;s read-only data cache. Serious kernels often go further and write <code>const float* __restrict__</code> to also assert that the pointers do not overlap; we keep it to plain <code>const</code> here for readability.</li>
+<li><strong><code>vec_add&lt;&lt;&lt;blocks, threads&gt;&gt;&gt;(...)</code></strong> is the <em>launch configuration</em>, CUDA&rsquo;s one piece of non-C++ syntax: it launches a <strong>grid</strong> of <code>blocks</code> thread blocks, each of <code>threads</code> threads, and every one of those <code>blocks × threads</code> threads runs the <em>same</em> kernel body. The launch is asynchronous — control returns to the CPU while the GPU works.</li>
+<li><strong>The built-in variables</strong> let each thread ask &ldquo;who am I?&rdquo;: <code>threadIdx.x</code> is its index within its block, <code>blockIdx.x</code> is its block&rsquo;s index within the grid, and <code>blockDim.x</code> is the block size (the <code>.x</code> is because grids and blocks may be up to 3-D; this kernel uses only one dimension).</li>
+<li><strong><code>int i = blockIdx.x * blockDim.x + threadIdx.x</code></strong> is the idiom at the heart of nearly every CUDA kernel: it flattens the (block, thread) pair into a single <strong>global index</strong>, so block 0 owns elements 0–255, block 1 owns 256–511, and so on. This is how each thread decides <em>which</em> element it is responsible for.</li>
+<li><strong><code>if (i &lt; n)</code></strong> is the <em>tail guard</em>. Because <code>blocks</code> is the ceiling <code>⌈n/256⌉</code>, the last block usually has more threads than there are elements left; threads with <code>i ≥ n</code> must do nothing, or they would read and write out of bounds.</li>
+</ul>
+<p>Notice what is <em>not</em> there: any loop over the array. A serial <code>for (i = 0; i &lt; n; i++) C[i] = A[i] + B[i]</code> has become a grid of threads, one per iteration — the parallelism replaces the loop. This is the SIMT realization in miniature, on three levels. First, the launch instantiates the thread hierarchy: <code>blocks × 256</code> threads, identical in <em>code</em> but differing in <code>blockIdx</code>/<code>threadIdx</code> and therefore in the <code>i</code> they compute, so identical code touches different data. Second, the hardware groups each block&rsquo;s 256 threads into <strong>warps of 32</strong> and runs a warp in lockstep — it fetches one instruction (load <code>A[i]</code>, load <code>B[i]</code>, add, store <code>C[i]</code>) and issues it to all 32 lanes at once, each operating on its own <code>i</code>; that shared instruction stream is the &ldquo;single instruction&rdquo; of SIMT. Third, the blocks are scheduled independently onto SMs, as many concurrently as fit, which is what lets the same kernel scale unchanged across GPUs of different sizes.</p>
+<p>This example is deliberately the &ldquo;hello world&rdquo; of SIMT, and it stays clean on two fronts that real kernels must fight. Its only branch, <code>if (i &lt; n)</code>, is false only for the few overshoot threads in the last warp, so there is essentially no <strong>warp divergence</strong> — no warp is forced to run both sides of a branch and serialize them. And because thread <code>i</code> reads <code>A[i]</code>, the 32 threads of a warp read 32 contiguous floats, which the hardware satisfies in a single <strong>coalesced</strong> memory transaction; a scattered access pattern (say, <code>A[i * 17]</code>) would do the same arithmetic while multiplying the memory traffic, exactly the memory-wall concern from above.</p>
+<p>Real performance kernels are far more involved: to feed the <strong>Tensor Cores</strong> (the matrix-multiply-accumulate units) at peak throughput, a GEMM kernel must carefully tile the problem, stage tiles through shared memory, and overlap the loading of the next tile with the computation on the current one (double-buffering). CUDA code compiles with <code>nvcc</code> through <strong>PTX</strong>, NVIDIA&rsquo;s portable virtual ISA, down to <strong>SASS</strong>, the architecture-specific machine code executed by the SMs (see Section 1.2). This gives CUDA maximal control and access to peak performance — it is where hand-tuned GEMM and attention kernels live, often via the CUTLASS template library — at the cost of being verbose, low-level, and specific to a particular GPU generation.</p>
+<h2 id="triton">
+  Triton
+  
+  <a class="anchor" href="#triton">#</a>
+  
+</h2>
+<p><strong>Triton</strong> is an open-source, Python-embedded language and compiler for GPU kernels that raises the level of abstraction. Instead of writing per-thread scalar code, the programmer reasons about <strong>tiles</strong> (blocks) of elements: a Triton program describes what one <em>block</em> of the computation does, using array-style operations over that block. The compiler then handles many of the intra-block details that a CUDA author does by hand — memory coalescing, shared-memory allocation, and scheduling of work within an SM. The same element-wise example is written in terms of a block of <code>BLOCK_SIZE</code> elements:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> triton
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> triton.language <span style="color:#66d9ef">as</span> tl
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@triton.jit</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">add_kernel</span>(x_ptr, y_ptr, out_ptr, n_elements, BLOCK_SIZE: tl<span style="color:#f92672">.</span>constexpr):
+</span></span><span style="display:flex;"><span>    pid <span style="color:#f92672">=</span> tl<span style="color:#f92672">.</span>program_id(axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)                       <span style="color:#75715e"># which block am I?</span>
+</span></span><span style="display:flex;"><span>    offsets <span style="color:#f92672">=</span> pid <span style="color:#f92672">*</span> BLOCK_SIZE <span style="color:#f92672">+</span> tl<span style="color:#f92672">.</span>arange(<span style="color:#ae81ff">0</span>, BLOCK_SIZE)
+</span></span><span style="display:flex;"><span>    mask <span style="color:#f92672">=</span> offsets <span style="color:#f92672">&lt;</span> n_elements                       <span style="color:#75715e"># guard the tail block</span>
+</span></span><span style="display:flex;"><span>    x <span style="color:#f92672">=</span> tl<span style="color:#f92672">.</span>load(x_ptr <span style="color:#f92672">+</span> offsets, mask<span style="color:#f92672">=</span>mask)           <span style="color:#75715e"># load a tile</span>
+</span></span><span style="display:flex;"><span>    y <span style="color:#f92672">=</span> tl<span style="color:#f92672">.</span>load(y_ptr <span style="color:#f92672">+</span> offsets, mask<span style="color:#f92672">=</span>mask)
+</span></span><span style="display:flex;"><span>    tl<span style="color:#f92672">.</span>store(out_ptr <span style="color:#f92672">+</span> offsets, x <span style="color:#f92672">+</span> y, mask<span style="color:#f92672">=</span>mask)     <span style="color:#75715e"># store the tile</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># One program instance per BLOCK_SIZE-element tile.</span>
+</span></span><span style="display:flex;"><span>grid <span style="color:#f92672">=</span> <span style="color:#66d9ef">lambda</span> meta: (triton<span style="color:#f92672">.</span>cdiv(n_elements, meta[<span style="color:#e6db74">&#34;BLOCK_SIZE&#34;</span>]),)
+</span></span><span style="display:flex;"><span>add_kernel[grid](x, y, out, n_elements, BLOCK_SIZE<span style="color:#f92672">=</span><span style="color:#ae81ff">1024</span>)
+</span></span></code></pre></div><p>It is instructive to read this against the CUDA version, because the two solve the same problem at different levels of abstraction. Taking the syntax in turn:</p>
+<ul>
+<li><strong><code>@triton.jit</code></strong> marks <code>add_kernel</code> as a Triton kernel and hands its body to the Triton compiler, which just-in-time compiles it to GPU code the first time it runs. The body is written in a restricted subset of Python operating on Triton values, not ordinary Python that executes eagerly.</li>
+<li><strong>The parameters</strong> are raw pointers into global memory (<code>x_ptr</code>, <code>y_ptr</code>, <code>out_ptr</code>), a scalar <code>n_elements</code>, and <code>BLOCK_SIZE</code>. The <code>BLOCK_SIZE: tl.constexpr</code> annotation marks it a <em>compile-time constant</em>: Triton specializes (and can autotune) the kernel for each concrete block size, which lets the compiler unroll and allocate registers around a known tile length.</li>
+<li><strong><code>pid = tl.program_id(axis=0)</code></strong> is Triton&rsquo;s analogue of <code>blockIdx</code>: it identifies <em>which program instance</em> this is. The crucial difference from CUDA is the <em>unit</em> of a program instance — not one thread, but one <strong>tile</strong> of <code>BLOCK_SIZE</code> elements. There is no <code>threadIdx</code> here at all.</li>
+<li><strong><code>offsets = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)</code></strong> computes, in one shot, the <em>vector</em> of element indices this instance owns — e.g. instance 0 owns <code>[0, 1, …, 1023]</code>, instance 1 owns <code>[1024, …, 2047]</code>. <code>offsets</code> is a length-<code>BLOCK_SIZE</code> array, and the arithmetic that follows is array-at-a-time, not scalar.</li>
+<li><strong><code>mask = offsets &lt; n_elements</code></strong> is the tile-level tail guard. Because array lengths are rarely a multiple of <code>BLOCK_SIZE</code>, the final tile overshoots the array: with <code>n_elements = 3000</code> and <code>BLOCK_SIZE = 1024</code> the grid has $\lceil 3000/1024 \rceil = 3$ tiles, and tile 2 owns <code>offsets = [2048, …, 3071]</code> even though valid indices stop at 2999. Comparing the whole <code>offsets</code> vector against <code>n_elements</code> elementwise yields a boolean vector — <code>true</code> for the 952 in-bounds lanes, <code>false</code> for the 72 that run past the end — which the <code>tl.load</code>/<code>tl.store</code> then honor, so the overshooting lanes are neither read nor written and never touch out-of-bounds memory. (For the earlier, full tiles every lane is in-bounds, so the mask is all-<code>true</code> and does nothing.) This plays the role of CUDA&rsquo;s <code>if (i &lt; n)</code>, but note the difference in mechanism: CUDA&rsquo;s is a <em>scalar branch</em> that one thread either takes or skips, whereas the mask is a <em>per-lane predicate</em> — every lane runs the same load/store instruction and the mask merely gates which lanes commit. That predication is deliberately more SIMT-friendly: a data-dependent branch that splits a warp forces the hardware to run both paths (warp divergence), while a masked instruction keeps all 32 lanes on one instruction stream and simply suppresses the inactive ones.</li>
+<li><strong><code>tl.load(x_ptr + offsets, mask=mask)</code></strong> gathers the whole tile from HBM into on-chip storage in one call, reading only the masked-in lanes; <code>x + y</code> adds two tiles elementwise; and <strong><code>tl.store(out_ptr + offsets, x + y, mask=mask)</code></strong> writes the result tile back, again honoring the mask.</li>
+<li><strong>The launch</strong> differs too. <code>grid = lambda meta: (triton.cdiv(n_elements, meta[&quot;BLOCK_SIZE&quot;]),)</code> computes how many tiles (program instances) are needed — the ceiling <code>⌈n / BLOCK_SIZE⌉</code> — and <code>add_kernel[grid](...)</code> launches that grid. Triton&rsquo;s grid counts <em>tiles</em>, whereas CUDA&rsquo;s <code>&lt;&lt;&lt;blocks, threads&gt;&gt;&gt;</code> counted blocks <em>and</em> the threads inside them.</li>
+</ul>
+<p>The heart of the contrast is where the SIMT hierarchy went. In CUDA you wrote the code for one <em>thread</em> and reasoned explicitly about warps of 32 and coalesced access; in Triton you write the code for one <em>tile</em>, and the compiler is responsible for turning that tile program into threads — deciding how to map the <code>BLOCK_SIZE</code> lanes onto a warp (or several), how to coalesce the <code>tl.load</code>, where to place data in shared memory, and how to schedule the work within an SM. The SIMT machinery has not gone away; it has been pushed below the language, so that <code>offsets</code>, <code>mask</code>, and the array-valued <code>tl.load</code>/<code>tl.store</code> express <em>what</em> each tile does while the compiler chooses <em>how</em> the threads carry it out.</p>
+<p>Because the block, rather than the thread, is the unit of programming, Triton has a substantially lower barrier to entry than CUDA, and it is productive precisely where the work is elementwise, reduction-heavy, fused, or layout-bound — fused RMSNorm, activation chains, packing/unpacking, and layout transforms. It is also the primary code-generation target of PyTorch&rsquo;s TorchInductor: when <code>torch.compile()</code> fuses a subgraph, it usually emits a Triton kernel. Triton lowers through its own <strong>Triton IR → LLVM IR → PTX → SASS</strong> (Section 1.2). The trade-off is that ceding intra-block scheduling to the compiler can leave performance on the table for the hardest primitives; for peak GEMM and some attention variants, hand-written CUDA, CUTLASS, or cuBLASLt can still win.</p>
+<h2 id="nki-neuron-kernel-interface">
+  NKI (Neuron Kernel Interface)
+  
+  <a class="anchor" href="#nki-neuron-kernel-interface">#</a>
+  
+</h2>
+<p><strong>NKI</strong> (pronounced &ldquo;Nicki&rdquo;) is AWS&rsquo;s Python-embedded kernel DSL for Trainium, part of the Neuron SDK. Like Triton it is <strong>tile-based</strong>, but it exposes the Trainium architecture from Section 1.1 much more directly. A NKI kernel operates on tiles staged in the on-chip <strong>SBUF</strong> scratchpad and <strong>PSUM</strong> accumulator, moved to and from off-chip <strong>HBM</strong> explicitly, and it maps operations onto the NeuronCore&rsquo;s specialized engines: the <strong>Tensor Engine</strong> (the systolic array, for matrix multiplies and transposes), the <strong>Vector Engine</strong> (reductions and elementwise ops), the <strong>Scalar Engine</strong> (activation functions), and the <strong>GPSIMD Engine</strong>. Because the systolic array is organized around 128 rows, NKI tiling is centered on a <strong>128-partition</strong> granularity: the first (partition) axis of a tile is at most 128, and kernels are written to march over the data in units of 128. The representative API mirrors this structure:</p>
+<ul>
+<li><code>nl.load</code> / <code>nl.store</code> — move tiles between HBM and SBUF.</li>
+<li><code>nisa.nc_matmul</code> — matrix multiply on the Tensor Engine.</li>
+<li><code>nisa.tensor_reduce</code> — reductions on the Vector Engine.</li>
+<li><code>nisa.activation</code> — activation functions on the Scalar Engine.</li>
+<li><code>nl.*</code> language ops (<code>add</code>, <code>multiply</code>, <code>exp</code>, <code>max</code>, <code>copy</code>, …) — elementwise/vector work, dispatched to the appropriate engine.</li>
+</ul>
+<p>A minimal element-wise add makes the explicit HBM ↔ SBUF movement visible:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> nki
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> nki.language <span style="color:#66d9ef">as</span> nl
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">@nki.jit</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">add_kernel</span>(a, b):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Output tensor allocated in off-chip HBM.</span>
+</span></span><span style="display:flex;"><span>    out <span style="color:#f92672">=</span> nl<span style="color:#f92672">.</span>ndarray(a<span style="color:#f92672">.</span>shape, dtype<span style="color:#f92672">=</span>a<span style="color:#f92672">.</span>dtype, buffer<span style="color:#f92672">=</span>nl<span style="color:#f92672">.</span>shared_hbm)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Tile indices; the partition (first) axis is at most 128.</span>
+</span></span><span style="display:flex;"><span>    i_p <span style="color:#f92672">=</span> nl<span style="color:#f92672">.</span>arange(a<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>])[:, <span style="color:#66d9ef">None</span>]
+</span></span><span style="display:flex;"><span>    i_f <span style="color:#f92672">=</span> nl<span style="color:#f92672">.</span>arange(a<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>])[<span style="color:#66d9ef">None</span>, :]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    a_tile <span style="color:#f92672">=</span> nl<span style="color:#f92672">.</span>load(a[i_p, i_f])       <span style="color:#75715e"># HBM -&gt; SBUF</span>
+</span></span><span style="display:flex;"><span>    b_tile <span style="color:#f92672">=</span> nl<span style="color:#f92672">.</span>load(b[i_p, i_f])       <span style="color:#75715e"># HBM -&gt; SBUF</span>
+</span></span><span style="display:flex;"><span>    c_tile <span style="color:#f92672">=</span> nl<span style="color:#f92672">.</span>add(a_tile, b_tile)     <span style="color:#75715e"># elementwise on-chip (Vector Engine)</span>
+</span></span><span style="display:flex;"><span>    nl<span style="color:#f92672">.</span>store(out[i_p, i_f], value<span style="color:#f92672">=</span>c_tile)  <span style="color:#75715e"># SBUF -&gt; HBM</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> out
+</span></span></code></pre></div><p>A matmul kernel would instead <code>nl.load</code> the operand tiles into SBUF, issue <code>nisa.nc_matmul</code> so the Tensor Engine accumulates partial sums in PSUM, optionally apply <code>nisa.activation</code> on the Scalar Engine, and <code>nl.store</code> the result back to HBM. NKI sits <em>below</em> the automatic path: Trainium is normally reached through the XLA-based Neuron graph compiler (<code>neuronx-cc</code>, via <code>torch-neuronx</code> / <code>jax-neuronx</code>) from PyTorch or JAX, which traces and fuses the whole model graph for you (Section 1.2). NKI is the escape hatch for hand-writing high-performance kernels when that graph compiler leaves performance on the table.</p>
+<p>In short, NKI pairs <strong>Triton&rsquo;s surface</strong> with <strong>CUDA&rsquo;s philosophy</strong>, on hardware unlike a GPU:</p>
+<ul>
+<li><strong>Like Triton</strong>, it is a Python-embedded, JIT-compiled, <em>tile-based</em> DSL — you reason about array-valued tiles, never a scalar thread.</li>
+<li><strong>More explicit than Triton, like CUDA</strong>, it makes you name what Triton leaves to the compiler: data is staged by hand in the <em>named</em> on-chip buffers (SBUF, PSUM) — there is no hardware cache to fall back on — and each op is pinned to a specific engine (<code>nisa.nc_matmul</code>, <code>nisa.tensor_reduce</code>, <code>nisa.activation</code>).</li>
+<li><strong>Unlike both</strong>, it does not target the GPU&rsquo;s SIMT model. A NeuronCore is a <em>dataflow</em> design with no warps, coalescing, or divergence; parallelism comes from the engines running concurrently and from pipelining DMA against compute, and the 128-partition tile shape is fixed by the systolic array rather than a tunable block size.</li>
+</ul>
+<h2 id="synthesis-a-control-versus-productivity-spectrum">
+  Synthesis: a control-versus-productivity spectrum
+  
+  <a class="anchor" href="#synthesis-a-control-versus-productivity-spectrum">#</a>
+  
+</h2>
+<p>These three languages are best understood as points on a single spectrum trading <strong>explicit control</strong> against <strong>productivity</strong>:</p>
+<pre tabindex="0"><code>   more control / more explicit  ───────────────►  more automation / more portable
+   ┌───────────────┐      ┌────────────────────┐      ┌────────────────────┐
+   │  CUDA         │      │  Triton   ·   NKI  │      │  XLA / graph       │
+   │  (scalar SIMT,│      │  (tile-based DSLs, │      │  compilers         │
+   │  hand-managed │      │  compiler fills in │      │  (whole-graph, you │
+   │  memory)      │      │  many details)     │      │  write no kernel)  │
+   └───────────────┘      └────────────────────┘      └────────────────────┘
+</code></pre><p>At one end, CUDA gives per-thread control over every register and shared-memory byte. In the middle, tile-based DSLs like Triton and NKI let you reason about blocks/tiles while the compiler handles lower-level bookkeeping (Triton hides intra-block scheduling; NKI still asks you to place tiles in SBUF/PSUM and pick engines, but frees you from thread-level detail). At the far end, whole-graph compilers like XLA ask you to write no kernel at all — you express the computation as a graph and the compiler owns the schedule. The right choice depends on how far a region falls into the long tail and how much the last increment of performance is worth.</p>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th><strong>CUDA</strong></th>
+          <th><strong>Triton</strong></th>
+          <th><strong>NKI</strong></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Host language</td>
+          <td>C++</td>
+          <td>Python-embedded</td>
+          <td>Python-embedded</td>
+      </tr>
+      <tr>
+          <td>Primary target</td>
+          <td>NVIDIA GPUs</td>
+          <td>NVIDIA GPUs (others emerging)</td>
+          <td>AWS Trainium / Inferentia</td>
+      </tr>
+      <tr>
+          <td>Unit of programming</td>
+          <td>scalar thread (SIMT)</td>
+          <td>tile / block</td>
+          <td>tile (128 partitions)</td>
+      </tr>
+      <tr>
+          <td>On-chip memory</td>
+          <td>explicit: registers, shared memory</td>
+          <td>compiler-managed within a block</td>
+          <td>explicit: SBUF, PSUM</td>
+      </tr>
+      <tr>
+          <td>Compute mapping</td>
+          <td>manual: warps, blocks, Tensor Cores</td>
+          <td>automatic intra-block</td>
+          <td>explicit engines: Tensor / Vector / Scalar / GPSIMD</td>
+      </tr>
+      <tr>
+          <td>Lowering path</td>
+          <td><code>nvcc</code> → PTX → SASS</td>
+          <td>Triton IR → LLVM IR → PTX → SASS</td>
+          <td>Neuron compiler → Trainium executable</td>
+      </tr>
+      <tr>
+          <td>Sweet spot</td>
+          <td>peak GEMM/attention, full control</td>
+          <td>fused elementwise/reduction/layout</td>
+          <td>Trainium kernels beyond the graph compiler</td>
+      </tr>
+  </tbody>
+</table>
+<p>What is striking is how much these otherwise-different languages share. Beneath the syntax, every kernel language is organized around the same handful of ideas, all of which follow directly from the hardware picture in Section 1.1:</p>
+<ol>
+<li><strong>Tiling / blocking</strong>: decompose a large tensor computation into fixed-size tiles (a CUDA thread block&rsquo;s tile, a Triton <code>BLOCK_SIZE</code>, a NKI 128-partition tile) that fit in fast on-chip memory.</li>
+<li><strong>Explicit use of the on-chip memory hierarchy</strong>: keep reused data in registers/shared memory (GPU) or SBUF/PSUM (Trainium), and minimize traffic to and from off-chip HBM.</li>
+<li><strong>Mapping compute onto engines/threads</strong>: assign work to the right execution resource — CUDA cores vs. Tensor Cores on a GPU, or the Tensor/Vector/Scalar/GPSIMD engines on a NeuronCore.</li>
+<li><strong>Overlapping computation with data movement</strong>: hide memory latency by prefetching the next tile while computing on the current one — double-buffering and software pipelining.</li>
+</ol>
+<p>Mastering a new kernel language is therefore mostly a matter of re-expressing these same four concerns in that language&rsquo;s vocabulary. That shared structure is what makes it feasible to reason across CUDA, Triton, and NKI at once — and, as later sections explore, what makes automated kernel generation a tractable target even across a fragmented landscape of backends.</p>
+<h2 id="flash-attention-a-fused-kernel-in-practice">
+  Flash Attention: a fused kernel in practice
+  
+  <a class="anchor" href="#flash-attention-a-fused-kernel-in-practice">#</a>
+  
+</h2>
+<p>Nothing ties these threads together — the memory wall, fusion, tiling, and the four shared concepts — better than <strong>Flash Attention</strong>, the fused attention kernel introduced by Dao et al. (2022). It is the poster child for why hand-written kernels matter, and it is exactly the &ldquo;FlashAttention-style online softmax&rdquo; entry in the long tail we named at the start of this section.</p>
+<p>Recall standard attention: from queries, keys, and values we compute the score matrix $S = QK^\top$, normalize it with $P = \text{softmax}(S)$, and produce the output $O = PV$. The trouble is that $S$ is an $N \times N$ matrix in the sequence length $N$. At $N = 8192$ that is roughly 67 million elements <em>per head</em> — far larger than the tens of MB of on-chip SRAM — so the unfused implementation writes the full $S$ (and $P$) out to HBM and reads it back to finish the computation. Those round-trips make standard attention firmly memory-bound: its arithmetic intensity is only about $62$ FLOPs/byte at $N = 4096, d = 128$, well below the $\sim$200 ridge point from the memory-wall discussion above.</p>
+<p>Fusion is the obvious cure, but softmax puts up a <strong>fusion blocker</strong>. Its denominator is a sum over an <em>entire row</em> of scores, and the numerically stable form subtracts each row&rsquo;s maximum — so a naive implementation needs two passes over the whole row and appears to require all of $S$ to be materialized before any of $P$ can be produced. That is precisely the &ldquo;not tileable&rdquo; case that defeats fusion. The resolution is an algebraic one: <strong>online softmax</strong> reformulates the normalization to maintain running statistics — a running max $m$ and a running normalizer $l$ — and <em>rescales</em> the partial results as new blocks of scores stream in, computing the exact stable softmax in a single streaming pass. It is a mathematically equivalent rewrite, not an approximation, and it removes the blocker.</p>
+<p><strong>Flash Attention = online softmax + tiling.</strong> With the blocker gone, the kernel tiles over the sequence: it holds a block of $Q$ on-chip, streams in blocks of $K$ and $V$, computes each score block $S$ and its contribution to the output while keeping the running $(m, l, O)$ statistics resident in SRAM, and never materializes the full $S$ or $P$ in HBM. Only $Q$, $K$, $V$ (in) and $O$ (out) touch off-chip memory. The result is <em>exact</em> — bit-for-bit the same attention — while HBM traffic drops from $O(N^2)$ toward $\sim O(N^2 d^2 / M)$ (with $M$ the on-chip SRAM size) and the memory footprint falls from $O(N^2)$ to $O(Nd)$, which is what lets attention scale to long sequences at all.</p>
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="kernel_fusion_flash.png"
+       alt="Flash Attention: a single fused kernel keeps intermediates on-chip"
+       style="width: 80%; height: auto; object-fit: contain;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.4rem;">
+    Flash Attention (fused): $Q, K, V$ are refilled from HBM once, the intermediates $S$ and $P$ stay in on-chip SRAM (SBUF), and only the final output $O$ is spilled back to HBM.
+  </p>
+</div>
+<p>Flash Attention maps cleanly onto the four shared concepts above: it <strong>tiles</strong> attention into $Q/K/V$ blocks; it makes <strong>explicit use of the on-chip memory hierarchy</strong> by keeping $S$, $P$, and the running $(m, l, O)$ in SRAM instead of HBM; it <strong>maps compute onto engines</strong> (the matmuls $QK^\top$ and $PV$ onto the matrix unit, the softmax rescaling onto the vector/scalar units); and a real implementation <strong>overlaps</strong> the load of the next $K/V$ block with the compute on the current one. It also makes the case for this entire tutorial: a general-purpose fusion compiler will not, on its own, discover the online-softmax algebra that makes fusing attention <em>legal</em>. That reformulation is human insight — exactly the kind of long-tail work that, today, still calls for a hand-written kernel.</p>
+<h2 id="takeaways-the-kernel-as-the-target-of-this-tutorial">
+  Takeaways: the kernel as the target of this tutorial
+  
+  <a class="anchor" href="#takeaways-the-kernel-as-the-target-of-this-tutorial">#</a>
+  
+</h2>
+<p>Everything above has described kernels from the human author&rsquo;s side of the desk; the tutorial asks what changes when the author is an LLM. Its pillars fall straight out of the ideas here:</p>
+<ul>
+<li><strong>The kernel is the output.</strong> It is the artifact the model is asked to emit — the one thing SFT on kernel corpora, RL post-training, and agentic iteration are all ultimately scored on.</li>
+<li><strong>The long tail is the reason to automate.</strong> What the compiler leaves behind is scarce in experts and costly in engineer-hours — a residue worth automating, not a solved problem.</li>
+<li><strong>The memory wall defines the reward.</strong> The arithmetic-intensity and roofline metrics above are the signal a hardware-aware RL reward must encode; being only a proxy, a careless one invites reward hacking — a kernel that games a latency or compile check without doing the operator&rsquo;s real work.</li>
+<li><strong>Fragmentation is the hard part, and shared structure is the way through.</strong> CUDA is nearly two decades deep in public code while a young DSL like NKI is genuinely low-resource — motivating data curation across heterogeneous targets and benchmarks that score kernels on unfamiliar hardware; the backend-independent core these languages share is what lets abundant data on one target inform generation on a starved one.</li>
+<li><strong>Flash Attention marks the ceiling.</strong> The hardest cases are where inference-time reasoning and multi-turn, agentic refinement earn their place.</li>
+</ul>
+<p>The rest of the tutorial takes these up in turn — teaching a model this vocabulary, rewarding kernels that are fast rather than merely plausible, and letting it reason and iterate its way into the long tail.</p>
 <h2 id="references">
   References
   
@@ -492,7 +788,20 @@ https://github.com/alex-shpak/hugo-book
   
 </h2>
 <ol>
-<li>[Placeholder reference.]</li>
+<li>NVIDIA, <em>CUDA C++ Programming Guide</em>. <a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/">https://docs.nvidia.com/cuda/cuda-c-programming-guide/</a></li>
+<li>NVIDIA, <em>CUDA Compiler Driver NVCC</em>. <a href="https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/">https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/</a></li>
+<li>NVIDIA, <em>Parallel Thread Execution (PTX) ISA</em>. <a href="https://docs.nvidia.com/cuda/parallel-thread-execution/">https://docs.nvidia.com/cuda/parallel-thread-execution/</a></li>
+<li>NVIDIA, <em>CUTLASS: CUDA Templates for Linear Algebra Subroutines</em>. <a href="https://github.com/NVIDIA/cutlass">https://github.com/NVIDIA/cutlass</a></li>
+<li>P. Tillet, H. T. Kung, and D. Cox, &ldquo;Triton: An Intermediate Language and Compiler for Tiled Neural Network Computations,&rdquo; <em>MAPL 2019</em>. <a href="https://doi.org/10.1145/3315508.3329973">https://doi.org/10.1145/3315508.3329973</a></li>
+<li>Triton, <em>Triton Documentation</em> (language reference and tutorials). <a href="https://triton-lang.org/">https://triton-lang.org/</a></li>
+<li>PyTorch, <em>TorchInductor and <code>torch.compile</code></em>. <a href="https://pytorch.org/docs/stable/torch.compiler.html">https://pytorch.org/docs/stable/torch.compiler.html</a></li>
+<li>AWS, <em>Neuron Kernel Interface (NKI) Documentation</em>. <a href="https://awsdocs-neuron.readthedocs-hosted.com/en/latest/general/nki/">https://awsdocs-neuron.readthedocs-hosted.com/en/latest/general/nki/</a></li>
+<li>AWS, <em>Trainium/Inferentia2 Architecture Guide for NKI</em> (NeuronCore engines, SBUF/PSUM, 128 partitions). <a href="https://awsdocs-neuron.readthedocs-hosted.com/en/latest/nki/guides/architecture/trainium_inferentia2_arch.html">https://awsdocs-neuron.readthedocs-hosted.com/en/latest/nki/guides/architecture/trainium_inferentia2_arch.html</a></li>
+<li>T. Dao, D. Y. Fu, S. Ermon, A. Rudra, and C. Ré, &ldquo;FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness,&rdquo; <em>NeurIPS 2022</em>. <a href="https://arxiv.org/abs/2205.14135">https://arxiv.org/abs/2205.14135</a></li>
+<li>S. Williams, A. Waterman, and D. Patterson, &ldquo;Roofline: An Insightful Visual Performance Model for Multicore Architectures,&rdquo; <em>Communications of the ACM</em>, 2009. <a href="https://doi.org/10.1145/1498765.1498785">https://doi.org/10.1145/1498765.1498785</a></li>
+<li>AWS, <em>Neuron Kernel Interface (NKI) Programming Guide</em>. <a href="https://awsdocs-neuron.readthedocs-hosted.com/en/latest/general/nki/index.html">https://awsdocs-neuron.readthedocs-hosted.com/en/latest/general/nki/index.html</a></li>
+<li>R. Saha, A. Manocha, Y. Park, et al., <em>Algorithms and Systems for Efficient Inference in Generative AI</em>, AAAI 2026 Tutorial (source of the memory-wall / kernel-fusion framing and the attention-fusion figures). <a href="https://neuron-science.github.io/inference_optimization/">https://neuron-science.github.io/inference_optimization/</a></li>
+<li>C. Hong, S. Bhatia, A. Cheung, and Y. S. Shao, <em>AI-Driven Accelerator Programming with LLMLift and Autocomp</em>, ASPLOS 2026 Tutorial (source of the &ldquo;lots of sources, lots of targets&rdquo; framing and the CUDA / Triton / NKI overview). <a href="https://charleshong3.github.io/research/asplos2026-tutorial/">https://charleshong3.github.io/research/asplos2026-tutorial/</a></li>
 </ol>
 </article>
  
@@ -519,16 +828,16 @@ https://github.com/alex-shpak/hugo-book
     <span>
     
       <a href="/llm_kernel_writing/docs/section-1/subsection-2/" class="flex align-center book-icon">
-        <img src="/llm_kernel_writing/svg/backward.svg" class="book-icon" alt="Previous" title="1.2 The ML Compiler Stack" />
-        <span>1.2 The ML Compiler Stack</span>
+        <img src="/llm_kernel_writing/svg/backward.svg" class="book-icon" alt="Previous" title="1.2 Overview of AI Software Stacks" />
+        <span>1.2 Overview of AI Software Stacks</span>
       </a>
     
     </span>
     <span>
     
       <a href="/llm_kernel_writing/docs/section-1/subsection-4/" class="flex align-center book-icon">
-        <span>1.4 Benchmarks and Evaluation for Kernel Generation</span>
-        <img src="/llm_kernel_writing/svg/forward.svg" class="book-icon" alt="Next" title="1.4 Benchmarks and Evaluation for Kernel Generation" />
+        <span>1.4 LLM Decoding and Inference-Time Scaling</span>
+        <img src="/llm_kernel_writing/svg/forward.svg" class="book-icon" alt="Next" title="1.4 LLM Decoding and Inference-Time Scaling" />
       </a>
     
     </span>
@@ -563,6 +872,14 @@ https://github.com/alex-shpak/hugo-book
   
 <nav id="TableOfContents">
   <ul>
+    <li><a href="#what-a-kernel-is-and-where-it-sits">What a kernel is, and where it sits</a></li>
+    <li><a href="#why-hand-written-kernels-matter-the-memory-wall">Why hand-written kernels matter: the memory wall</a></li>
+    <li><a href="#cuda">CUDA</a></li>
+    <li><a href="#triton">Triton</a></li>
+    <li><a href="#nki-neuron-kernel-interface">NKI (Neuron Kernel Interface)</a></li>
+    <li><a href="#synthesis-a-control-versus-productivity-spectrum">Synthesis: a control-versus-productivity spectrum</a></li>
+    <li><a href="#flash-attention-a-fused-kernel-in-practice">Flash Attention: a fused kernel in practice</a></li>
+    <li><a href="#takeaways-the-kernel-as-the-target-of-this-tutorial">Takeaways: the kernel as the target of this tutorial</a></li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>
