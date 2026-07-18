@@ -11,30 +11,13 @@
 
 
 
-
-
-  
-
-
-[Placeholder content for subsection 1.6 RL Post-Training: PPO and GRPO Variants.]
-
-
-
-  References
-  
-  #
-  
-
-
-[Placeholder reference.]
-">
+Supervised fine-tuning (Section 1.5) teaches a model to imitate a fixed corpus, but imitation has intrinsic ceilings: the model can only reproduce behavior it was shown, and its objective rewards matching reference tokens rather than the outcome we actually care about, i.e., whether the response succeeds at the task at hand. This is a property of what the response does &ndash; something that two token sequences can satisfy equally well even when they share few tokens (and which a token-matching loss cannot see). Reinforcement learning (RL) post-training closes this gap. Instead of matching references, the model generates its own responses, each response is scored by a reward, and the model is updated to make high-reward responses more likely. This section develops that formulation generically — the objective, the policy-gradient estimator, and the two algorithms, PPO and GRPO, that dominate modern LLM post-training. Section 2 then applies this machinery to kernel generation, where the reward comes from compiling and running the generated code.">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
 <meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-6/">
   <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
   <meta property="og:title" content="1.6 RL Post-Training: PPO and GRPO Variants">
-  <meta property="og:description" content="RL Post-Training: PPO and GRPO Variants # [Placeholder content for subsection 1.6 RL Post-Training: PPO and GRPO Variants.]
-References # [Placeholder reference.]">
+  <meta property="og:description" content="RL Post-Training: PPO and GRPO Variants # Supervised fine-tuning (Section 1.5) teaches a model to imitate a fixed corpus, but imitation has intrinsic ceilings: the model can only reproduce behavior it was shown, and its objective rewards matching reference tokens rather than the outcome we actually care about, i.e., whether the response succeeds at the task at hand. This is a property of what the response does – something that two token sequences can satisfy equally well even when they share few tokens (and which a token-matching loss cannot see). Reinforcement learning (RL) post-training closes this gap. Instead of matching references, the model generates its own responses, each response is scored by a reward, and the model is updated to make high-reward responses more likely. This section develops that formulation generically — the objective, the policy-gradient estimator, and the two algorithms, PPO and GRPO, that dominate modern LLM post-training. Section 2 then applies this machinery to kernel generation, where the reward comes from compiling and running the generated code.">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
 <title>1.6 RL Post-Training: PPO and GRPO Variants | Teaching LLMs to Write System Kernels</title>
@@ -43,7 +26,7 @@ References # [Placeholder reference.]">
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-6/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.41280eb55d0faef48301899da71029e8681649ce2850953ac2af8f8cdc3e1631.js" integrity="sha256-QSgOtV0PrvSDAYmdpxAp6GgWSc4oUJU6wq&#43;PjNw&#43;FjE=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.031218deba9c6ddede47b1dfb08118837945de97efe00c9497fb7650e494acb4.js" integrity="sha256-AxIY3rqcbd7eR7HfsIEYg3lF3pfv4AyUl/t2UOSUrLQ=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-6/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -223,7 +206,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/" class="">LLM-Driven Kernel Generation</a>
+    <a href="/llm_kernel_writing/docs/section-2/" class="">Post-Training LLMs for Kernel Generation</a>
   
 
           
@@ -236,25 +219,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/subsection-1/" class="">2.1 Problem Definition of LLM-Assisted Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-2/subsection-2/" class="">2.2 Data Preparation and Curation Strategies</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-1/" class="">2.1 Supervised Fine-Tuning on Kernel Corpora</a>
   
 
           
@@ -272,7 +237,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/subsection-3/" class="">2.3 Evaluation Benchmarking for Generated Kernels</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-2/" class="">2.2 Reinforcement Learning from Execution Feedback</a>
   
 
           
@@ -290,7 +255,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/subsection-4/" class="">2.4 Reward Hacking Behaviors and Mitigation</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-3/" class="">2.3 RL for Kernel Optimization and Reward Hacking</a>
   
 
           
@@ -502,6 +467,14 @@ https://github.com/alex-shpak/hugo-book
   
 <nav id="TableOfContents">
   <ul>
+    <li><a href="#the-rl-objective">The RL objective</a></li>
+    <li><a href="#policy-gradient-optimization">Policy-gradient optimization</a>
+      <ul>
+        <li><a href="#ppo-proximal-policy-optimization">PPO: Proximal Policy Optimization</a></li>
+        <li><a href="#grpo-group-relative-policy-optimization">GRPO: Group Relative Policy Optimization</a></li>
+        <li><a href="#kl-regularization-to-the-reference-policy">KL regularization to the reference policy</a></li>
+      </ul>
+    </li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>
@@ -522,10 +495,51 @@ https://github.com/alex-shpak/hugo-book
   
 </h1>
 
+
+<p>Supervised fine-tuning (Section 1.5) teaches a model to imitate a fixed corpus, but imitation has intrinsic ceilings: the model can only reproduce behavior it was shown, and its objective rewards matching <em>reference tokens</em> rather than the outcome we actually care about, i.e., whether the response <em>succeeds at the task at hand</em>. This is a property of what the response <em>does</em> &ndash; something that two token sequences can satisfy equally well even when they share few tokens (and which a token-matching loss cannot see). <strong>Reinforcement learning (RL) post-training</strong> closes this gap. Instead of matching references, the model <em>generates</em> its own responses, each response is <em>scored</em> by a reward, and the model is <em>updated</em> to make high-reward responses more likely. This section develops that formulation generically — the objective, the policy-gradient estimator, and the two algorithms, <strong>PPO</strong> and <strong>GRPO</strong>, that dominate modern LLM post-training. Section 2 then applies this machinery to kernel generation, where the reward comes from compiling and running the generated code.</p>
+<p>RL is especially effective when the reward is <strong>verifiable</strong>, i.e., it can be computed by an objective, automatic checker rather than a learned model of human preference. Math (check the final answer) and code (run unit tests) are the canonical cases, and this regime is known as <strong>RL with verifiable rewards (RLVR)</strong>; kernel generation (compile, check against a reference, and profile) is another, and is the subject of Section 2.2.</p>
+<h2 id="the-rl-objective">
+  The RL objective
+  
+  <a class="anchor" href="#the-rl-objective">#</a>
+  
+</h2>
+<p>We model the post-trained LLM as a <strong>policy</strong> 
+<span>
+  \( \pi_\theta(y \mid x) \)
+  </span>
+
+ with parameters 
+<span>
+  \( \theta \)
+  </span>
+
+ that, given a prompt 
+<span>
+  \( x \)
+  </span>
+
+, generates a response 
+<span>
+  \( y \)
+  </span>
+
+ autoregressively. Each response is scored by a scalar <strong>reward</strong> 
+<span>
+  \( r(x, y) \in \mathbb{R} \)
+  </span>
+
+ returned by an external verifier. Given a distribution of prompts 
+<span>
+  \( \mathcal{D} \)
+  </span>
+
+, the RL objective is to maximize the expected reward of the responses the policy generates:</p>
+
 <link rel="stylesheet" href="/llm_kernel_writing/katex/katex.min.css" />
 <script defer src="/llm_kernel_writing/katex/katex.min.js"></script>
 
-  <script defer src="/llm_kernel_writing/katex/auto-render.min.js" onload="renderMathInElement(document.body, {
+<script defer src="/llm_kernel_writing/katex/auto-render.min.js" onload="renderMathInElement(document.body, {
   &#34;delimiters&#34;: [
     {&#34;left&#34;: &#34;$$&#34;, &#34;right&#34;: &#34;$$&#34;, &#34;display&#34;: true},
     {&#34;left&#34;: &#34;$&#34;, &#34;right&#34;: &#34;$&#34;, &#34;display&#34;: false},
@@ -535,18 +549,527 @@ https://github.com/alex-shpak/hugo-book
 }
 );"></script>
 
+<span>\[ J(\theta) \;=\; \mathbb{E}_{x \sim \mathcal{D}}\; \mathbb{E}_{y \sim \pi_\theta(\cdot \mid x)}\big[\, r(x, y) \,\big]. \]</span>
+<p>It is worth pointing out the sequential structure this compact objective hides. Generating a response is a sequence of decisions: at each step the policy observes a <strong>state</strong>, defined as the prompt plus the tokens emitted so far, 
+<span>
+  \( (x, y_{\lt t}) \)
+  </span>
 
-<p>[Placeholder content for subsection 1.6 RL Post-Training: PPO and GRPO Variants.]</p>
+, and subsequently then takes an <strong>action</strong>, the next token 
+<span>
+  \( y_t \)
+  </span>
 
+. This autoregressive process continues until the response is completely generated. A full generation 
+<span>
+  \( y \)
+  </span>
 
+ is thus a <em>trajectory</em>, and 
+<span>
+  \( \pi_\theta \)
+  </span>
+
+ is a policy over trajectories. In the settings we care about, the reward is typically <strong>terminal</strong> and sparse, i.e., 
+<span>
+  \( r(x, y) \)
+  </span>
+
+ can be obtained only once the <em>entire</em> response has been produced (and, for verifiable domains, checked); so that there are no intermediate per-token rewards. This creates the central <strong>credit-assignment</strong> problem: a whole response earns a <em>single</em> scalar, yet that scalar gives no direct indication of <em>which</em> of the hundreds of token-level actions deserve the credit or blame. A slow kernel, for instance, might be 390 good tokens undone by one bad block-size choice, or wrong throughout; the reward is the same number in both cases. Separating the decisions that mattered from those that were incidental is precisely what the advantage estimators below (PPO&rsquo;s value network, GRPO&rsquo;s group-relative baseline) are designed to do.</p>
+<p>To keep the policy from drifting too far from a reference model 
+<span>
+  \( \pi_{\text{ref}} \)
+  </span>
+
+ (typically the SFT model) — which stabilizes training and preserves the fluent, general behavior the model started with, a KL penalty is often added:</p>
+
+<span>\[ J(\theta) \;=\; \mathbb{E}_{x \sim \mathcal{D}}\, \mathbb{E}_{y \sim \pi_\theta(\cdot \mid x)}\big[\, r(x, y) \,\big] \;-\; \beta\, \mathbb{E}_{x \sim \mathcal{D}}\Big[\, \mathrm{KL}\big(\pi_\theta(\cdot \mid x)\,\|\,\pi_{\text{ref}}(\cdot \mid x)\big) \Big]. \]</span>
+<p>The essential contrast with SFT (Section 1.5): SFT minimizes a divergence <em>to a fixed dataset</em>, whereas RL maximizes reward <em>over the policy&rsquo;s own samples</em>. This is what allows RL to reinforce a good response the model discovered on its own (even one that appears in no reference corpus) and thereby <em>surpass</em> the behavior imitation alone could reach.</p>
+<h2 id="policy-gradient-optimization">
+  Policy-gradient optimization
+  
+  <a class="anchor" href="#policy-gradient-optimization">#</a>
+  
+</h2>
+<p><strong>Why policy gradients.</strong> Because the reward is a black box (we generally cannot backpropagate through a checker, a compiler, or a test harness), 
+<span>
+  \( J(\theta) \)
+  </span>
+
+ is optimized with <strong>policy-gradient</strong> methods, which estimate gradients from sampled rollouts alone.</p>
+<p><strong>Deriving the estimator.</strong> Deriving the gradient is worth a moment, because it explains why RL training takes the form it does. The difficulty is that 
+<span>
+  \( \theta \)
+  </span>
+
+ parameterizes the very distribution we average over, not just the quantity inside the average, so we cannot naively push the gradient through the expectation. Fixing a prompt 
+<span>
+  \( x \)
+  </span>
+
+ and writing the expectation as a sum over possible responses,</p>
+
+<span>\[ J(\theta) \;=\; \sum_{y} \pi_\theta(y \mid x)\, r(x, y), \qquad\quad \nabla_\theta J(\theta) \;=\; \sum_{y} r(x, y)\, \nabla_\theta \pi_\theta(y \mid x). \]</span>
+<p>The right-hand side is not an expectation under 
+<span>
+  \( \pi_\theta \)
+  </span>
+
+ (the 
+<span>
+  \( \nabla_\theta \pi_\theta \)
+  </span>
+
+ factor is not a probability distribution), and 
+<span>
+  \( r \)
+  </span>
+
+ may be a non-differentiable black box, so we cannot estimate it by sampling as written. The <strong>log-derivative identity</strong> repairs this:</p>
+
+<span>\[ \nabla_\theta \pi_\theta(y \mid x) \;=\; \pi_\theta(y \mid x)\, \nabla_\theta \log \pi_\theta(y \mid x), \]</span>
+<p>which is simply 
+<span>
+  \( \nabla_\theta \log \pi_\theta = \nabla_\theta \pi_\theta / \pi_\theta \)
+  </span>
+
+ rearranged. Substituting it restores a 
+<span>
+  \( \pi_\theta(y \mid x) \)
+  </span>
+
+ factor out front, turning the sum back into an expectation:</p>
+
+<span>\[ \nabla_\theta J(\theta) \;=\; \sum_{y} \pi_\theta(y \mid x)\, r(x, y)\, \nabla_\theta \log \pi_\theta(y \mid x) \;=\; \mathbb{E}_{y \sim \pi_\theta(\cdot \mid x)}\big[\, r(x, y)\, \nabla_\theta \log \pi_\theta(y \mid x) \,\big]. \]</span>
+<p>Restoring the average over prompts 
+<span>
+  \( x \sim \mathcal{D} \)
+  </span>
+
+ gives the <strong>policy-gradient theorem</strong>:</p>
+
+<span>\[ \nabla_\theta J(\theta) \;=\; \mathbb{E}_{x \sim \mathcal{D}}\, \mathbb{E}_{y \sim \pi_\theta(\cdot \mid x)}\big[\, r(x, y)\, \nabla_\theta \log \pi_\theta(y \mid x) \,\big]. \]</span>
+<p><strong>The REINFORCE rule.</strong> The payoff is that the gradient is once again an expectation over the policy&rsquo;s <em>own</em> samples, so it can be estimated by Monte Carlo: draw responses from the current policy and average 
+<span>
+  \( r(x,y)\, \nabla_\theta \log \pi_\theta(y \mid x) \)
+  </span>
+
+ over them. The reward enters only as a scalar multiplier (it is never differentiated), and 
+<span>
+  \( \nabla_\theta \log \pi_\theta \)
+  </span>
+
+ is ordinary backpropagation through the model&rsquo;s own log-probabilities, so a black-box, non-differentiable reward is no obstacle. This estimator is the classic <strong>REINFORCE</strong> rule.</p>
+<p><strong>What one Monte Carlo sample is.</strong> Concretely, one sample is one <em>complete rollout</em>: the policy generates a full response 
+<span>
+  \( y = (y_1, \dots, y_T) \)
+  </span>
+
+ token by token, and the oracle then returns a single terminal reward 
+<span>
+  \( r(x, y) \)
+  </span>
+
+ for the finished response (there is no reward for a half-written one). A single rollout already gives an unbiased gradient estimate, but its variance is high, so in practice one draws a batch of 
+<span>
+  \( N \)
+  </span>
+
+ independent rollouts per prompt and averages:</p>
+
+<span>\[ \nabla_\theta J(\theta) \;\approx\; \frac{1}{N} \sum_{i=1}^{N} r(x, y^{(i)})\, \nabla_\theta \log \pi_\theta\!\big(y^{(i)} \mid x\big), \qquad y^{(i)} \sim \pi_\theta(\cdot \mid x). \]</span>
+<p>Each rollout contributes exactly one reward and one backprop pass; the per-token structure <em>within</em> a rollout (below) is deterministic bookkeeping, not additional sampling. Sampling several rollouts per prompt is also what makes the group-relative baseline of GRPO (discussed later) possible, since a single sample has nothing to compare against.</p>
+<p><strong>Reducing variance with a baseline.</strong> Intuitively, the update increases the log-probability of high-reward responses and decreases it for low-reward ones. The raw estimator is unbiased but high-variance, so in practice the reward is replaced by an <strong>advantage</strong> 
+<span>
+  \( A(x,y) = r(x,y) - b(x) \)
+  </span>
+
+: a response-independent baseline 
+<span>
+  \( b(x) \)
+  </span>
+
+ (the typical reward for prompt 
+<span>
+  \( x \)
+  </span>
+
+) is subtracted to cut variance. This leaves the gradient unchanged in expectation, because the score function has zero mean and the log-derivative trick yields 
+<span>
+  \( \mathbb{E}_{y \sim \pi_\theta}[\nabla_\theta \log \pi_\theta(y \mid x)] = \sum_y \nabla_\theta \pi_\theta(y \mid x) = \nabla_\theta \sum_y \pi_\theta(y \mid x) = \nabla_\theta 1 = 0 \)
+  </span>
+
+, so subtracting any such 
+<span>
+  \( b(x) \)
+  </span>
+
+ contributes nothing on average:</p>
+
+<span>\[ \nabla_\theta J(\theta) \;=\; \mathbb{E}\big[\, A(x, y)\, \nabla_\theta \log \pi_\theta(y \mid x) \,\big]. \]</span>
+<p><strong>Spreading the reward over tokens.</strong> Since the response is a token sequence, the score term decomposes over tokens (the same autoregressive factorization as in SFT), which is how the sequence-level reward is distributed across per-token updates:</p>
+
+<span>\[ \nabla_\theta \log \pi_\theta(y \mid x) \;=\; \sum_{t=1}^{|y|} \nabla_\theta \log \pi_\theta(y_t \mid x, y_{\lt t}). \]</span>
+<p>The choice of baseline/advantage estimator is what distinguishes the algorithms below.</p>
+<h3 id="ppo-proximal-policy-optimization">
+  PPO: Proximal Policy Optimization
+  
+  <a class="anchor" href="#ppo-proximal-policy-optimization">#</a>
+  
+</h3>
+<p><strong>A learned baseline (actor-critic).</strong> Proximal Policy Optimization (PPO) is the classic <em>actor-critic</em> instantiation. Alongside the policy (the &ldquo;actor&rdquo;), it trains a separate <strong>value network</strong> 
+<span>
+  \( V_\phi(x, y_{\lt t}) \)
+  </span>
+
+ (the &ldquo;critic&rdquo;) that predicts the reward a partial generation will eventually earn. This learned value serves as the baseline, so the advantage 
+<span>
+  \( \hat{A}_t \)
+  </span>
+
+ measures how much a continuation did <em>better than the critic expected</em>, position by position (in practice estimated with generalized advantage estimation, GAE). The hat denotes an <em>estimate</em>: the true advantage uses the unknown expected return, whereas 
+<span>
+  \( \hat{A}_t \)
+  </span>
+
+ is computed from 
+<span>
+  \( V_\phi \)
+  </span>
+
+ and a sampled rollout, so a well-trained critic gives a sharp, per-token signal while a poor one misleads the update.</p>
+<p><strong>Reusing rollouts via a probability ratio.</strong> Rollouts are expensive (for kernels, each one compiles and runs code), so PPO reuses a batch for several gradient steps rather than resampling after every step. Doing so correctly requires distinguishing the frozen <strong>sampling policy</strong> 
+<span>
+  \( \pi_{\theta_{\text{old}}} \)
+  </span>
+
+ that produced the batch from the <strong>current policy</strong> 
+<span>
+  \( \pi_\theta \)
+  </span>
+
+ being updated, and reweighting each sample by the <strong>probability ratio</strong> 
+<span>
+  \( \rho_t(\theta) = \pi_\theta(y_t \mid x, y_{\lt t}) / \pi_{\theta_{\text{old}}}(y_t \mid x, y_{\lt t}) \)
+  </span>
+
+ (importance sampling).</p>
+<p>This is worth emphasizing: PPO does not merely change the <em>baseline</em> inside the vanilla policy gradient, it changes the <strong>loss function</strong> itself. Plain REINFORCE optimizes a surrogate that contains only the current policy,</p>
+
+<span>\[ \mathcal{L}^{\text{PG}}(\theta) \;=\; -\,\mathbb{E}\big[\, \hat{A}_t \, \log \pi_\theta(y_t \mid x, y_{\lt t}) \,\big], \]</span>
+<p>which is valid only for samples drawn from the very 
+<span>
+  \( \pi_\theta \)
+  </span>
+
+ being differentiated, so it must be resampled after a single step. PPO replaces the 
+<span>
+  \( \log \pi_\theta \)
+  </span>
+
+ term with the ratio 
+<span>
+  \( \rho_t(\theta) \)
+  </span>
+
+, which references a second, frozen policy and is exactly what lets a batch sampled from 
+<span>
+  \( \pi_{\theta_{\text{old}}} \)
+  </span>
+
+ be reused for multiple updates. (The learned value baseline of the previous paragraph is a <em>baseline choice</em> allowed within the vanilla framework; the ratio, and the clipping below, genuinely change the objective.)</p>
+<p><strong>Clipping (the &ldquo;proximal&rdquo; part).</strong> Importance reweighting is only trustworthy while 
+<span>
+  \( \pi_\theta \)
+  </span>
+
+ stays close to 
+<span>
+  \( \pi_{\theta_{\text{old}}} \)
+  </span>
+
+; if 
+<span>
+  \( \rho_t \)
+  </span>
+
+ grows large, a few samples dominate and the update can blow up. PPO therefore <em>clips</em> the ratio, optimizing the minimum of the unclipped and clipped terms:</p>
+
+<span>\[ \mathcal{L}^{\text{PPO}}(\theta) = \mathbb{E}\Big[\, \min\big( \rho_t(\theta)\, \hat{A}_t,\; \operatorname{clip}(\rho_t(\theta),\, 1-\epsilon,\, 1+\epsilon)\, \hat{A}_t \big) \Big], \qquad \rho_t(\theta) = \frac{\pi_\theta(y_t \mid x, y_{\lt t})}{\pi_{\theta_{\text{old}}}(y_t \mid x, y_{\lt t})}. \]</span>
+<p>The 
+<span>
+  \( \min \)
+  </span>
+
+ makes the clipping one-sided in exactly the right way, which is clearest by cases on the sign of the advantage:</p>
+<ul>
+<li><strong>Positive advantage (
+<span>
+  \( \hat{A}_t \gt 0 \)
+  </span>
+
+, a good token).</strong> We want to raise this token&rsquo;s probability, so 
+<span>
+  \( \rho_t \)
+  </span>
+
+ tends to grow. Once 
+<span>
+  \( \rho_t \gt 1+\epsilon \)
+  </span>
+
+, the clipped term 
+<span>
+  \( (1+\epsilon)\hat{A}_t \)
+  </span>
+
+ is smaller than the unclipped 
+<span>
+  \( \rho_t \hat{A}_t \)
+  </span>
+
+, so the 
+<span>
+  \( \min \)
+  </span>
+
+ selects it and the objective goes flat: no further reward for pushing the probability even higher.</li>
+<li><strong>Negative advantage (
+<span>
+  \( \hat{A}_t \lt 0 \)
+  </span>
+
+, a bad token).</strong> We want to lower its probability, so 
+<span>
+  \( \rho_t \)
+  </span>
+
+ tends to shrink. Once 
+<span>
+  \( \rho_t \lt 1-\epsilon \)
+  </span>
+
+, the clipped term 
+<span>
+  \( (1-\epsilon)\hat{A}_t \)
+  </span>
+
+ (recall 
+<span>
+  \( \hat{A}_t \lt 0 \)
+  </span>
+
+) is again the one the 
+<span>
+  \( \min \)
+  </span>
+
+ selects, flattening the objective: no further reward for suppressing it beyond the band.</li>
+</ul>
+<p>Either way, once a token&rsquo;s ratio leaves 
+<span>
+  \( [1-\epsilon, 1+\epsilon] \)
+  </span>
+
+ (a typical 
+<span>
+  \( \epsilon \)
+  </span>
+
+ is 0.1 to 0.2) its gradient contribution vanishes, keeping each update inside a <em>trust region</em> around the sampling policy. At the first step, 
+<span>
+  \( \theta = \theta_{\text{old}} \)
+  </span>
+
+ so 
+<span>
+  \( \rho_t = 1 \)
+  </span>
+
+ and the gradient matches plain policy gradient; the ratio and clip only bite as 
+<span>
+  \( \theta \)
+  </span>
+
+ drifts.</p>
+<p><strong>The cost.</strong> PPO is robust and is the algorithm behind much of RLHF, but it is expensive: the value network is a second model roughly the size of the policy, so it roughly doubles memory and adds its own training instability (a bad critic yields misleading advantages). That overhead is the specific pain point the next algorithm removes.</p>
+<h3 id="grpo-group-relative-policy-optimization">
+  GRPO: Group Relative Policy Optimization
+  
+  <a class="anchor" href="#grpo-group-relative-policy-optimization">#</a>
+  
+</h3>
+<p><strong>The group as its own baseline.</strong> Group Relative Policy Optimization (GRPO) removes the value network entirely and has become the workhorse of modern LLM RL, including the kernel-generation systems of Section 2.2. Its motivating question is: the critic exists only to answer &ldquo;what reward should I expect for this prompt?&rdquo;, so can we estimate that reference point from samples instead of a trained model? GRPO does exactly that. For each prompt 
+<span>
+  \( x \)
+  </span>
+
+ it samples a <strong>group</strong> of 
+<span>
+  \( G \)
+  </span>
+
+ complete responses from the current policy,</p>
+
+<span>\[ y_1, y_2, \dots, y_G \;\sim\; \pi_{\theta_{\text{old}}}(\cdot \mid x), \]</span>
+<p>scores each with the reward oracle to get 
+<span>
+  \( r_i = r(x, y_i) \)
+  </span>
+
+, and uses the group&rsquo;s mean reward as the baseline. The advantage of a response is how far its reward sits above or below that mean, normalized by the group&rsquo;s spread:</p>
+
+<span>\[ \hat{A}_i \;=\; \frac{r_i - \operatorname{mean}(\{r_1, \dots, r_G\})}{\operatorname{std}(\{r_1, \dots, r_G\})}, \qquad r_i = r(x, y_i), \quad i = 1, \dots, G. \]</span>
+<p>Reading the advantage:</p>
+<ul>
+<li>
+<span>
+  \( \hat{A}_i \gt 0 \)
+  </span>
+
+: response 
+<span>
+  \( i \)
+  </span>
+
+ beat its siblings on this prompt, so reinforce it.</li>
+<li>
+<span>
+  \( \hat{A}_i \lt 0 \)
+  </span>
+
+: it was worse than its siblings, so suppress it.</li>
+<li>
+<span>
+  \( \hat{A}_i \approx 0 \)
+  </span>
+
+: it was about average, so little signal.</li>
+</ul>
+<p>Every token of response 
+<span>
+  \( y_i \)
+  </span>
+
+ is assigned this same sequence-level 
+<span>
+  \( \hat{A}_i \)
+  </span>
+
+, since there is no critic to produce a per-token value. The group&rsquo;s rollouts thus do double duty: they are both the samples the gradient is averaged over <em>and</em> the samples whose mean provides the baseline, which is precisely what lets GRPO drop the value network. Everything else is inherited from PPO: GRPO plugs this 
+<span>
+  \( \hat{A}_i \)
+  </span>
+
+ into the same clipped-ratio surrogate (with the same 
+<span>
+  \( \rho \)
+  </span>
+
+ and the same trust-region logic).</p>
+<p><strong>Per prompt, not per batch.</strong> A group is tied to a <em>single</em> prompt: the mean and standard deviation are computed <em>within</em> each prompt&rsquo;s group, never pooled across prompts. A training batch is a collection of such groups, one per prompt. This within-group normalization is what makes the baseline fair: a response is judged against <em>other attempts at the same prompt</em>, so an easy prompt (rewards near 1.0) and a hard one (rewards near 0.1) each reward their own best attempts, rather than the update simply favoring whichever prompt happened to be easier. It also means GRPO structurally requires 
+<span>
+  \( G \gt 1 \)
+  </span>
+
+: with a single response there is no group, no mean to subtract, and the advantage is undefined (contrast PPO, whose critic-based baseline works even for one rollout per prompt).</p>
+<p><strong>The zero-variance pitfall.</strong> The group baseline is informative only when the rewards actually differ. If every response in a group earns the <em>same</em> reward, then 
+<span>
+  \( r_i = \operatorname{mean} \)
+  </span>
+
+ for all 
+<span>
+  \( i \)
+  </span>
+
+, so every 
+<span>
+  \( \hat{A}_i = 0 \)
+  </span>
+
+ and the prompt contributes no gradient at all. This happens when a group is all-fail (nothing compiles, common early in training) or all-pass (a prompt the model already solves). GRPO therefore learns only from prompts in a <em>learnable band</em> that still produce a mix of outcomes, which is exactly why curriculum and dynamic task selection matter for it (Section 2.2).</p>
+<p><strong>Normalization.</strong> The division by 
+<span>
+  \( \operatorname{std}(\{r_1, \dots, r_G\}) \)
+  </span>
+
+ rescales advantages to unit variance per prompt. It is a normalization choice, not a necessity: dropping it (together with the sequence-length normalization) removes a subtle bias toward longer or harder responses (<em>Dr. GRPO</em>). The essential idea, the group mean as baseline, does not depend on it.</p>
+<h3 id="kl-regularization-to-the-reference-policy">
+  KL regularization to the reference policy
+  
+  <a class="anchor" href="#kl-regularization-to-the-reference-policy">#</a>
+  
+</h3>
+<p>Both algorithms are often combined with the KL term from the objective above, penalizing divergence from the reference policy 
+<span>
+  \( \pi_{\text{ref}} \)
+  </span>
+
+ (typically the SFT model). Concretely, for GRPO the full training loss adds a KL penalty (weighted by 
+<span>
+  \( \beta \)
+  </span>
+
+) to the clipped surrogate:</p>
+
+<span>\[ \begin{aligned}
+\mathcal{L}^{\text{GRPO}}(\theta) \;&amp;=\; \mathbb{E}\Big[\, \min\big( \rho_{i,t}(\theta)\, \hat{A}_i,\; \operatorname{clip}(\rho_{i,t}(\theta),\, 1-\epsilon,\, 1+\epsilon)\, \hat{A}_i \big) \Big] \;-\; \beta\, \mathrm{KL}\big(\pi_\theta \,\|\, \pi_{\text{ref}}\big), \\[6pt]
+\text{where} \quad \rho_{i,t}(\theta) \;&amp;=\; \frac{\pi_\theta(y_{i,t} \mid x, y_{i,\lt t})}{\pi_{\theta_{\text{old}}}(y_{i,t} \mid x, y_{i,\lt t})}.
+\end{aligned} \]</span>
+<p>The ratio 
+<span>
+  \( \rho_{i,t} \)
+  </span>
+
+ is PPO&rsquo;s probability ratio, now indexed by response 
+<span>
+  \( i \)
+  </span>
+
+ and token 
+<span>
+  \( t \)
+  </span>
+
+ (PPO uses the identical loss with its critic-based 
+<span>
+  \( \hat{A}_t \)
+  </span>
+
+ in place of 
+<span>
+  \( \hat{A}_i \)
+  </span>
+
+). The KL term&rsquo;s role is to keep the policy within a <em>trust region in distribution space</em>: it stabilizes optimization and prevents the model from drifting away from the fluent, general behavior it started with as it chases reward. Note this is a <em>second, distinct</em> closeness constraint from the clipping: clipping keeps 
+<span>
+  \( \pi_\theta \)
+  </span>
+
+ near the <em>sampling</em> policy 
+<span>
+  \( \pi_{\theta_{\text{old}}} \)
+  </span>
+
+ (an optimization safeguard for reusing a batch), whereas the KL term keeps it near the <em>fixed</em> reference 
+<span>
+  \( \pi_{\text{ref}} \)
+  </span>
+
+ (preserving general capability). Some large-scale RLVR recipes deliberately weaken or drop the KL term when they want the policy to move far from the reference, relying on other mechanisms for stability (<em>DAPO</em>).</p>
 <h2 id="references">
   References
   
   <a class="anchor" href="#references">#</a>
   
 </h2>
+<p><strong>RL algorithms.</strong></p>
 <ol>
-<li>[Placeholder reference.]</li>
+<li>J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov. <em>Proximal Policy Optimization Algorithms.</em> arXiv:1707.06347, 2017. <a href="https://arxiv.org/abs/1707.06347">arxiv.org/abs/1707.06347</a></li>
+<li>Z. Shao, P. Wang, Q. Zhu, R. Xu, J. Song, X. Bi, et al. <em>DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models</em> (introduces GRPO). arXiv:2402.03300, 2024. <a href="https://arxiv.org/abs/2402.03300">arxiv.org/abs/2402.03300</a></li>
+<li>Z. Liu, C. Chen, W. Li, P. Qi, T. Pang, C. Du, W. S. Lee, and M. Lin. <em>Understanding R1-Zero-Like Training: A Critical Perspective</em> (Dr. GRPO). arXiv:2503.20783, 2025. <a href="https://arxiv.org/abs/2503.20783">arxiv.org/abs/2503.20783</a></li>
+<li>Q. Yu, Z. Zhang, R. Zhu, Y. Yuan, et al. <em>DAPO: An Open-Source LLM Reinforcement Learning System at Scale.</em> arXiv:2503.14476, 2025. <a href="https://arxiv.org/abs/2503.14476">arxiv.org/abs/2503.14476</a></li>
 </ol>
 </article>
  
@@ -581,8 +1104,8 @@ https://github.com/alex-shpak/hugo-book
     <span>
     
       <a href="/llm_kernel_writing/docs/section-2/" class="flex align-center book-icon">
-        <span>LLM-Driven Kernel Generation</span>
-        <img src="/llm_kernel_writing/svg/forward.svg" class="book-icon" alt="Next" title="LLM-Driven Kernel Generation" />
+        <span>Post-Training LLMs for Kernel Generation</span>
+        <img src="/llm_kernel_writing/svg/forward.svg" class="book-icon" alt="Next" title="Post-Training LLMs for Kernel Generation" />
       </a>
     
     </span>
@@ -617,6 +1140,14 @@ https://github.com/alex-shpak/hugo-book
   
 <nav id="TableOfContents">
   <ul>
+    <li><a href="#the-rl-objective">The RL objective</a></li>
+    <li><a href="#policy-gradient-optimization">Policy-gradient optimization</a>
+      <ul>
+        <li><a href="#ppo-proximal-policy-optimization">PPO: Proximal Policy Optimization</a></li>
+        <li><a href="#grpo-group-relative-policy-optimization">GRPO: Group Relative Policy Optimization</a></li>
+        <li><a href="#kl-regularization-to-the-reference-policy">KL regularization to the reference policy</a></li>
+      </ul>
+    </li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>

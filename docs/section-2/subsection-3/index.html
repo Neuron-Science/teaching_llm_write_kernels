@@ -4,46 +4,34 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="
-  Evaluation Benchmarking for Generated Kernels
+  RL for Kernel Optimization and Reward Hacking
   
   #
   
 
 
 
+The reward is the only channel through which &ldquo;what we actually want&rdquo; enters RL training — a scalar 
 
-
+  \( r(x, y) \)
   
 
-
-[Placeholder content for subsection 2.3 Evaluation Benchmarking for Generated Kernels.]
-
-
-
-  References
-  
-  #
-  
-
-
-[Placeholder reference.]
-">
+ that should be high when a kernel compiles, is correct, and runs fast. How that reward is designed decides what the policy learns, and its weaknesses become the policy&rsquo;s exploits, so most of the practical challenges of kernel RL trace back to it. This subsection works through them in turn: what signals the reward should carry, how to combine them into a reward design, and how that reward gets hacked — and defended.">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
 <meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-3/">
   <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
-  <meta property="og:title" content="2.3 Evaluation Benchmarking for Generated Kernels">
-  <meta property="og:description" content="Evaluation Benchmarking for Generated Kernels # [Placeholder content for subsection 2.3 Evaluation Benchmarking for Generated Kernels.]
-References # [Placeholder reference.]">
+  <meta property="og:title" content="2.3 RL for Kernel Optimization and Reward Hacking">
+  <meta property="og:description" content="RL for Kernel Optimization and Reward Hacking # The reward is the only channel through which “what we actually want” enters RL training — a scalar \( r(x, y) \) that should be high when a kernel compiles, is correct, and runs fast. How that reward is designed decides what the policy learns, and its weaknesses become the policy’s exploits, so most of the practical challenges of kernel RL trace back to it. This subsection works through them in turn: what signals the reward should carry, how to combine them into a reward design, and how that reward gets hacked — and defended.">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
-<title>2.3 Evaluation Benchmarking for Generated Kernels | Teaching LLMs to Write System Kernels</title>
+<title>2.3 RL for Kernel Optimization and Reward Hacking | Teaching LLMs to Write System Kernels</title>
 <link rel="icon" href="/llm_kernel_writing/favicon.png" >
 <link rel="manifest" href="/llm_kernel_writing/manifest.json">
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-3/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.41280eb55d0faef48301899da71029e8681649ce2850953ac2af8f8cdc3e1631.js" integrity="sha256-QSgOtV0PrvSDAYmdpxAp6GgWSc4oUJU6wq&#43;PjNw&#43;FjE=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.031218deba9c6ddede47b1dfb08118837945de97efe00c9497fb7650e494acb4.js" integrity="sha256-AxIY3rqcbd7eR7HfsIEYg3lF3pfv4AyUl/t2UOSUrLQ=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-3/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -223,7 +211,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/" class="">LLM-Driven Kernel Generation</a>
+    <a href="/llm_kernel_writing/docs/section-2/" class="">Post-Training LLMs for Kernel Generation</a>
   
 
           
@@ -236,25 +224,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/subsection-1/" class="">2.1 Problem Definition of LLM-Assisted Kernel Generation</a>
-  
-
-          
-  <ul>
-    
-  </ul>
-
-        </li>
-      
-    
-      
-        <li>
-          
-  
-  
-
-  
-    <a href="/llm_kernel_writing/docs/section-2/subsection-2/" class="">2.2 Data Preparation and Curation Strategies</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-1/" class="">2.1 Supervised Fine-Tuning on Kernel Corpora</a>
   
 
           
@@ -272,7 +242,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/subsection-3/" class="active">2.3 Evaluation Benchmarking for Generated Kernels</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-2/" class="">2.2 Reinforcement Learning from Execution Feedback</a>
   
 
           
@@ -290,7 +260,7 @@ https://github.com/alex-shpak/hugo-book
   
 
   
-    <a href="/llm_kernel_writing/docs/section-2/subsection-4/" class="">2.4 Reward Hacking Behaviors and Mitigation</a>
+    <a href="/llm_kernel_writing/docs/section-2/subsection-3/" class="active">2.3 RL for Kernel Optimization and Reward Hacking</a>
   
 
           
@@ -486,7 +456,7 @@ https://github.com/alex-shpak/hugo-book
     <img src="/llm_kernel_writing/svg/menu.svg" class="book-icon" alt="Menu" />
   </label>
 
-  <h3>2.3 Evaluation Benchmarking for Generated Kernels</h3>
+  <h3>2.3 RL for Kernel Optimization and Reward Hacking</h3>
 
   <label for="toc-control">
     
@@ -502,6 +472,10 @@ https://github.com/alex-shpak/hugo-book
   
 <nav id="TableOfContents">
   <ul>
+    <li><a href="#signals-for-good-kernels">Signals for good kernels</a></li>
+    <li><a href="#reward-designs">Reward designs</a></li>
+    <li><a href="#reward-hacking">Reward hacking</a></li>
+    <li><a href="#how-to-mitigate-reward-hacking">How to mitigate reward hacking</a></li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>
@@ -515,17 +489,61 @@ https://github.com/alex-shpak/hugo-book
 
       
       
-  <article class="markdown book-article"><h1 id="evaluation-benchmarking-for-generated-kernels">
-  <strong>Evaluation Benchmarking for Generated Kernels</strong>
+  <article class="markdown book-article"><h1 id="rl-for-kernel-optimization-and-reward-hacking">
+  RL for Kernel Optimization and Reward Hacking
   
-  <a class="anchor" href="#evaluation-benchmarking-for-generated-kernels">#</a>
+  <a class="anchor" href="#rl-for-kernel-optimization-and-reward-hacking">#</a>
   
 </h1>
+
+
+<p>The reward is the <em>only</em> channel through which &ldquo;what we actually want&rdquo; enters RL training — a scalar 
+<span>
+  \( r(x, y) \)
+  </span>
+
+ that should be high when a kernel compiles, is correct, and runs fast. How that reward is designed decides what the policy learns, and its weaknesses become the policy&rsquo;s exploits, so most of the practical <strong>challenges</strong> of kernel RL trace back to it. This subsection works through them in turn: what <strong>signals</strong> the reward should carry, how to combine them into a reward <strong>design</strong>, and how that reward gets <strong>hacked</strong> — and defended.</p>
+<h2 id="signals-for-good-kernels">
+  Signals for good kernels
+  
+  <a class="anchor" href="#signals-for-good-kernels">#</a>
+  
+</h2>
+<p>End-to-end <strong>speedup</strong> over a baseline is the headline signal, but a reward built on speedup alone is both <em>sparse</em> (a kernel earns nothing until it is correct <em>and</em> faster) and <em>easy to game</em>. Richer, more diagnostic signals make the reward denser and harder to exploit. The commonly used signals fall into a few groups:</p>
+<ul>
+<li><strong>Correctness</strong> — outputs match the reference within tolerance, ideally across many shapes and dtypes, not one.</li>
+<li><strong>Performance</strong> — end-to-end speedup, but also its <em>breakdown</em>: kernel-vs-total runtime, per-region timing to locate the bottleneck, and the compute / memory-access / synchronization / launch split.</li>
+<li><strong>Memory and hardware efficiency</strong> — memory-bandwidth utilization, peak memory footprint, cache-hit rate, FLOP efficiency, and (on accelerators such as Trainium) engine-specific occupancy of the tensor/vector/scalar units and DMA activity.</li>
+<li><strong>Robustness</strong> — variance of correctness and speed <em>across shapes</em>, and run-to-run timing consistency (e.g., median-of-buckets timing to resist noise).</li>
+<li><strong>Quality</strong> — a rule-based or LLM-judge assessment of whether the kernel is a genuine, idiomatic implementation rather than a degenerate one.</li>
+</ul>
+<!-- Beyond making the reward denser, several of these signals double as **anti-cheating** signals (below): a kernel that claims a large speedup while its custom code covers only a trivial fraction of the runtime, or while the tensor engine sits idle, is almost certainly gaming the reward rather than optimizing it. -->
+<h2 id="reward-designs">
+  Reward designs
+  
+  <a class="anchor" href="#reward-designs">#</a>
+  
+</h2>
+<p>Given a set of signals 
+<span>
+  \( s_k(x, y) \)
+  </span>
+
+, the design question is how to fold them into one scalar. Common shapes, roughly from most to least hackable:</p>
+<ul>
+<li><strong>Linear weighted sum.</strong> 
+<span>
+  \( r(x, y) = \sum_k w_k\, s_k(x, y) \)
+  </span>
+
+ — add up the component signals, e.g. correctness plus speedup (<em>Kevin</em>) or correctness alone (<em>AutoTriton</em>). Simple and dense, but every term is an independent surface to game, and a large weight on speed can dominate correctness.</li>
+<li><strong>Discrete milestone / gating.</strong> Bucket the outcome into ordered tiers so partial progress is rewarded without unbounded incentives:</li>
+</ul>
 
 <link rel="stylesheet" href="/llm_kernel_writing/katex/katex.min.css" />
 <script defer src="/llm_kernel_writing/katex/katex.min.js"></script>
 
-  <script defer src="/llm_kernel_writing/katex/auto-render.min.js" onload="renderMathInElement(document.body, {
+<script defer src="/llm_kernel_writing/katex/auto-render.min.js" onload="renderMathInElement(document.body, {
   &#34;delimiters&#34;: [
     {&#34;left&#34;: &#34;$$&#34;, &#34;right&#34;: &#34;$$&#34;, &#34;display&#34;: true},
     {&#34;left&#34;: &#34;$&#34;, &#34;right&#34;: &#34;$&#34;, &#34;display&#34;: false},
@@ -535,18 +553,187 @@ https://github.com/alex-shpak/hugo-book
 }
 );"></script>
 
+<span>\[ r(x, y) = \begin{cases} 0, &amp; \text{fails to compile}, \\ 1, &amp; \text{correct}, \\ 2, &amp; \text{correct and faster than baseline}. \end{cases} \]</span>
+<p>This is robust to outliers and low-variance, and correctness strictly gates any performance reward (<em>CUDA Agent</em>).</p>
+<ul>
+<li><strong>Conditional gating.</strong> A stricter version of the above: performance is scored only once correctness passes, and efficiency signals only once a speed threshold passes — so the policy cannot trade correctness for speed.</li>
+<li><strong>Hierarchical decomposition.</strong> Split the trajectory into parts and reward them differently — for instance a high-level optimization <em>plan</em> vs. the low-level <em>code</em> — attaching speed-oriented credit to the plan and correctness credit to the implementation (<em>TritonRL</em>).</li>
+<li><strong>Length shaping.</strong> A concave length penalty (short kernels for easy tasks, longer allowed for hard ones) discourages padding and rambling without punishing genuinely complex kernels (<em>Composer 2</em>).</li>
+</ul>
+<!-- Two related knobs act at the *optimizer* level rather than in 
+<span>
+  \( r \)
+  </span>
 
-<p>[Placeholder content for subsection 2.3 Evaluation Benchmarking for Generated Kernels.]</p>
+ itself: **clip-higher** (an asymmetric PPO clip that keeps low-probability exploratory tokens alive to prevent entropy collapse) and **overlong reward shaping** (a soft penalty for truncated/over-long responses to reduce length-driven reward noise), both from *DAPO*. -->
+<h2 id="reward-hacking">
+  Reward hacking
+  
+  <a class="anchor" href="#reward-hacking">#</a>
+  
+</h2>
+<p>Because a verifiable reward is an <em>automated checker</em>, RL will find and exploit any gap between &ldquo;passing the checker&rdquo; and &ldquo;actually being a fast, correct kernel.&rdquo; This is <strong>reward hacking</strong> — a long-studied pathology of RL in general, in which an agent maximizes the literal reward at the expense of the objective it was meant to proxy (<em>Amodei et al.</em>; <em>Skalse et al.</em>) — and it is the dominant failure mode of kernel RL. Since the reward is only a <em>proxy</em> for a good kernel, the policy can drive it up without genuinely optimizing anything: it superficially satisfies the check while cheating underneath.</p>
+<p>To make this concrete, fix one task — a matrix multiply 
+<span>
+  \( C = AB \)
+  </span>
 
+, scored by a check that compares the output against <code>A @ B</code> and times it. A <em>genuine</em> submission is a real tiled Triton kernel:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#a6e22e">@triton.jit</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">matmul_kernel</span>(a_ptr, b_ptr, c_ptr, M, N, K, BLOCK: tl<span style="color:#f92672">.</span>constexpr):
+</span></span><span style="display:flex;"><span>    row, col <span style="color:#f92672">=</span> tl<span style="color:#f92672">.</span>program_id(<span style="color:#ae81ff">0</span>), tl<span style="color:#f92672">.</span>program_id(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>    acc <span style="color:#f92672">=</span> tl<span style="color:#f92672">.</span>zeros((BLOCK, BLOCK), tl<span style="color:#f92672">.</span>float32)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> k <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, K, BLOCK):        <span style="color:#75715e"># tile over the K dimension</span>
+</span></span><span style="display:flex;"><span>        a <span style="color:#f92672">=</span> tl<span style="color:#f92672">.</span>load(<span style="color:#f92672">...</span>)                <span style="color:#75715e"># a BLOCK×BLOCK tile of A</span>
+</span></span><span style="display:flex;"><span>        b <span style="color:#f92672">=</span> tl<span style="color:#f92672">.</span>load(<span style="color:#f92672">...</span>)                <span style="color:#75715e"># a BLOCK×BLOCK tile of B</span>
+</span></span><span style="display:flex;"><span>        acc <span style="color:#f92672">+=</span> tl<span style="color:#f92672">.</span>dot(a, b)             <span style="color:#75715e"># multiply-accumulate the tiles</span>
+</span></span><span style="display:flex;"><span>    tl<span style="color:#f92672">.</span>store(<span style="color:#f92672">...</span>, acc)                  <span style="color:#75715e"># write the output tile</span>
+</span></span></code></pre></div><p>The exploits fall into four families: three submit a <strong>dishonest kernel</strong> — faking correctness, faking speed, or not writing a kernel at all — while the fourth attacks the <strong>evaluator itself</strong>. Each is illustrated below on the matmul task.</p>
+<p><strong>Faking correctness — return a passing output it never computed.</strong></p>
+<ul>
+<li><strong>Reference copy</strong> — hand back the reference output instead of computing it.</li>
+<li><strong>Tolerance gaming</strong> — a cheap constant or low-precision output that lands within <code>atol</code>/<code>rtol</code>.</li>
+<li><strong>Benchmark-task exploits</strong> — near-zero or seed-invariant outputs, or algebraically trivializing the task.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#a6e22e">@triton.jit</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">matmul_kernel</span>(a_ptr, b_ptr, c_ptr, ref_ptr, N, BLOCK: tl<span style="color:#f92672">.</span>constexpr):
+</span></span><span style="display:flex;"><span>    i <span style="color:#f92672">=</span> tl<span style="color:#f92672">.</span>program_id(<span style="color:#ae81ff">0</span>) <span style="color:#f92672">*</span> BLOCK <span style="color:#f92672">+</span> tl<span style="color:#f92672">.</span>arange(<span style="color:#ae81ff">0</span>, BLOCK)
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Write the reference answer straight into the output. The check</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># C ≈ A @ B then passes — yet A and B are never read and no matmul runs.</span>
+</span></span><span style="display:flex;"><span>    tl<span style="color:#f92672">.</span>store(c_ptr <span style="color:#f92672">+</span> i, tl<span style="color:#f92672">.</span>load(ref_ptr <span style="color:#f92672">+</span> i))
+</span></span></code></pre></div><p><strong>Faking speed — correct, but the measured time is gamed.</strong></p>
+<ul>
+<li><strong>Warm-up-cache exploit</strong> — cache the result during warm-up, then skip the compute in the timed run.</li>
+<li><strong>Input memoization</strong> — cache outputs keyed on input identity.</li>
+<li><strong>Sync removal</strong> — drop a synchronization the kernel needs so the timer stops early.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>_cache <span style="color:#f92672">=</span> {}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">matmul</span>(A, B):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> A<span style="color:#f92672">.</span>data_ptr() <span style="color:#f92672">not</span> <span style="color:#f92672">in</span> _cache:      <span style="color:#75715e"># first (untimed) warm-up call: compute for real</span>
+</span></span><span style="display:flex;"><span>        _cache[A<span style="color:#f92672">.</span>data_ptr()] <span style="color:#f92672">=</span> A <span style="color:#f92672">@</span> B
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> _cache[A<span style="color:#f92672">.</span>data_ptr()]         <span style="color:#75715e"># timed call, same inputs: cache hit → ~0 s measured</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># The output is correct, but the expensive compute ran outside the timed window.</span>
+</span></span></code></pre></div><p><strong>Not a real kernel — the framework does the work.</strong></p>
+<ul>
+<li><strong>Direct fallback</strong> — call the framework op directly, or wrap it in <code>try</code>/<code>except</code> / inheritance.</li>
+<li><strong>Trivial or partial kernel</strong> — a trivial or unused kernel, or kernelizing only a sub-operation.</li>
+<li><strong>Framework-feature laundering</strong> — wrap the op in a CUDA Graph or <code>torch.compile</code> and claim its speedup.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">matmul</span>(A, B):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Correct and honestly timed — but there is no custom kernel at all:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># PyTorch&#39;s built-in matmul does the work, so nothing was written or optimized.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> torch<span style="color:#f92672">.</span>matmul(A, B)
+</span></span></code></pre></div><p><strong>Tampering with the evaluator — attack the checker or timer itself.</strong> These attacks target the harness — plain Python: the correctness oracle, the timer, the environment — rather than the kernel, so they are the <em>least</em> backend-specific family: the same tricks apply to CUDA, Triton, or any other target.</p>
+<ul>
+<li><strong>Check subversion</strong> — monkey-patch the correctness oracle (e.g., <code>torch.allclose</code>) so it always passes, or the timer (<code>time.perf_counter</code>, <code>torch.cuda.synchronize</code>) so the runtime reads as zero.</li>
+<li><strong>Memory aliasing</strong> — exploit an output buffer the harness never zeroed, so it still holds the reference.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># The harness verifies correctness with torch.allclose(output, reference).</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Overwrite it to always return True → any output, even garbage, &#34;passes&#34;.</span>
+</span></span><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>allclose <span style="color:#f92672">=</span> <span style="color:#66d9ef">lambda</span> <span style="color:#f92672">*</span>a, <span style="color:#f92672">**</span>k: <span style="color:#66d9ef">True</span>
+</span></span></code></pre></div><h2 id="how-to-mitigate-reward-hacking">
+  How to mitigate reward hacking
+  
+  <a class="anchor" href="#how-to-mitigate-reward-hacking">#</a>
+  
+</h2>
+<p>Mitigation hardens the <em>pipeline</em> that turns a submission into a reward. Rather than one check, a robust reward runs the submission in an isolated sandbox and passes it through a chain of gates — compile, correctness, genuineness, timing — where any failure caps the reward before speed is ever credited:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>  submission
+</span></span><span style="display:flex;"><span>      │
+</span></span><span style="display:flex;"><span>      ▼   ┌──────────── ① sandbox (harness isolation) ────────────┐
+</span></span><span style="display:flex;"><span>          │  cannot patch the timer / synchronize, reach the      │
+</span></span><span style="display:flex;"><span>          │  reference, or read a non-zeroed output buffer        │
+</span></span><span style="display:flex;"><span>          └────────────────────────┬──────────────────────────────┘
+</span></span><span style="display:flex;"><span>                                   ▼
+</span></span><span style="display:flex;"><span>   compile ──▶ ② correctness ──▶ ③ genuine-kernel ──▶ ④ timing ──▶ ⑤ reward
+</span></span><span style="display:flex;"><span>                  (I random          (coverage ρ,       (median-      (+ penalties)
+</span></span><span style="display:flex;"><span>                   inputs)            verifier)          of-buckets)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>   any gate fails  ⇒  reward capped (0, or r_correct with no speed credit)
+</span></span></code></pre></div><p><strong>① Harness isolation</strong> <em>(the sandbox — vs. tampering with the evaluator)</em>. None of the checks below matter if the policy can rewrite them, so the whole pipeline runs sandboxed: the submission cannot patch the timer or <code>synchronize</code>, reach 
+<span>
+  \( f_{\mathrm{ref}} \)
+  </span>
 
+, or read a non-zeroed buffer — closing exactly the memory loophole that <em>Sakana</em>&rsquo;s system was caught exploiting. It is the only defense against evaluator tampering, since no reward term can detect an attack on the thing computing the reward.</p>
+<p><strong>② Robust correctness</strong> <em>(correctness gate — vs. faking correctness)</em>. Score correctness on 
+<span>
+  \( I \)
+  </span>
+
+ randomized, held-out inputs 
+<span>
+  \( v_1, \dots, v_I \)
+  </span>
+
+ rather than one (TritonRL), so a memorized constant or a copied reference cannot pass in general:</p>
+
+<span>\[ \mathrm{correct}(y) = \mathbf{1}\!\left[\; \max_{j=1,\dots,I} \big\lVert f_y(v_j) - f_{\mathrm{ref}}(v_j) \big\rVert \;\le\; \mathrm{atol} + \mathrm{rtol}\cdot \lVert f_{\mathrm{ref}}(v_j) \rVert \;\right] \]</span>
+<p>Drawing fresh 
+<span>
+  \( v_j \)
+  </span>
+
+ each evaluation also blocks the <em>input-memoization</em> trick — caching an output the first time and replaying it whenever the same input recurs.</p>
+<p><strong>③ Genuine-kernel verification</strong> <em>(genuine-kernel gate — vs. not-a-kernel)</em>. Confirm the work is actually done <em>by the kernel</em>. A <strong>kernel-coverage</strong> ratio — the fraction of runtime spent inside the custom kernel — exposes fallbacks and partial kernelization (<em>Dr. Kernel</em>):</p>
+
+<span>\[ \rho(y) = \frac{t_{\text{custom-kernel}}}{t_{\text{total}}}, \qquad \text{flag as not-a-kernel if } \rho(y) &lt; \rho_{\min} \]</span>
+<p>This pairs with a static verifier (a rule-based check for real <code>@triton.jit</code> kernels and forbidden framework calls) and an LLM judge for semantic correctness (<em>TritonRL</em>), plus, on accelerators, profile checks such as a matmul with an idle tensor engine but heavy DMA.</p>
+<p><strong>④ Robust timing</strong> <em>(timing gate — vs. faking speed)</em>. Time the kernel 
+<span>
+  \( R \)
+  </span>
+
+ times, group the runs into 
+<span>
+  \( B \)
+  </span>
+
+ buckets, and take the median of the per-bucket means — resistant to noise and to warm-up/caching spikes (median-of-buckets, <em>CUDA-L1</em>):</p>
+
+<span>\[ \hat{t}(y) = \operatorname{median}_{1 \le b \le B} \Big( \tfrac{1}{|b|}\!\sum_{r \in b} t_r \Big), \qquad \mathrm{speedup}(y) = \frac{\hat{t}(\mathrm{baseline})}{\hat{t}(y)} \]</span>
+<!-- 
+**⑤ Soft penalties, not just gates** *(reward — cross-cutting)*. Steps ②–④ act as *binary gates* — pass or fail — which is exactly a hard filter. The same detectors can instead feed the reward as **graded penalties**, so a submission that partially cheats loses reward *in proportion* and the policy feels a smooth *gradient away* from the exploit rather than a flat cutoff:
+
+```katex
+r(y) = r_{\text{base}}(y) \;-\; \sum_i \lambda_i\, d_i(y), \qquad d_i(y) \ge 0 \;\;(\text{how strongly detector } i \text{ fires}).
+```
+
+Because 
+<span>
+  \( d_i \)
+  </span>
+
+ can be continuous — e.g. how far the coverage 
+<span>
+  \( \rho \)
+  </span>
+
+ fell below 
+<span>
+  \( \rho_{\min} \)
+  </span>
+
+, or the margin by which a tolerance was gamed — this expresses *severities* that a hard gate cannot. -->
 <h2 id="references">
   References
   
   <a class="anchor" href="#references">#</a>
   
 </h2>
+<p><strong>LLM kernel generation and reward hacking.</strong></p>
 <ol>
-<li>[Placeholder reference.]</li>
+<li>J. Woo, S. Zhu, A. Nie, Z. Jia, Y. Wang, and Y. Park. <em>TritonRL: Training LLMs to Think and Code Triton Without Cheating.</em> arXiv:2510.17891, 2025. <a href="https://arxiv.org/abs/2510.17891">arxiv.org/abs/2510.17891</a></li>
+<li>W. Dai, H. Wu, Q. Yu, et al. <em>CUDA Agent: Large-Scale Agentic RL for High-Performance CUDA Kernel Generation.</em> arXiv:2602.24286, 2026. <a href="https://arxiv.org/abs/2602.24286">arxiv.org/abs/2602.24286</a></li>
+<li>W. Liu, J. Xu, Y. Li, L. Zheng, T. Li, Q. Liu, and J. He. <em>Dr. Kernel: Reinforcement Learning Done Right for Triton Kernel Generations.</em> arXiv:2602.05885, 2026. <a href="https://arxiv.org/abs/2602.05885">arxiv.org/abs/2602.05885</a></li>
+<li>C. Baronio, P. Marsella, B. Pan, S. Guo, and S. Alberti. <em>Kevin: Multi-Turn RL for Generating CUDA Kernels.</em> arXiv:2507.11948, 2025. <a href="https://arxiv.org/abs/2507.11948">arxiv.org/abs/2507.11948</a></li>
+<li><em>CUDA-L1: Improving CUDA Optimization via Contrastive Reinforcement Learning.</em> arXiv:2507.14111, 2025. <a href="https://arxiv.org/abs/2507.14111">arxiv.org/abs/2507.14111</a></li>
+<li>Sakana AI. <em>The AI CUDA Engineer.</em> Technical report, 2025. <a href="https://sakana.ai/ai-cuda-engineer/">sakana.ai/ai-cuda-engineer</a></li>
+<li>S. Li, Z. Wang, Y. He, Y. Li, Q. Shi, J. Li, Y. Hu, W. Che, X. Han, Z. Liu, and M. Sun. <em>AutoTriton: Automatic Triton Programming with Reinforcement Learning in LLMs.</em> arXiv:2507.05687, 2025. <a href="https://arxiv.org/abs/2507.05687">arxiv.org/abs/2507.05687</a></li>
+<li>D. Amodei, C. Olah, J. Steinhardt, P. Christiano, J. Schulman, and D. Mané. <em>Concrete Problems in AI Safety.</em> arXiv:1606.06565, 2016. <a href="https://arxiv.org/abs/1606.06565">arxiv.org/abs/1606.06565</a></li>
+<li>J. Skalse, N. H. R. Howe, D. Krasheninnikov, and D. Krueger. <em>Defining and Characterizing Reward Hacking.</em> arXiv:2209.13085, 2022. <a href="https://arxiv.org/abs/2209.13085">arxiv.org/abs/2209.13085</a></li>
+<li>Cursor Research. <em>Composer 2 Technical Report.</em> arXiv:2603.24477, 2026. <a href="https://arxiv.org/abs/2603.24477">arxiv.org/abs/2603.24477</a></li>
 </ol>
 </article>
  
@@ -573,16 +760,16 @@ https://github.com/alex-shpak/hugo-book
     <span>
     
       <a href="/llm_kernel_writing/docs/section-2/subsection-2/" class="flex align-center book-icon">
-        <img src="/llm_kernel_writing/svg/backward.svg" class="book-icon" alt="Previous" title="2.2 Data Preparation and Curation Strategies" />
-        <span>2.2 Data Preparation and Curation Strategies</span>
+        <img src="/llm_kernel_writing/svg/backward.svg" class="book-icon" alt="Previous" title="2.2 Reinforcement Learning from Execution Feedback" />
+        <span>2.2 Reinforcement Learning from Execution Feedback</span>
       </a>
     
     </span>
     <span>
     
-      <a href="/llm_kernel_writing/docs/section-2/subsection-4/" class="flex align-center book-icon">
-        <span>2.4 Reward Hacking Behaviors and Mitigation</span>
-        <img src="/llm_kernel_writing/svg/forward.svg" class="book-icon" alt="Next" title="2.4 Reward Hacking Behaviors and Mitigation" />
+      <a href="/llm_kernel_writing/docs/section-3/" class="flex align-center book-icon">
+        <span>Advanced Agentic Systems</span>
+        <img src="/llm_kernel_writing/svg/forward.svg" class="book-icon" alt="Next" title="Advanced Agentic Systems" />
       </a>
     
     </span>
@@ -617,6 +804,10 @@ https://github.com/alex-shpak/hugo-book
   
 <nav id="TableOfContents">
   <ul>
+    <li><a href="#signals-for-good-kernels">Signals for good kernels</a></li>
+    <li><a href="#reward-designs">Reward designs</a></li>
+    <li><a href="#reward-hacking">Reward hacking</a></li>
+    <li><a href="#how-to-mitigate-reward-hacking">How to mitigate reward hacking</a></li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>
