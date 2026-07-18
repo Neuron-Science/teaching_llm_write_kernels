@@ -26,7 +26,7 @@ Supervised fine-tuning (Section 1.5) teaches a model to imitate a fixed corpus, 
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-6/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.031218deba9c6ddede47b1dfb08118837945de97efe00c9497fb7650e494acb4.js" integrity="sha256-AxIY3rqcbd7eR7HfsIEYg3lF3pfv4AyUl/t2UOSUrLQ=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.4904cee82bd1c002d6b8fbb5ca9deb4b4dda6d481fca68547ff13ccf71953538.js" integrity="sha256-SQTO6CvRwALWuPu1yp3rS03abUgfymhUf/E8z3GVNTg=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-6/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -717,7 +717,7 @@ https://github.com/alex-shpak/hugo-book
   <a class="anchor" href="#ppo-proximal-policy-optimization">#</a>
   
 </h3>
-<p><strong>A learned baseline (actor-critic).</strong> Proximal Policy Optimization (PPO) is the classic <em>actor-critic</em> instantiation. Alongside the policy (the &ldquo;actor&rdquo;), it trains a separate <strong>value network</strong> 
+<p><strong>A learned baseline (actor-critic).</strong> Proximal Policy Optimization (PPO) [1] is the classic <em>actor-critic</em> instantiation. Alongside the policy (the &ldquo;actor&rdquo;), it trains a separate <strong>value network</strong> 
 <span>
   \( V_\phi(x, y_{\lt t}) \)
   </span>
@@ -899,7 +899,7 @@ https://github.com/alex-shpak/hugo-book
   <a class="anchor" href="#grpo-group-relative-policy-optimization">#</a>
   
 </h3>
-<p><strong>The group as its own baseline.</strong> Group Relative Policy Optimization (GRPO) removes the value network entirely and has become the workhorse of modern LLM RL, including the kernel-generation systems of Section 2.2. Its motivating question is: the critic exists only to answer &ldquo;what reward should I expect for this prompt?&rdquo;, so can we estimate that reference point from samples instead of a trained model? GRPO does exactly that. For each prompt 
+<p><strong>The group as its own baseline.</strong> Group Relative Policy Optimization (GRPO) [2] removes the value network entirely and has become the workhorse of modern LLM RL, including the kernel-generation systems of Section 2.2. Its motivating question is: the critic exists only to answer &ldquo;what reward should I expect for this prompt?&rdquo;, so can we estimate that reference point from samples instead of a trained model? GRPO does exactly that. For each prompt 
 <span>
   \( x \)
   </span>
@@ -994,7 +994,7 @@ https://github.com/alex-shpak/hugo-book
   \( \operatorname{std}(\{r_1, \dots, r_G\}) \)
   </span>
 
- rescales advantages to unit variance per prompt. It is a normalization choice, not a necessity: dropping it (together with the sequence-length normalization) removes a subtle bias toward longer or harder responses (<em>Dr. GRPO</em>). The essential idea, the group mean as baseline, does not depend on it.</p>
+ rescales advantages to unit variance per prompt. It is a normalization choice, not a necessity: dropping it (together with the sequence-length normalization) removes a subtle bias toward longer or harder responses (Dr. GRPO [3]). The essential idea, the group mean as baseline, does not depend on it.</p>
 <h3 id="kl-regularization-to-the-reference-policy">
   KL regularization to the reference policy
   
@@ -1057,7 +1057,7 @@ https://github.com/alex-shpak/hugo-book
   \( \pi_{\text{ref}} \)
   </span>
 
- (preserving general capability). Some large-scale RLVR recipes deliberately weaken or drop the KL term when they want the policy to move far from the reference, relying on other mechanisms for stability (<em>DAPO</em>).</p>
+ (preserving general capability). Some large-scale RLVR recipes deliberately weaken or drop the KL term when they want the policy to move far from the reference, relying on other mechanisms for stability (DAPO [4]).</p>
 <h2 id="references">
   References
   

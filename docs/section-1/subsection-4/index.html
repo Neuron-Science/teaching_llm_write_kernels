@@ -11,30 +11,13 @@
 
 
 
-
-
-  
-
-
-[Placeholder content for subsection 1.4 LLM Decoding and Inference-Time Scaling.]
-
-
-
-  References
-  
-  #
-  
-
-
-[Placeholder reference.]
-">
+The previous subsections looked at the hardware a kernel runs on and the languages it is written in. We now look at how a language model actually produces text, i.e., decoding, and at how spending more compute at generation time, i.e., inference-time scaling, can buy better outputs. Decoding earns a place in this tutorial for two distinct reasons, and it is worth separating them:">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
 <meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-4/">
   <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
   <meta property="og:title" content="1.4 LLM Decoding and Inference-Time Scaling">
-  <meta property="og:description" content="LLM Decoding and Inference-Time Scaling # [Placeholder content for subsection 1.4 LLM Decoding and Inference-Time Scaling.]
-References # [Placeholder reference.]">
+  <meta property="og:description" content="LLM Decoding and Inference-Time Scaling # The previous subsections looked at the hardware a kernel runs on and the languages it is written in. We now look at how a language model actually produces text, i.e., decoding, and at how spending more compute at generation time, i.e., inference-time scaling, can buy better outputs. Decoding earns a place in this tutorial for two distinct reasons, and it is worth separating them:">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
 <title>1.4 LLM Decoding and Inference-Time Scaling | Teaching LLMs to Write System Kernels</title>
@@ -43,7 +26,7 @@ References # [Placeholder reference.]">
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-4/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.031218deba9c6ddede47b1dfb08118837945de97efe00c9497fb7650e494acb4.js" integrity="sha256-AxIY3rqcbd7eR7HfsIEYg3lF3pfv4AyUl/t2UOSUrLQ=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.4904cee82bd1c002d6b8fbb5ca9deb4b4dda6d481fca68547ff13ccf71953538.js" integrity="sha256-SQTO6CvRwALWuPu1yp3rS03abUgfymhUf/E8z3GVNTg=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-4/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -484,6 +467,10 @@ https://github.com/alex-shpak/hugo-book
   
 <nav id="TableOfContents">
   <ul>
+    <li><a href="#how-llms-decode">How LLMs decode</a></li>
+    <li><a href="#decoding-as-a-workload-why-efficient-kernels-matter">Decoding as a workload: why efficient kernels matter</a></li>
+    <li><a href="#speeding-up-the-rl-rollout-loop">Speeding up the RL rollout loop</a></li>
+    <li><a href="#inference-time-scaling">Inference-time scaling</a></li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>
@@ -504,10 +491,58 @@ https://github.com/alex-shpak/hugo-book
   
 </h1>
 
+
+<p>The previous subsections looked at the <em>hardware</em> a kernel runs on and the <em>languages</em> it is written in. We now look at how a language model actually <em>produces</em> text, i.e., <strong>decoding</strong>, and at how spending more compute at generation time, i.e., <strong>inference-time scaling</strong>, can buy better outputs. Decoding earns a place in this tutorial for two distinct reasons, and it is worth separating them:</p>
+<ul>
+<li>&ldquo;LLM inference is one of the most important workloads that efficient kernels exist to accelerate (training is the other). Understanding how decoding works, and why it is expensive, is understanding a large part of the <em>demand</em> for the kernels this tutorial teaches an LLM to write.</li>
+<li>Methods in this tutorial <em>generate</em> kernels by decoding, and the reinforcement-learning stages (Sections 2.2, 3.1) spend most of their wall-clock time doing so. How fast we decode therefore shapes both the kernel-writing model&rsquo;s output and the cost of training it.</li>
+</ul>
+<h2 id="how-llms-decode">
+  How LLMs decode
+  
+  <a class="anchor" href="#how-llms-decode">#</a>
+  
+</h2>
+<p>A language model is a next-token distribution 
+<span>
+  \( \pi_\theta(\cdot \mid \text{context}) \)
+  </span>
+
+ (Section 1.5). Generating a response is an <strong>autoregressive</strong> loop: sample or select one token, append it to the context, and repeat until a stop token. Because each step conditions on all previous tokens, generation is inherently <em>sequential</em>, i.e., token 
+<span>
+  \( t \)
+  </span>
+
+ cannot be produced until token 
+<span>
+  \( t-1 \)
+  </span>
+
+ exists.</p>
+<p><strong>Two phases.</strong> A single generation splits into two very different regimes:</p>
+<ul>
+<li><strong>Prefill.</strong> The prompt is processed in <em>one</em> forward pass over all its tokens in parallel, producing the first output token and populating the <strong>KV cache</strong> (the per-layer keys and values for every prompt token, saved so attention need not recompute them). Prefill is compute-heavy and parallel, so it is typically <em>compute-bound</em>.</li>
+<li><strong>Decode.</strong> Output tokens are then generated one at a time, each a forward pass over a <em>single</em> new token that attends to the growing KV cache. Because each step does little arithmetic but must read the entire cache (and all model weights) from memory, decode is <strong>memory-bandwidth-bound</strong>, the memory-wall regime of Section 1.3. As the sequence lengthens, the KV cache grows, so decode gets <em>more</em> bandwidth-bound over time.</li>
+</ul>
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="prefill_and_decoding.png"
+       alt="Prefill and decode stages of autoregressive generation"
+       style="width: 80%; height: auto; object-fit: contain;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.4rem;">
+    The two stages of autoregressive generation: prefill processes the whole prompt in one parallel pass and populates the KV cache, then decode generates one token at a time, each step reading the growing cache.
+  </p>
+</div>
+<p><strong>Greedy versus sampling.</strong> How the next token is chosen from 
+<span>
+  \( \pi_\theta \)
+  </span>
+
+ is the <strong>decoding strategy</strong>. <em>Greedy</em> decoding always takes the single highest-probability token, giving one deterministic output:</p>
+
 <link rel="stylesheet" href="/llm_kernel_writing/katex/katex.min.css" />
 <script defer src="/llm_kernel_writing/katex/katex.min.js"></script>
 
-  <script defer src="/llm_kernel_writing/katex/auto-render.min.js" onload="renderMathInElement(document.body, {
+<script defer src="/llm_kernel_writing/katex/auto-render.min.js" onload="renderMathInElement(document.body, {
   &#34;delimiters&#34;: [
     {&#34;left&#34;: &#34;$$&#34;, &#34;right&#34;: &#34;$$&#34;, &#34;display&#34;: true},
     {&#34;left&#34;: &#34;$&#34;, &#34;right&#34;: &#34;$&#34;, &#34;display&#34;: false},
@@ -517,10 +552,160 @@ https://github.com/alex-shpak/hugo-book
 }
 );"></script>
 
+<span>\[ y_t \;=\; \arg\max_{v \in \mathcal{V}} \; \pi_\theta(v \mid x, y_{\lt t}). \]</span>
+<p><em>Stochastic</em> decoding instead samples 
+<span>
+  \( y_t \sim \pi_\theta(\cdot \mid x, y_{\lt t}) \)
+  </span>
 
-<p>[Placeholder content for subsection 1.4 LLM Decoding and Inference-Time Scaling.]</p>
+, usually after reshaping the distribution with a <strong>temperature</strong> 
+<span>
+  \( T \gt 0 \)
+  </span>
 
+, which divides the logits 
+<span>
+  \( z_t \)
+  </span>
 
+ before the softmax:</p>
+
+<span>\[ \pi_\theta^{(T)}(v \mid x, y_{\lt t}) \;=\; \frac{\exp\!\big(z_t[v] / T\big)}{\sum_{v&#39; \in \mathcal{V}} \exp\!\big(z_t[v&#39;] / T\big)}. \]</span>
+<p>As 
+<span>
+  \( T \to 0 \)
+  </span>
+
+ this concentrates all mass on the top token (recovering greedy), 
+<span>
+  \( T = 1 \)
+  </span>
+
+ leaves the model&rsquo;s distribution unchanged, and 
+<span>
+  \( T \gt 1 \)
+  </span>
+
+ flattens it toward uniform and increases diversity. Sampling is then usually restricted to the most probable tokens by a <strong>truncation</strong>: <strong>top-
+<span>
+  \( k \)
+  </span>
+
+</strong> keeps the 
+<span>
+  \( k \)
+  </span>
+
+ highest-probability tokens, while <strong>top-
+<span>
+  \( p \)
+  </span>
+
+</strong> (nucleus) keeps the smallest set 
+<span>
+  \( \mathcal{V}_p \)
+  </span>
+
+ whose cumulative probability reaches 
+<span>
+  \( p \)
+  </span>
+
+,</p>
+
+<span>\[ \mathcal{V}_p \;=\; \text{smallest set with} \sum_{v \in \mathcal{V}_p} \pi_\theta^{(T)}(v \mid x, y_{\lt t}) \;\ge\; p, \]</span>
+<p>after which the distribution is renormalized over the kept set and sampled from. Sampling is what makes generation <em>diverse</em>: prompting the same model twice yields different outputs, which is precisely the property the sampling-based methods of Section 2.1 (drawing many candidate kernels) and the GRPO groups of Section 1.6 rely on.</p>
+<h2 id="decoding-as-a-workload-why-efficient-kernels-matter">
+  Decoding as a workload: why efficient kernels matter
+  
+  <a class="anchor" href="#decoding-as-a-workload-why-efficient-kernels-matter">#</a>
+  
+</h2>
+<p>Step back to the tutorial&rsquo;s premise. We want LLMs to write fast kernels because the workloads those kernels run on are expensive, and LLM <em>inference</em> is one of the most important of those workloads (large-scale training is the other). The cost structure of inference follows directly from the decoding mechanics above. Prefill and decode stress the hardware differently, and the <em>decode</em> phase in particular is unusually punishing: it is memory-bound, it repeats once per generated token, and its KV-cache reads grow with context length. This is exactly why the long-tail kernels named in Section 1.3, fused attention, RMSNorm, fused GEMM epilogues, are worth hand-writing (or generating), each one speeding up an operation that a serving system runs billions of times. A sister tutorial on inference optimization [1] develops this workload and its optimizations, KV caching, paged attention, batching, quantization, in depth. Here we need only the parts that bear on kernel generation.</p>
+<h2 id="speeding-up-the-rl-rollout-loop">
+  Speeding up the RL rollout loop
+  
+  <a class="anchor" href="#speeding-up-the-rl-rollout-loop">#</a>
+  
+</h2>
+<p>The second role is more practical, and specific to <em>how this tutorial teaches models</em> to write kernels. One of the prominent methods is Reinforcement learning (RL). RL for kernels (Sections 2.2, 3.1) repeats a loop: the policy <strong>generates</strong> candidate kernels, an oracle scores them, and a gradient step follows. In that loop the generation, i.e., the <strong>rollout</strong> step is decoding, and it usually dominates wall-clock time, because GRPO draws a <em>group</em> of 
+<span>
+  \( G \)
+  </span>
+
+ full rollouts per prompt (Section 1.6) and each rollout is a full autoregressive generation, whereas the gradient update is a single pass.</p>
+<p>Modern RL frameworks are architected around this fact. Systems such as <strong>VERL</strong> [2] run a <em>separate inference/rollout engine</em> alongside the training engine, delegating generation to a high-throughput serving stack, typically <strong>vLLM</strong> [3] or <strong>SGLang</strong> [4]. The point is that every inference optimization from the serving world then accelerates RL rollouts directly:</p>
+<ul>
+<li><strong>KV caching</strong> avoids recomputing attention over already-generated tokens within each rollout.</li>
+<li><strong>Paged attention</strong> (vLLM) stores the KV cache in non-contiguous blocks, eliminating the memory fragmentation that otherwise caps how many rollouts run concurrently.</li>
+<li><strong>Continuous batching</strong> keeps the accelerator busy by admitting and retiring sequences dynamically rather than waiting for a whole batch to finish, which matters because rollouts in a group finish at different lengths.</li>
+<li><strong>Speculative decoding</strong> [5] drafts several tokens with a small model and verifies them in one pass of the large model, raising decode throughput without changing the output distribution.</li>
+</ul>
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="static_batching.png"
+       alt="Static batching"
+       style="width: 48%; height: auto; object-fit: contain; display: inline-block; vertical-align: top;" />
+  <img src="continuous_batching.png"
+       alt="Continuous batching"
+       style="width: 48%; height: auto; object-fit: contain; display: inline-block; vertical-align: top;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.4rem;">
+    Static batching (left) holds every request until the longest one finishes, wasting slots as short rollouts idle; continuous batching (right) admits and retires sequences at each decode step, keeping the accelerator full, which matters because the rollouts in a GRPO group finish at different lengths.
+  </p>
+</div>
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="paged_attn.png"
+       alt="Paged attention KV cache"
+       style="width: 75%; height: auto; object-fit: contain;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.4rem;">
+    Paged attention stores each rollout's KV cache in fixed-size blocks mapped through a block table, like virtual memory, so the cache need not be contiguous. This removes the fragmentation that otherwise caps how many rollouts run at once.
+  </p>
+</div>
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="drafter.png"
+       alt="Speculative decoding: draft phase"
+       style="width: 70%; height: auto; object-fit: contain;" />
+  <img src="verify.png"
+       alt="Speculative decoding: verify phase"
+       style="width: 70%; height: auto; object-fit: contain; margin-top: 1rem;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.4rem;">
+    Speculative decoding: a small drafter proposes several tokens (top) that the large model verifies in a single parallel pass (bottom), accepting the longest correct prefix. It raises decode throughput without changing the output distribution.
+  </p>
+</div>
+<p>The practical consequence is a tight coupling: faster decoding means more rollouts per GPU-hour means more RL for a fixed budget, so the efficiency of the <em>inference</em> engine bounds the efficiency of the <em>training</em> system. There is also a pleasing loop here, i.e., the kernels this tutorial teaches models to write are the same kind that make vLLM and SGLang fast, so better inference kernels accelerate the very RL used to train better kernel-writing models.</p>
+<h2 id="inference-time-scaling">
+  Inference-time scaling
+  
+  <a class="anchor" href="#inference-time-scaling">#</a>
+  
+</h2>
+<p>Decoding is not just something to make cheap; it is also a <em>lever</em>. <strong>Inference-time scaling</strong> (or test-time compute) trades extra computation at generation time for higher-quality outputs, without touching the model weights. The striking empirical finding is that this trade can be <em>more compute-efficient than scaling the model</em>: on hard reasoning tasks, a smaller model given more test-time compute can match or beat a much larger model decoded once [8], and quality often improves predictably as the compute budget grows, a test-time analogue of the training scaling laws [9]. It is broadly the mechanism behind reasoning models such as OpenAI o1 and DeepSeek-R1 [10]. The gain comes in two complementary flavors, <strong>parallel</strong> scaling (draw many independent samples and select) and <strong>sequential</strong> scaling (revise a single line of work over several steps) [8], and several forms of each recur in this tutorial:</p>
+<ul>
+<li><strong>Best-of-
+<span>
+  \( N \)
+  </span>
+
+ with a verifier.</strong> Sample 
+<span>
+  \( N \)
+  </span>
+
+ candidate responses and keep the best one according to a selector. For open-ended text the selector is weak, but <em>kernels come with an objective verifier</em>, i.e., compile, check against a reference, and time it, so best-of-
+<span>
+  \( N \)
+  </span>
+
+ genuinely works: sampling more candidate kernels and keeping the fastest correct one reliably improves results, and success climbs steadily with 
+<span>
+  \( N \)
+  </span>
+
+ (a scaling first shown at large sample counts for competitive programming [11] and formalized as training a verifier to rank samples [12]). This is exactly the <code>pass@k</code> notion from Section 1.5 turned into a generation strategy.</li>
+<li><strong>Self-consistency</strong> [6]<strong>.</strong> Sample many reasoning paths and take a majority vote over their answers. It helps when answers are comparable but, unlike a verifier, cannot certify correctness, so for kernels a verifier-based selector is usually preferable.</li>
+<li><strong>Sequential refinement.</strong> Rather than sampling independently, feed a candidate&rsquo;s <em>feedback</em> (a compiler error, a failing test, a profile) back into the model and let it revise, iterating over several turns [13]. For kernels the feedback is unusually rich and objective (exact compiler diagnostics and measured runtimes), so refinement is especially effective. This is the basis of the multi-turn and evolutionary agents of Sections 3.1 and 3.2.</li>
+<li><strong>Reasoning as compute.</strong> Allocating decode tokens to an explicit chain of thought [7] before the final answer is itself inference-time scaling: it spends generation compute to improve quality. This is why the reasoning-augmented targets of Sections 1.5 and 2.1 exist, and why Section 3.3 treats inference-time scaling as a first-class tool for kernel code reasoning.</li>
+</ul>
+<p>The common thread is that spending more test-time compute, more samples, more turns, more reasoning, is a dependable way to get better kernels, and it is especially effective here because an automatic verifier lets us <em>select</em> reliably among the extra candidates. Section 3 develops these strategies specifically for kernel generation.</p>
 <h2 id="references">
   References
   
@@ -528,7 +713,19 @@ https://github.com/alex-shpak/hugo-book
   
 </h2>
 <ol>
-<li>[Placeholder reference.]</li>
+<li>R. Saha, A. Manocha, Y. Park, et al. <em>Algorithms and Systems for Efficient Inference in Generative AI</em>, AAAI 2026 Tutorial. <a href="https://neuron-science.github.io/inference_optimization/">neuron-science.github.io/inference_optimization/</a></li>
+<li>G. Sheng, C. Zhang, Z. Ye, X. Wu, W. Zhang, R. Zhang, Y. Peng, H. Lin, and C. Wu. <em>HybridFlow: A Flexible and Efficient RLHF Framework</em> (VeRL). <em>EuroSys 2025</em>. <a href="https://arxiv.org/abs/2409.19256">arxiv.org/abs/2409.19256</a></li>
+<li>W. Kwon, Z. Li, S. Zhuang, et al. <em>Efficient Memory Management for Large Language Model Serving with PagedAttention</em> (vLLM). <em>SOSP 2023</em>. <a href="https://arxiv.org/abs/2309.06180">arxiv.org/abs/2309.06180</a></li>
+<li>L. Zheng, L. Yin, Z. Xie, et al. <em>SGLang: Efficient Execution of Structured Language Model Programs.</em> <em>NeurIPS 2024</em>. <a href="https://arxiv.org/abs/2312.07104">arxiv.org/abs/2312.07104</a></li>
+<li>Y. Leviathan, M. Kalman, and Y. Matias. <em>Fast Inference from Transformers via Speculative Decoding.</em> <em>ICML 2023</em>. <a href="https://arxiv.org/abs/2211.17192">arxiv.org/abs/2211.17192</a></li>
+<li>X. Wang, J. Wei, D. Schuurmans, et al. <em>Self-Consistency Improves Chain of Thought Reasoning in Language Models.</em> <em>ICLR 2023</em>. <a href="https://arxiv.org/abs/2203.11171">arxiv.org/abs/2203.11171</a></li>
+<li>J. Wei, X. Wang, D. Schuurmans, et al. <em>Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.</em> <em>NeurIPS 2022</em>. <a href="https://arxiv.org/abs/2201.11903">arxiv.org/abs/2201.11903</a></li>
+<li>C. Snell, J. Lee, K. Xu, and A. Kumar. <em>Scaling LLM Test-Time Compute Optimally Can Be More Effective than Scaling Model Parameters.</em> arXiv:2408.03314, 2024. <a href="https://arxiv.org/abs/2408.03314">arxiv.org/abs/2408.03314</a></li>
+<li>B. Brown, J. Juravsky, R. Ehrlich, et al. <em>Large Language Monkeys: Scaling Inference Compute with Repeated Sampling.</em> arXiv:2407.21787, 2024. <a href="https://arxiv.org/abs/2407.21787">arxiv.org/abs/2407.21787</a></li>
+<li>DeepSeek-AI. <em>DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning.</em> arXiv:2501.12948, 2025. <a href="https://arxiv.org/abs/2501.12948">arxiv.org/abs/2501.12948</a></li>
+<li>Y. Li, D. Choi, J. Chung, et al. <em>Competition-Level Code Generation with AlphaCode.</em> <em>Science</em>, 378(6624), 2022. <a href="https://arxiv.org/abs/2203.07814">arxiv.org/abs/2203.07814</a></li>
+<li>K. Cobbe, V. Kosaraju, M. Bavarian, et al. <em>Training Verifiers to Solve Math Word Problems.</em> arXiv:2110.14168, 2021. <a href="https://arxiv.org/abs/2110.14168">arxiv.org/abs/2110.14168</a></li>
+<li>A. Madaan, N. Tandon, P. Gupta, et al. <em>Self-Refine: Iterative Refinement with Self-Feedback.</em> <em>NeurIPS 2023</em>. <a href="https://arxiv.org/abs/2303.17651">arxiv.org/abs/2303.17651</a></li>
 </ol>
 </article>
  
@@ -599,6 +796,10 @@ https://github.com/alex-shpak/hugo-book
   
 <nav id="TableOfContents">
   <ul>
+    <li><a href="#how-llms-decode">How LLMs decode</a></li>
+    <li><a href="#decoding-as-a-workload-why-efficient-kernels-matter">Decoding as a workload: why efficient kernels matter</a></li>
+    <li><a href="#speeding-up-the-rl-rollout-loop">Speeding up the RL rollout loop</a></li>
+    <li><a href="#inference-time-scaling">Inference-time scaling</a></li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>

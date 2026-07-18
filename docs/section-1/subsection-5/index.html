@@ -11,30 +11,13 @@
 
 
 
-
-
-  
-
-
-[Placeholder content for subsection 1.5 Supervised Fine-Tuning (SFT) for Code Generation.]
-
-
-
-  References
-  
-  #
-  
-
-
-[Placeholder reference.]
-">
+A base language model emerges from pretraining as a broad next-token predictor over internet-scale text and code. It is fluent, but it is not yet a reliable assistant for any particular task. When prompted to produce a program to a specification, it may ramble, ignore the format, or drift off task. Supervised fine-tuning (SFT) is the first and most direct step that adapts such a base model into a task-specific generator. It is the foundation this tutorial builds on: Section 2.1 applies this recipe to kernel corpora, and the reinforcement-learning stage of Section 1.6 assumes an SFT model as its starting point. This section develops SFT generically, for code generation, before those later sections specialize it.">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
 <meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-5/">
   <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
   <meta property="og:title" content="1.5 Supervised Fine-Tuning (SFT) for Code Generation">
-  <meta property="og:description" content="Supervised Fine-Tuning (SFT) for Code Generation # [Placeholder content for subsection 1.5 Supervised Fine-Tuning (SFT) for Code Generation.]
-References # [Placeholder reference.]">
+  <meta property="og:description" content="Supervised Fine-Tuning (SFT) for Code Generation # A base language model emerges from pretraining as a broad next-token predictor over internet-scale text and code. It is fluent, but it is not yet a reliable assistant for any particular task. When prompted to produce a program to a specification, it may ramble, ignore the format, or drift off task. Supervised fine-tuning (SFT) is the first and most direct step that adapts such a base model into a task-specific generator. It is the foundation this tutorial builds on: Section 2.1 applies this recipe to kernel corpora, and the reinforcement-learning stage of Section 1.6 assumes an SFT model as its starting point. This section develops SFT generically, for code generation, before those later sections specialize it.">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
 <title>1.5 Supervised Fine-Tuning (SFT) for Code Generation | Teaching LLMs to Write System Kernels</title>
@@ -43,7 +26,7 @@ References # [Placeholder reference.]">
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-5/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.031218deba9c6ddede47b1dfb08118837945de97efe00c9497fb7650e494acb4.js" integrity="sha256-AxIY3rqcbd7eR7HfsIEYg3lF3pfv4AyUl/t2UOSUrLQ=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.4904cee82bd1c002d6b8fbb5ca9deb4b4dda6d481fca68547ff13ccf71953538.js" integrity="sha256-SQTO6CvRwALWuPu1yp3rS03abUgfymhUf/E8z3GVNTg=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-5/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -484,6 +467,9 @@ https://github.com/alex-shpak/hugo-book
   
 <nav id="TableOfContents">
   <ul>
+    <li><a href="#the-sft-objective">The SFT objective</a></li>
+    <li><a href="#practical-considerations-for-code">Practical considerations for code</a></li>
+    <li><a href="#limitations-and-what-comes-next">Limitations, and what comes next</a></li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>
@@ -504,10 +490,57 @@ https://github.com/alex-shpak/hugo-book
   
 </h1>
 
+
+<p>A base language model emerges from <strong>pretraining</strong> as a broad next-token predictor over internet-scale text and code. It is fluent, but it is not yet a reliable <em>assistant</em> for any particular task. When prompted to produce a program to a specification, it may ramble, ignore the format, or drift off task. <strong>Supervised fine-tuning (SFT)</strong> is the first and most direct step that adapts such a base model into a task-specific generator. It is the foundation this tutorial builds on: Section 2.1 applies this recipe to <em>kernel</em> corpora, and the reinforcement-learning stage of Section 1.6 assumes an SFT model as its starting point. This section develops SFT generically, for code generation, before those later sections specialize it.</p>
+<p>It helps to place SFT within the full training pipeline that turns raw text into a capable assistant:</p>
+<pre tabindex="0"><code>  Pre-training  →  Mid-training  →  SFT  →  RL
+                                    └────┬────┘
+                                     post-training
+</code></pre><p>Each stage plays a distinct role. Microsoft&rsquo;s <strong>MAI-Thinking-1</strong> technical report [1] is a useful concrete reference throughout, since it documents each stage of a from-scratch build, and we use it for illustrative figures below.</p>
+<ul>
+<li><strong>Pre-training.</strong> Self-supervised next-token prediction over a broad, internet-scale corpus of text and code. It instills general language ability, world knowledge, and coding fluency, and is by far the most compute-heavy stage. Its output is the &ldquo;base model.&rdquo; MAI-Thinking-1, for instance, pre-trains on <strong>30 trillion tokens</strong> of in-house-processed web data, public GitHub code, books, academic papers, news, and multilingual text [1].</li>
+<li><strong>Mid-training.</strong> Continued next-token training on a deliberately <em>reshaped</em> data mixture: upweighting high-value, target-relevant data (code, math, reasoning), injecting domain-specific or long-context data, and annealing the learning rate. It sharpens the capabilities that post-training will rely on, bridging the generic base and the specialized assistant. (This is a newer, less-standardized term than the others.) In MAI-Thinking-1 this is <strong>3.55 trillion tokens</strong> across two phases that emphasize STEM, math, and coding &ldquo;to build a strong foundation for reasoning RL climbs,&rdquo; and progressively extend the context window from 16K to 64K and then 256K tokens [1].</li>
+<li><strong>Post-training.</strong> The umbrella for everything after pre-training. It converts the knowledgeable base model into a useful, instruction-following assistant, typically in two stages:
+<ul>
+<li><strong>SFT</strong> (this section): imitate curated <em>(prompt, target)</em> demonstrations to teach instruction-following, output formatting, and task grounding, moving the prior toward good solutions. Its ceiling is the demonstrations themselves.</li>
+<li><strong>RL</strong> (Section 1.6): optimize a <em>reward</em> over the model&rsquo;s own generations, pushing past imitation toward the outcome that actually matters (for kernels, a program that is correct <em>and</em> fast). It can surpass the demonstrations. MAI-Thinking-1&rsquo;s RL climb rewards responses by <em>executing code</em> or by feedback from a prompted judge, and trains three domain specialists (STEM reasoning, agentic coding and tool use, and helpfulness/safety) [1].</li>
+</ul>
+</li>
+</ul>
+<p>The first two stages share one objective, next-token prediction on ever-more-curated data, while the two post-training stages differ sharply: SFT imitates fixed targets, whereas RL learns from the consequences of the model&rsquo;s own outputs. (The ordering can vary: MAI-Thinking-1 notably drives its main RL climb directly from the mid-trained base with no prior SFT on reasoning traces, and only later uses a light SFT to consolidate its specialists [1]. The pre-training → mid-training → SFT → RL pipeline above is the common default, not a rigid law.) The rest of this section develops SFT.</p>
+<p>The idea is <strong>imitation</strong> (behavior cloning): collect a corpus of high-quality <em>(prompt, target)</em> demonstrations and train the model to reproduce the targets by next-token prediction. For code generation, a prompt is a task specification (a natural-language description, a function signature, a docstring, perhaps tests or examples) and the target is a correct program that satisfies it. SFT does two things at once: it grounds the model in the syntax, APIs, and idioms of the target language, and it reshapes the model&rsquo;s behavioral prior toward the region of the output space where good solutions live.</p>
+<h2 id="the-sft-objective">
+  The SFT objective
+  
+  <a class="anchor" href="#the-sft-objective">#</a>
+  
+</h2>
+<p><strong>Conditional sequence modeling.</strong> We fine-tune an autoregressive model 
+<span>
+  \( \pi_\theta \)
+  </span>
+
+ with parameters 
+<span>
+  \( \theta \)
+  </span>
+
+. Given a prompt 
+<span>
+  \( x \)
+  </span>
+
+, the model assigns a probability to a target 
+<span>
+  \( y \)
+  </span>
+
+ by the chain rule, one token at a time:</p>
+
 <link rel="stylesheet" href="/llm_kernel_writing/katex/katex.min.css" />
 <script defer src="/llm_kernel_writing/katex/katex.min.js"></script>
 
-  <script defer src="/llm_kernel_writing/katex/auto-render.min.js" onload="renderMathInElement(document.body, {
+<script defer src="/llm_kernel_writing/katex/auto-render.min.js" onload="renderMathInElement(document.body, {
   &#34;delimiters&#34;: [
     {&#34;left&#34;: &#34;$$&#34;, &#34;right&#34;: &#34;$$&#34;, &#34;display&#34;: true},
     {&#34;left&#34;: &#34;$&#34;, &#34;right&#34;: &#34;$&#34;, &#34;display&#34;: false},
@@ -517,10 +550,120 @@ https://github.com/alex-shpak/hugo-book
 }
 );"></script>
 
+<span>\[ \pi_\theta(y \mid x) \;=\; \prod_{t=1}^{|y|} \pi_\theta\!\big(y_t \mid x, \, y_{\lt t}\big), \]</span>
+<p>where 
+<span>
+  \( y_{\lt t} = (y_1, \dots, y_{t-1}) \)
+  </span>
 
-<p>[Placeholder content for subsection 1.5 Supervised Fine-Tuning (SFT) for Code Generation.]</p>
+ is the prefix of already-generated tokens. Each factor is a categorical distribution over the vocabulary 
+<span>
+  \( \mathcal{V} \)
+  </span>
 
+, a softmax over the model&rsquo;s logits 
+<span>
+  \( z_t \in \mathbb{R}^{|\mathcal{V}|} \)
+  </span>
 
+ at position 
+<span>
+  \( t \)
+  </span>
+
+:</p>
+
+<span>\[ \pi_\theta(v \mid x, y_{\lt t}) \;=\; \frac{\exp\big(z_t[v]\big)}{\sum_{v&#39; \in \mathcal{V}} \exp\big(z_t[v&#39;]\big)}, \qquad v \in \mathcal{V}, \]</span>
+<p>and because 
+<span>
+  \( z_t \)
+  </span>
+
+ depends on the whole context 
+<span>
+  \( (x, y_{\lt t}) \)
+  </span>
+
+ through the transformer, every token is predicted conditioned on the entire prompt and all previously generated tokens.</p>
+<p><strong>Maximum likelihood.</strong> Given a corpus 
+<span>
+  \( \mathcal{D} = \{(x^{(i)}, y^{(i)})\}_{i=1}^{N} \)
+  </span>
+
+, SFT fits 
+<span>
+  \( \theta \)
+  </span>
+
+ by <strong>maximum likelihood estimation</strong> (MLE): choose the parameters that make the reference targets as probable as possible. Taking the log turns the product into a sum and negating turns maximization into minimization, giving the <strong>negative log-likelihood</strong> loss, which expands over tokens as:</p>
+
+<span>\[ \mathcal{L}_{\text{SFT}}(\theta) \;=\; -\,\frac{1}{N}\sum_{i=1}^{N} \log \pi_\theta\!\big(y^{(i)} \mid x^{(i)}\big) \;=\; -\,\frac{1}{N}\sum_{i=1}^{N} \sum_{t=1}^{|y^{(i)}|} \log \pi_\theta\!\big(y^{(i)}_t \mid x^{(i)}, \, y^{(i)}_{\lt t}\big). \]</span>
+<p><strong>Token-level cross-entropy.</strong> Each inner term is the <strong>cross-entropy</strong> between the one-hot target 
+<span>
+  \( e_{y_t} \in \{0,1\}^{|\mathcal{V}|} \)
+  </span>
+
+ and the model&rsquo;s predicted distribution, 
+<span>
+  \( -\sum_{v} e_{y_t}[v]\,\log \pi_\theta(v \mid x, y_{\lt t}) \)
+  </span>
+
+. So SFT is just next-token classification, supervised at every position of every target.</p>
+<p>Two properties of this objective are worth stating, because the later RL stage is motivated by the second:</p>
+<ol>
+<li>
+<p><strong>Teacher forcing.</strong> At every position the model is conditioned on the <em>ground-truth</em> prefix 
+<span>
+  \( y_{\lt t} \)
+  </span>
+
+, not its own past predictions. The whole target is scored in a single forward pass under a causal mask, with no autoregressive sampling during training, which is what lets the loss decompose into 
+<span>
+  \( |y| \)
+  </span>
+
+ independent, densely-supervised terms per example (training is cheap and stable).</p>
+</li>
+<li>
+<p><strong>Exposure bias.</strong> Because training always supplies the correct prefix while inference must consume the model&rsquo;s own (possibly erroneous) generations, SFT is subject to the well-known train/inference <em>exposure bias</em>. One early mistake shifts the model into contexts it never saw during training. This mismatch, together with the fact that the loss rewards matching <em>tokens</em> rather than task success, is exactly what reinforcement learning (Section 1.6) is introduced to address.</p>
+</li>
+</ol>
+<h2 id="practical-considerations-for-code">
+  Practical considerations for code
+  
+  <a class="anchor" href="#practical-considerations-for-code">#</a>
+  
+</h2>
+<p>Several choices specific to code generation shape how the objective above is applied in practice.</p>
+<ul>
+<li>
+<p><strong>Loss masking (prompt vs. completion).</strong> Each training example concatenates the prompt and the target into one sequence, but the loss is applied <em>only to the target tokens</em>. The prompt is attended to as context but never used as a supervised target (there is nothing to learn by predicting the user&rsquo;s own request), so a loss mask zeroes out the prompt positions and the average is taken over completion tokens alone.</p>
+</li>
+<li>
+<p><strong>Instruction and chat formatting.</strong> Code assistants are trained on a fixed template that wraps the task in role markers and delimits code blocks. Consistent formatting at training time is what lets the model reliably emit parseable, well-delimited code at inference time rather than prose mixed with snippets. This is the <em>instruction-tuning</em> recipe that turns a base model into a controllable assistant [2, 3].</p>
+</li>
+<li>
+<p><strong>Fill-in-the-middle (FIM).</strong> Much real code editing is <em>infilling</em>, i.e., completing a span given both the code before and after it, not just left-to-right continuation. Code models are therefore commonly trained on a <strong>fill-in-the-middle</strong> transformation [5]: a document is split into prefix, middle, and suffix, reordered so the middle is predicted from both surrounding contexts. This teaches infilling without changing the next-token objective above.</p>
+</li>
+<li>
+<p><strong>Reasoning distillation.</strong> As we will see in the kernel setting (Section 2.1), targets can be augmented with an explicit <em>reasoning trace</em> distilled from a stronger model, so the student learns to think through the approach before emitting code, not merely to reproduce final programs.</p>
+</li>
+<li>
+<p><strong>Evaluation with <code>pass@k</code>.</strong> Code quality is judged by <em>functional correctness</em>, not token overlap with a reference. The standard metric is <strong><code>pass@k</code></strong> [4]: sample 
+<span>
+  \( k \)
+  </span>
+
+ programs per task and count the task solved if any one passes its tests. This directly reflects that many distinct programs can be correct, and it is the notion of success the RL reward later optimizes more directly.</p>
+</li>
+</ul>
+<h2 id="limitations-and-what-comes-next">
+  Limitations, and what comes next
+  
+  <a class="anchor" href="#limitations-and-what-comes-next">#</a>
+  
+</h2>
+<p>SFT is powerful and usually indispensable, but imitation of a fixed corpus has intrinsic ceilings. Because the objective only maximizes the likelihood of reference targets, the model can at best reproduce the behavior it was shown; it cannot discover solutions <em>better</em> than its corpus, and its quality is capped by the strength of the demonstrations and the curation filters. And because the loss scores token overlap rather than whether the program actually runs correctly and efficiently, SFT has no direct signal for the outcome we care about. Closing that gap, by letting the model learn from executing its own generations against a reward, is the role of reinforcement-learning post-training, developed in Section 1.6 and applied to kernels in Section 2.2.</p>
 <h2 id="references">
   References
   
@@ -528,7 +671,11 @@ https://github.com/alex-shpak/hugo-book
   
 </h2>
 <ol>
-<li>[Placeholder reference.]</li>
+<li>The Microsoft AI Team. <em>MAI-Thinking-1: Building a Hill-Climbing Machine.</em> Microsoft AI, 2026. <a href="https://microsoft.ai/pdf/mai-thinking-1.pdf">microsoft.ai/pdf/mai-thinking-1.pdf</a></li>
+<li>J. Wei, M. Bosma, V. Y. Zhao, et al. <em>Finetuned Language Models Are Zero-Shot Learners</em> (instruction tuning / FLAN). arXiv:2109.01652, 2021. <a href="https://arxiv.org/abs/2109.01652">arxiv.org/abs/2109.01652</a></li>
+<li>L. Ouyang, J. Wu, X. Jiang, et al. <em>Training Language Models to Follow Instructions with Human Feedback</em> (InstructGPT; SFT then RL). arXiv:2203.02155, 2022. <a href="https://arxiv.org/abs/2203.02155">arxiv.org/abs/2203.02155</a></li>
+<li>M. Chen, J. Tworek, H. Jun, et al. <em>Evaluating Large Language Models Trained on Code</em> (Codex; the <code>pass@k</code> metric). arXiv:2107.03374, 2021. <a href="https://arxiv.org/abs/2107.03374">arxiv.org/abs/2107.03374</a></li>
+<li>M. Bavarian, H. Jun, N. Tezak, et al. <em>Efficient Training of Language Models to Fill in the Middle.</em> arXiv:2207.14255, 2022. <a href="https://arxiv.org/abs/2207.14255">arxiv.org/abs/2207.14255</a></li>
 </ol>
 </article>
  
@@ -599,6 +746,9 @@ https://github.com/alex-shpak/hugo-book
   
 <nav id="TableOfContents">
   <ul>
+    <li><a href="#the-sft-objective">The SFT objective</a></li>
+    <li><a href="#practical-considerations-for-code">Practical considerations for code</a></li>
+    <li><a href="#limitations-and-what-comes-next">Limitations, and what comes next</a></li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>

@@ -24,7 +24,7 @@ Before we can talk about teaching an LLM to write system kernels, we have to be 
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-1/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.031218deba9c6ddede47b1dfb08118837945de97efe00c9497fb7650e494acb4.js" integrity="sha256-AxIY3rqcbd7eR7HfsIEYg3lF3pfv4AyUl/t2UOSUrLQ=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.4904cee82bd1c002d6b8fbb5ca9deb4b4dda6d481fca68547ff13ccf71953538.js" integrity="sha256-SQTO6CvRwALWuPu1yp3rS03abUgfymhUf/E8z3GVNTg=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-1/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -472,7 +472,7 @@ https://github.com/alex-shpak/hugo-book
     <li><a href="#aws-trainium">AWS Trainium</a></li>
     <li><a href="#scaling-out-from-chip-to-server-to-datacenter">Scaling out: from chip to server to datacenter</a></li>
     <li><a href="#synthesis-what-a-kernel-actually-targets">Synthesis: what a kernel actually targets</a></li>
-    <li><a href="#references">References</a></li>
+    <li><a href="#further-reading">Further Reading</a></li>
   </ul>
 </nav>
 
@@ -749,10 +749,10 @@ global memory (HBM)             (largest, slowest, off-chip)
 </table>
 <p>A high-performance kernel — whatever the backend — is fundamentally an answer to the same set of questions: <em>How do I tile the computation so the matrix unit stays busy? What do I stage in the on-chip scratchpad, and when? How do I map the elementwise/reduction epilogue onto the vector and scalar units? How do I overlap data movement with computation so the engines never stall?</em> The differences between CUDA, XLA, and NKI are, to a large degree, differences in <em>how much</em> of that reasoning the programmer does explicitly versus how much the compiler does for them.</p>
 <p>That is the bridge to the rest of Section 1. The hardware here defines the <em>targets</em>; Section 1.2 will build a mental model of the <em>software stacks</em> that lower models down toward this hardware; and Section 1.3 will turn to the kernel-programming interfaces — CUDA, Triton, and NKI — through which a person, a compiler, or an LLM actually writes the code that these engines run.</p>
-<h2 id="references">
-  References
+<h2 id="further-reading">
+  Further Reading
   
-  <a class="anchor" href="#references">#</a>
+  <a class="anchor" href="#further-reading">#</a>
   
 </h2>
 <ol>
@@ -851,7 +851,7 @@ global memory (HBM)             (largest, slowest, off-chip)
     <li><a href="#aws-trainium">AWS Trainium</a></li>
     <li><a href="#scaling-out-from-chip-to-server-to-datacenter">Scaling out: from chip to server to datacenter</a></li>
     <li><a href="#synthesis-what-a-kernel-actually-targets">Synthesis: what a kernel actually targets</a></li>
-    <li><a href="#references">References</a></li>
+    <li><a href="#further-reading">Further Reading</a></li>
   </ul>
 </nav>
 

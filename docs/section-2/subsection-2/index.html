@@ -11,14 +11,13 @@
 
 
 
-
-Writing a kernel that is fast on a specific piece of hardware is a different problem from writing one that is merely valid: performance is governed by low-level, device-specific decisions (memory-hierarchy staging, tiling and block sizes, occupancy, coalesced access, tensor-core utilization), and the only faithful measure of whether those decisions are good is to run the kernel and time it. A model trained purely to reproduce plausible-looking code has no access to that signal and no objective that rewards it, so it plateaus at &ldquo;valid but not hardware-optimized.&rdquo;">
+Section 2.1 left us with an SFT model that is grounded in a kernel language (it produces valid, idiomatic code) but capped by imitation: it can only reproduce the corpus it was shown, with no way to tell a fast kernel from a merely reference-like one. Closing that gap is the job of this section. The reason it needs a new tool is that writing a kernel that is fast on a specific piece of hardware is a different problem from writing one that is merely valid. Performance is governed by low-level, device-specific decisions: memory-hierarchy staging, tiling and block sizes, occupancy, coalesced access, tensor-core utilization. The only faithful measure of whether those decisions are good is to run the kernel and time it. A model trained purely to reproduce plausible-looking code has no access to that signal and no objective that rewards it, so it plateaus at &ldquo;valid but not hardware-optimized.&rdquo;">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
 <meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-2/">
   <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
   <meta property="og:title" content="2.2 Reinforcement Learning from Execution Feedback">
-  <meta property="og:description" content="Reinforcement Learning from Execution Feedback # Writing a kernel that is fast on a specific piece of hardware is a different problem from writing one that is merely valid: performance is governed by low-level, device-specific decisions (memory-hierarchy staging, tiling and block sizes, occupancy, coalesced access, tensor-core utilization), and the only faithful measure of whether those decisions are good is to run the kernel and time it. A model trained purely to reproduce plausible-looking code has no access to that signal and no objective that rewards it, so it plateaus at “valid but not hardware-optimized.”">
+  <meta property="og:description" content="Reinforcement Learning from Execution Feedback # Section 2.1 left us with an SFT model that is grounded in a kernel language (it produces valid, idiomatic code) but capped by imitation: it can only reproduce the corpus it was shown, with no way to tell a fast kernel from a merely reference-like one. Closing that gap is the job of this section. The reason it needs a new tool is that writing a kernel that is fast on a specific piece of hardware is a different problem from writing one that is merely valid. Performance is governed by low-level, device-specific decisions: memory-hierarchy staging, tiling and block sizes, occupancy, coalesced access, tensor-core utilization. The only faithful measure of whether those decisions are good is to run the kernel and time it. A model trained purely to reproduce plausible-looking code has no access to that signal and no objective that rewards it, so it plateaus at “valid but not hardware-optimized.”">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
 <title>2.2 Reinforcement Learning from Execution Feedback | Teaching LLMs to Write System Kernels</title>
@@ -27,7 +26,7 @@ Writing a kernel that is fast on a specific piece of hardware is a different pro
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-2/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.031218deba9c6ddede47b1dfb08118837945de97efe00c9497fb7650e494acb4.js" integrity="sha256-AxIY3rqcbd7eR7HfsIEYg3lF3pfv4AyUl/t2UOSUrLQ=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.4904cee82bd1c002d6b8fbb5ca9deb4b4dda6d481fca68547ff13ccf71953538.js" integrity="sha256-SQTO6CvRwALWuPu1yp3rS03abUgfymhUf/E8z3GVNTg=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-2/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -470,14 +469,7 @@ https://github.com/alex-shpak/hugo-book
   <ul>
     <li><a href="#example-rl-workflow-for-kernel-optimization">Example: RL workflow for kernel optimization</a></li>
     <li><a href="#data">Data</a></li>
-    <li><a href="#rl-formulation">RL formulation</a></li>
-    <li><a href="#policy-gradient-optimization">Policy-gradient optimization</a>
-      <ul>
-        <li><a href="#ppo">PPO</a></li>
-        <li><a href="#grpo">GRPO</a></li>
-        <li><a href="#kl-regularization-to-the-reference-policy">KL regularization to the reference policy</a></li>
-      </ul>
-    </li>
+    <li><a href="#rl-formulation-for-kernels">RL formulation for kernels</a></li>
     <li><a href="#rewards-from-execution-feedback">Rewards from execution feedback</a></li>
     <li><a href="#curriculum-and-task-selection">Curriculum and task selection</a>
       <ul>
@@ -485,12 +477,7 @@ https://github.com/alex-shpak/hugo-book
         <li><a href="#adaptive-sampling">Adaptive sampling</a></li>
       </ul>
     </li>
-    <li><a href="#multi-turn-rl">Multi-turn RL</a>
-      <ul>
-        <li><a href="#context-management">Context management</a></li>
-        <li><a href="#credit-assignment">Credit assignment</a></li>
-      </ul>
-    </li>
+    <li><a href="#multi-turn-rl-and-agentic-refinement">Multi-turn RL and agentic refinement</a></li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>
@@ -505,43 +492,64 @@ https://github.com/alex-shpak/hugo-book
       
       
   <article class="markdown book-article"><h1 id="reinforcement-learning-from-execution-feedback">
-  Reinforcement Learning from Execution Feedback
+  <strong>Reinforcement Learning from Execution Feedback</strong>
   
   <a class="anchor" href="#reinforcement-learning-from-execution-feedback">#</a>
   
 </h1>
 
 
-<!-- 
-Suppose we already have a model equipped with basic kernel-writing knowledge — it knows the target programming model, uses the right APIs, and reliably produces kernels that compile and often run correctly. Such a model is still not enough.  -->
-<p>Writing a kernel that is <em>fast on a specific piece of hardware</em> is a different problem from writing one that is merely valid: performance is governed by low-level, device-specific decisions (memory-hierarchy staging, tiling and block sizes, occupancy, coalesced access, tensor-core utilization), and the only faithful measure of whether those decisions are good is to <em>run the kernel and time it</em>. A model trained purely to reproduce plausible-looking code has no access to that signal and no objective that rewards it, so it plateaus at &ldquo;valid but not hardware-optimized.&rdquo;</p>
-<p>Reinforcement learning (RL) is the tool that optimizes this missing objective directly. Instead of imitating a fixed corpus of code, we let the model <em>generate</em> kernels, <em>run</em> them on the target hardware, and <em>learn from the outcome</em>: kernels that compile, produce correct results, and run faster are reinforced, while those that fail are discouraged. Kernels are an especially favorable setting for this — unlike open-ended language tasks, they come with an automatic, high-fidelity <strong>oracle</strong> (compile the kernel, check it against a reference, and time it on hardware), so the reward is <em>verifiable</em> and objective rather than a learned proxy, the regime known as <strong>RL with verifiable rewards (RLVR)</strong>. This makes RL cheaper and more reliable for kernels than for domains that hinge on human-preference models, and is why RL post-training has become the dominant recipe for state-of-the-art kernel generators. This subsection formulates kernel generation as an RL problem, introduces the policy-gradient algorithms used in practice (PPO and GRPO), and describes the execution-feedback loop that turns a compiler and a GPU into a reward signal.</p>
+<p>Section 2.1 left us with an SFT model that is <em>grounded</em> in a kernel language (it produces valid, idiomatic code) but capped by imitation: it can only reproduce the corpus it was shown, with no way to tell a fast kernel from a merely reference-like one. Closing that gap is the job of this section. The reason it needs a new tool is that writing a kernel that is <em>fast on a specific piece of hardware</em> is a different problem from writing one that is merely valid. Performance is governed by low-level, device-specific decisions: memory-hierarchy staging, tiling and block sizes, occupancy, coalesced access, tensor-core utilization. The only faithful measure of whether those decisions are good is to <em>run the kernel and time it</em>. A model trained purely to reproduce plausible-looking code has no access to that signal and no objective that rewards it, so it plateaus at &ldquo;valid but not hardware-optimized.&rdquo;</p>
+<p>Reinforcement learning (RL) is the tool that optimizes this missing objective directly. Instead of imitating a fixed corpus of code, we let the model <em>generate</em> kernels, <em>run</em> them on the target hardware, and <em>learn from the outcome</em>: kernels that compile, produce correct results, and run faster are reinforced, while those that fail are discouraged. Kernels are an especially favorable setting for this. Unlike open-ended language tasks, they come with an automatic, high-fidelity <strong>oracle</strong>: compile the kernel, check it against a reference, and time it on hardware. The reward is therefore <em>verifiable</em> and objective rather than a learned proxy, the regime known as <strong>RL with verifiable rewards (RLVR)</strong>. This makes RL cheaper and more reliable for kernels than for domains that hinge on human-preference models, and is why RL post-training has become the dominant recipe for state-of-the-art kernel generators. Building on the general RL post-training machinery of Section 1.6 (the objective, policy gradients, and the PPO and GRPO algorithms), this subsection focuses on what is specific to kernels: casting kernel generation as an RL problem and describing the execution-feedback loop that turns a compiler and the hardware into a reward signal.</p>
 <h2 id="example-rl-workflow-for-kernel-optimization">
   Example: RL workflow for kernel optimization
   
   <a class="anchor" href="#example-rl-workflow-for-kernel-optimization">#</a>
   
 </h2>
-<p>Before diving into the pieces, here is the overall loop. RL post-training for kernels is an iterative cycle built from four ingredients — a pool of <strong>tasks</strong>, a <strong>policy</strong>, a <strong>reward</strong> computed by execution, and a policy-gradient <strong>optimizer</strong>:</p>
+<p>Before diving into the pieces, here is the overall loop: RL post-training for kernels is an iterative cycle built from four ingredients: a pool of <strong>tasks</strong>, a <strong>policy</strong>, a <strong>reward</strong> computed by execution, and a policy-gradient <strong>optimizer</strong>:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>  sample task x  ──▶  policy π_θ generates kernel(s) y  ──▶  execute: compile · check · time
 </span></span><span style="display:flex;"><span>                                                                   │
 </span></span><span style="display:flex;"><span>         ▲                                                         ▼
 </span></span><span style="display:flex;"><span>         └──────────────  policy-gradient update  ◀──────────  reward r(x, y)
-</span></span></code></pre></div><p>Each step of the loop: (1) sample a task from the data pool; (2) the policy — initialized from the SFT model of Section 2.1 — generates one or more candidate kernels, optionally over several refinement turns; (3) each kernel is run in a sandboxed environment that returns a <em>verifiable</em> reward from compilation, correctness, and speed; (4) a policy-gradient algorithm (PPO or GRPO) nudges the policy toward the higher-reward kernels. Repeating this cycle is what drives the policy past the &ldquo;valid but not hardware-optimized&rdquo; plateau.</p>
-<p>The rest of this subsection expands each ingredient in turn: the <strong>data</strong> that defines the tasks (next), the <strong>RL formulation</strong> and <strong>policy-gradient</strong> algorithms that carry out the update, the <strong>reward</strong> computed from execution feedback, the <strong>curriculum</strong> that decides which tasks to train on, and the <strong>multi-turn</strong> setting that lets the policy revise using feedback. (Reward <em>design</em> — how to turn correct-and-fast into a scalar — is deferred to Section 2.3.)</p>
+</span></span></code></pre></div><p>Each step of the loop: (1) sample a task from the data pool; (2) the policy (initialized from the SFT model of Section 2.1) generates one or more candidate kernels, optionally over several refinement turns; (3) each kernel is run in a sandboxed environment that returns a <em>verifiable</em> reward from compilation, correctness, and speed; (4) a policy-gradient algorithm (PPO or GRPO) nudges the policy toward the higher-reward kernels. Repeating this cycle is what drives the policy past the &ldquo;valid but not hardware-optimized&rdquo; plateau.</p>
+<p><strong>A concrete pass.</strong> Take the RMSNorm task from Section 2.1 as 
+<span>
+  \( x \)
+  </span>
+
+. The policy emits a candidate kernel 
+<span>
+  \( y \)
+  </span>
+
+ and the sandbox then (i) <strong>compiles</strong> it (a build failure ends the pass with a low reward); (ii) <strong>checks correctness</strong> by running 
+<span>
+  \( y \)
+  </span>
+
+ on held-out test inputs and comparing its output against the PyTorch reference within numerical tolerance; and (iii) <strong>times</strong> it against that reference to get a speedup. A kernel that compiles, matches the reference, and runs 1.8× faster earns a high reward and is reinforced; one that computes the wrong thing (say, LayerNorm) or is correct but slower is penalized. Over many such passes the policy shifts toward kernels that are both correct and fast.</p>
+<p>The <strong>sandbox</strong> that produces this reward is a piece of infrastructure worth designing deliberately, because it executes untrusted, model-generated code on real accelerators:</p>
+<ul>
+<li><strong>Isolation.</strong> Each candidate runs in a separate process (or container) with a hard timeout and memory cap, so a kernel that hangs, deadlocks, or corrupts device state cannot stall or crash training; it is simply killed and scored as a failure.</li>
+<li><strong>Determinism and fairness.</strong> Correctness is checked against fixed test inputs at a set tolerance, and timing uses warm-up runs plus repeated trials (reporting, e.g., the median) on a pinned hardware target, so the speedup signal is reproducible rather than noisy.</li>
+<li><strong>Throughput.</strong> Because RL needs a reward for every rollout, the sandbox is typically pooled across many workers/devices and caches compilation. In practice the throughput of this environment, not the policy update, is often what limits training, so building a robust distributed kernel environment (for example Dr. Kernel&rsquo;s KernelGYM [3]) is an engineering contribution in its own right.</li>
+</ul>
+<p>In the multi-turn and agentic settings (Section 3.1), this same environment is exposed to the policy as callable <strong>tools</strong> (a compiler, a runner, a profiler), so kernel RL doubles as an instance of <em>tool-use</em> RLVR, with the tools&rsquo; output serving as both the model&rsquo;s feedback and the source of the reward.</p>
+<p>The rest of this subsection expands each ingredient in turn: the <strong>data</strong> that defines the tasks (next), the <strong>RL formulation</strong> specialized to kernels (building on the algorithms of Section 1.6), the <strong>reward</strong> computed from execution feedback, the <strong>curriculum</strong> that decides which tasks to train on, and the <strong>multi-turn</strong> setting that lets the policy revise using feedback.</p>
 <h2 id="data">
   Data
   
   <a class="anchor" href="#data">#</a>
   
 </h2>
-<p>Unlike SFT, where every task should be paired with an expert kernel to imitate, RL needs <strong>no reference kernels</strong>: an example is just a <em>task</em> — an operator specification together with a reference implementation (e.g., the PyTorch function) and test inputs — because the reward comes from <em>running</em> the model&rsquo;s own kernel and checking it against that reference, not from comparing it to a stored expert solution. This sharply lowers the data barrier: any operator for which a slow but obviously-correct reference can be written is a usable RL task, even if no fast kernel for it exists anywhere.</p>
-<p>Formally, whereas SFT trained on labeled pairs 
+<p>Unlike SFT, where every task should be paired with an expert kernel to imitate, RL needs <strong>no reference kernels</strong>. An example is just a <em>task</em>: an operator specification together with a reference implementation (e.g., the PyTorch function) and test inputs. The reward comes from <em>running</em> the model&rsquo;s own kernel and checking it against that reference, not from comparing it to a stored expert solution. This sharply lowers the data barrier: any operator for which a slow but obviously-correct reference can be written is a usable RL task, even if no fast kernel for it exists anywhere.</p>
+<p>Whereas SFT trained on labeled pairs 
 <span>
   \( \mathcal{D} = \{(x^{(i)}, y^{(i)})\} \)
   </span>
 
- (Section 2.1), an RL task set carries <strong>no target kernels</strong> — each element is just a prompt 
+ (Section 2.1), an RL task set carries <strong>no target kernels</strong>; each element is just a prompt 
 <span>
   \( x^{(i)} \)
   </span>
@@ -572,311 +580,280 @@ Suppose we already have a model equipped with basic kernel-writing knowledge —
   \( x \)
   </span>
 
- itself can take several forms depending on how much scaffolding the task provides — from a plain natural-language description of the desired function, to an instruction alone, to an instruction plus a reference implementation, to an instruction plus a reference plus a seed kernel to optimize. The only firm requirement is that 
+ itself can take several forms depending on how much scaffolding the task provides: from a plain natural-language description of the desired function, to an instruction alone, to an instruction plus a reference implementation, to an instruction plus a reference plus a seed kernel to optimize. The only firm requirement is that 
 <span>
   \( x \)
   </span>
 
- admit an automatic correctness and performance check (usually via a reference implementation and test inputs), since that check is what produces the reward.</p>
-<p>Several public sources supply such tasks:</p>
-<ul>
-<li><strong>KernelBench</strong> — a few hundred PyTorch reference modules organized by difficulty level; serves as both the standard evaluation benchmark and a common task source.</li>
-<li><strong>TritonBench</strong> — a large set of real-world Triton operators.</li>
-<li><strong>KernelBook</strong> — many PyTorch–Triton pairs whose <em>PyTorch side alone</em> already furnishes RL tasks (its Triton side is needed only for SFT).</li>
-<li><strong>CUDA-Agent-Ops-6K</strong> — ~6,000 synthesized operator-level CUDA tasks (fused compositions of PyTorch operators), filtered and decontaminated against KernelBench (<em>CUDA Agent</em>).</li>
-</ul>
-<p>Beyond these fixed datasets, tasks can also be <strong>synthesized</strong> programmatically — composing primitive operators into fused programs at controlled difficulty — which is how CUDA-Agent-Ops-6K above was built and how several curriculum methods obtain broad, difficulty-labeled coverage (<em>CUDA Agent</em>; <em>DRTriton</em>).</p>
-<h2 id="rl-formulation">
-  RL formulation
-  
-  <a class="anchor" href="#rl-formulation">#</a>
-  
-</h2>
-<p>We model the fine-tuned LLM as a <strong>policy</strong> 
-<span>
-  \( \pi_\theta(y \mid x) \)
-  </span>
-
- that, given a task prompt 
-<span>
-  \( x \)
-  </span>
-
- (operator specification, reference implementation, hardware target), generates a candidate kernel 
+ admit an automatic correctness and performance check (usually via a reference implementation and test inputs), since that check is what produces the reward. Concretely, the RL task for our running RMSNorm example is just the Section 2.1 prompt, <em>without</em> the target kernel:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Task x:
+</span></span><span style="display:flex;"><span>  Write a Triton kernel that computes fused RMSNorm over the last dimension,
+</span></span><span style="display:flex;"><span>  for x of shape (M, N), fp16, on NVIDIA H100.
+</span></span><span style="display:flex;"><span>  Reference (PyTorch):
+</span></span><span style="display:flex;"><span>      def rmsnorm(x, w, eps=1e-6):
+</span></span><span style="display:flex;"><span>          rms = x.pow(2).mean(dim=-1, keepdim=True).add(eps).rsqrt()
+</span></span><span style="display:flex;"><span>          return x * rms * w
+</span></span><span style="display:flex;"><span>  Test inputs: (M, N) in {(4096, 1024), (8192, 4096), ...}, random fp16.
+</span></span></code></pre></div><p>Compare this with the SFT pair in Section 2.1: there the reference Triton kernel was the <em>target</em> 
 <span>
   \( y \)
   </span>
 
- autoregressively — the same factorization introduced in Section 2.1. Each generated kernel is scored by a scalar <strong>reward</strong> 
+ the model was trained to reproduce; here there is no 
 <span>
-  \( r(x, y) \in \mathbb{R} \)
+  \( y \)
   </span>
 
- obtained by executing it (compile + correctness + performance). Given a distribution of tasks 
-<span>
-  \( \mathcal{D} \)
-  </span>
-
-, the RL objective is to maximize the expected reward of the kernels the policy generates:</p>
-
-<span>\[ J(\theta) \;=\; \mathbb{E}_{x \sim \mathcal{D}}\; \mathbb{E}_{y \sim \pi_\theta(\cdot \mid x)}\big[\, r(x, y) \,\big]. \]</span>
-<p>To keep the policy from drifting too far from a reference model 
-<span>
-  \( \pi_{\text{ref}} \)
-  </span>
-
- (typically the SFT model) — which stabilizes training and preserves the fluent, general behavior the model started with — a KL penalty is often added:</p>
-
-<span>\[ J(\theta) \;=\; \mathbb{E}_{x \sim \mathcal{D}}\, \mathbb{E}_{y \sim \pi_\theta(\cdot \mid x)}\big[\, r(x, y) \,\big] \;-\; \beta\, \mathbb{E}_{x \sim \mathcal{D}}\Big[\, \mathrm{KL}\big(\pi_\theta(\cdot \mid x)\,\|\,\pi_{\text{ref}}(\cdot \mid x)\big) \Big]. \]</span>
-<p>Contrast this with the SFT objective of Section 2.1: SFT minimizes a divergence <em>to a fixed dataset</em>, whereas RL maximizes reward <em>over the policy&rsquo;s own samples</em>. This is the crucial difference — RL can reward a correct, fast kernel the model discovered on its own, even if it appears in no reference corpus, which is what allows the policy to <em>surpass</em> its teacher.</p>
-<h2 id="policy-gradient-optimization">
-  Policy-gradient optimization
+ at all. The <code>rmsnorm</code> reference and the test inputs are the entire task, and together they <em>are</em> the reward oracle: the sandbox runs the model&rsquo;s kernel on the test inputs and grades it against <code>rmsnorm</code> for correctness and speed.</p>
+<p>Several public sources supply such tasks:</p>
+<ul>
+<li><strong>KernelBench</strong> [12]: a few hundred PyTorch reference modules organized by difficulty level; serves as both the standard evaluation benchmark and a common task source.</li>
+<li><strong>TritonBench</strong> [13]: a large set of real-world Triton operators.</li>
+<li><strong>KernelBook</strong> [14]: many PyTorch–Triton pairs whose <em>PyTorch side alone</em> already furnishes RL tasks (its Triton side is needed only for SFT).</li>
+<li><strong>CUDA-Agent-Ops-6K</strong> [15]: ~6,000 synthesized operator-level CUDA tasks (fused compositions of PyTorch operators), filtered and decontaminated against KernelBench (CUDA Agent [4]).</li>
+</ul>
+<p>Beyond these fixed datasets, tasks can also be <strong>synthesized</strong> programmatically, composing primitive operators into fused programs at controlled difficulty, which is how CUDA-Agent-Ops-6K above was built and how several curriculum methods obtain broad, difficulty-labeled coverage (CUDA Agent [4]; DRTriton [5]).</p>
+<p>Because the reference and test inputs <em>are</em> the reward oracle, a task is only as good as that check, and its quality directly bounds the training signal:</p>
+<ul>
+<li><strong>A trustworthy reference.</strong> The reference must be unambiguously correct (even if slow), since every generated kernel is graded against it; a buggy reference wrongly rewards kernels for being wrong.</li>
+<li><strong>Representative, adversarial test inputs.</strong> Correctness is only ever checked on the provided inputs, so they must exercise the shapes, dtypes, and edge cases that matter (e.g., non-power-of-two <code>N</code>, tail masking, extreme values). Thin or too-forgiving tests are exactly what let a model <em>reward hack</em>, passing the check without implementing the operator (Section 2.3), so the tests double as the corpus&rsquo;s integrity guarantee.</li>
+<li><strong>A meaningful performance baseline.</strong> The speed reward is <em>relative</em> to a baseline (the PyTorch reference, or an existing kernel to beat), so a fair, well-tuned baseline is what makes &ldquo;faster&rdquo; mean something rather than rewarding a kernel for merely outrunning an artificially slow reference.</li>
+</ul>
+<h2 id="rl-formulation-for-kernels">
+  RL formulation for kernels
   
-  <a class="anchor" href="#policy-gradient-optimization">#</a>
+  <a class="anchor" href="#rl-formulation-for-kernels">#</a>
   
 </h2>
-<p>Because the reward is a black box (we cannot backpropagate through a compiler or a GPU timer), 
+<p>The generic RL machinery, the expected-reward objective 
 <span>
-  \( J(\theta) \)
+  \( J(\theta) = \mathbb{E}_{x\sim\mathcal{D}}\,\mathbb{E}_{y\sim\pi_\theta(\cdot\mid x)}[\,r(x,y)\,] \)
   </span>
 
- is optimized with <strong>policy-gradient</strong> methods, which estimate gradients from sampled rollouts alone.</p>
-<p>The policy-gradient theorem gives the gradient of the objective as</p>
-
-<span>\[ \nabla_\theta J(\theta) \;=\; \mathbb{E}_{x \sim \mathcal{D}}\, \mathbb{E}_{y \sim \pi_\theta(\cdot \mid x)}\big[\, r(x, y)\, \nabla_\theta \log \pi_\theta(y \mid x) \,\big]. \]</span>
-<p>Intuitively, this rule increases the log-probability of high-reward kernels and decreases it for low-reward ones. The raw estimator has high variance, so the reward is replaced by an <strong>advantage</strong> 
+, its optimization by <strong>policy gradients</strong>, and the <strong>PPO</strong> and <strong>GRPO</strong> algorithms that carry out the update, is developed in Section 1.6. Here we take that formulation as given and focus on what is specific to <em>kernels</em>: the policy is our SFT model 
 <span>
-  \( A(x,y) = r(x,y) - b(x) \)
+  \( \pi_\theta(y \mid x) \)
   </span>
 
-, where the baseline 
-<span>
-  \( b(x) \)
-  </span>
-
- subtracts the typical reward for task 
+ that maps a task prompt 
 <span>
   \( x \)
   </span>
 
- without changing the gradient in expectation:</p>
-
-<span>\[ \nabla_\theta J(\theta) \;=\; \mathbb{E}\big[\, A(x, y)\, \nabla_\theta \log \pi_\theta(y \mid x) \,\big]. \]</span>
-<p>Since the kernel is a token sequence, the score term decomposes over tokens exactly as in Section 2.1, which is how the sequence-level reward is distributed across per-token updates:</p>
-
-<span>\[ \nabla_\theta \log \pi_\theta(y \mid x) \;=\; \sum_{t=1}^{|y|} \nabla_\theta \log \pi_\theta(y_t \mid x, y_{&lt;t}). \]</span>
-<p>The choice of baseline/advantage estimator is what distinguishes the algorithms below.</p>
-<h3 id="ppo">
-  PPO
-  
-  <a class="anchor" href="#ppo">#</a>
-  
-</h3>
-<p>Proximal Policy Optimization (PPO) is the classic actor–critic instantiation: it trains a separate <strong>value network</strong> 
+ (operator specification, reference implementation, hardware target) to a candidate kernel 
 <span>
-  \( V_\phi(x, y_{\lt t}) \)
+  \( y \)
   </span>
 
- as the baseline and optimizes a <em>clipped</em> surrogate objective that prevents each update from moving the policy too far from the sampling policy 
+, and the reward 
 <span>
-  \( \pi_{\theta_{\text{old}}} \)
+  \( r(x, y) \)
   </span>
 
-:</p>
-
-<span>\[ \mathcal{L}^{\text{PPO}}(\theta) = \mathbb{E}\Big[\, \min\big( \rho_t(\theta)\, \hat{A}_t,\; \operatorname{clip}(\rho_t(\theta),\, 1-\epsilon,\, 1+\epsilon)\, \hat{A}_t \big) \Big], \qquad \rho_t(\theta) = \frac{\pi_\theta(y_t \mid x, y_{&lt;t})}{\pi_{\theta_{\text{old}}}(y_t \mid x, y_{&lt;t})}. \]</span>
-<p>PPO is robust but expensive: the value network roughly doubles memory and adds its own training instability — a real cost when the policy is already a multi-billion-parameter model.</p>
-<h3 id="grpo">
-  GRPO
-  
-  <a class="anchor" href="#grpo">#</a>
-  
-</h3>
-<p>Group Relative Policy Optimization (GRPO) removes the value network entirely and is the workhorse of modern kernel RL (used by <em>AutoTriton</em>, <em>TritonRL</em>, <em>DRTriton</em>, and others). For each prompt 
+ is obtained by <em>executing</em> that kernel (compile + correctness + performance).</p>
+<p>Two properties of this reward shape everything downstream:</p>
+<ul>
+<li><strong>It is terminal and sparse.</strong> 
 <span>
-  \( x \)
+  \( r(x, y) \)
   </span>
 
- it samples a <strong>group</strong> of 
-<span>
-  \( G \)
-  </span>
-
- completions 
-<span>
-  \( \{y_1, \dots, y_G\} \)
-  </span>
-
-, scores each one, and uses the group statistics as the baseline — the advantage of a sample is simply how much better its reward is than the group average:</p>
-
-<span>\[ \hat{A}_i \;=\; \frac{r_i - \operatorname{mean}(\{r_1, \dots, r_G\})}{\operatorname{std}(\{r_1, \dots, r_G\})}, \qquad r_i = r(x, y_i), \quad i = 1, \dots, G. \]</span>
-<p>This <em>group-relative</em> baseline is naturally suited to kernels: sampling several implementations of the same operator and rewarding the ones that run fastest relative to their siblings is a direct, low-overhead form of comparison, with no value model to train. The division by the group standard deviation is a normalization choice, not a necessity — dropping it (together with the sequence-length normalization) removes a subtle bias toward longer or harder responses (<em>Dr. GRPO</em>).</p>
-<h3 id="kl-regularization-to-the-reference-policy">
-  KL regularization to the reference policy
-  
-  <a class="anchor" href="#kl-regularization-to-the-reference-policy">#</a>
-  
-</h3>
-<p>Both algorithms are often combined with the KL term from the objective above, penalizing divergence from the reference policy 
-<span>
-  \( \pi_{\text{ref}} \)
-  </span>
-
- (typically the SFT model). Its role is to keep the policy within a <em>trust region in distribution space</em>: it stabilizes optimization and prevents the model from drifting away from the fluent, general behavior it started with as it chases reward. Indeed, some large-scale RLVR recipes deliberately weaken or drop the KL term when they want the policy to move far from the reference, relying on other mechanisms for stability (e.g., <em>DAPO</em>).</p>
+ is defined only once the <em>entire</em> kernel has been generated, compiled, and run. There is no meaningful way to score a half-written kernel, so no intermediate per-token rewards exist. A whole kernel therefore earns a <em>single</em> scalar that must be attributed back across the hundreds of token-level actions that produced it, ideally separating the tokens that encoded a good tiling or fusion decision from those that merely completed boilerplate. In plain policy-gradient training this scalar is applied <em>uniformly</em> to every token of the rollout (Section 1.6), so attribution happens only in aggregate over many samples; sharper <strong>credit assignment</strong> (per-turn or per-token) is a distinct problem, taken up in Section 3.1.</li>
+<li><strong>It is verifiable and deterministic.</strong> The reward comes from an objective checker (a compiler and a profiler), not a learned preference model, and the same kernel graded the same way yields the same score, up to timing noise the sandbox averages out. This is exactly the RLVR regime, and it is what makes RL cheaper and more reliable for kernels than for open-ended language tasks.</li>
+</ul>
+<p>The pay-off of this formulation is the same one that motivated the section: unlike SFT, which minimizes a divergence <em>to a fixed dataset</em>, RL maximizes reward <em>over the policy&rsquo;s own samples</em>, so it can reinforce a correct, fast kernel the model discovered on its own, even one that appears in no reference corpus, and thereby <em>surpass</em> its teacher.</p>
+<p><strong>Why GRPO fits kernels.</strong> Of the two algorithms, <strong>GRPO</strong> is the workhorse of modern kernel RL (used by AutoTriton [1], TritonRL [2], DRTriton [5], and others), and its group-relative baseline is a natural match: sampling several candidate kernels for the <em>same</em> operator and rewarding the ones that run fastest relative to their siblings is a direct, low-overhead comparison, with no value network to train (a real saving when the policy is already a multi-billion-parameter model). It does, however, sharpen a kernel-specific failure mode: when every kernel in a group earns the <em>same</em> reward (e.g., all fail to compile early in training), the group-relative advantage is zero and the task yields no gradient, which is exactly what the curriculum and task-selection strategies below are designed to avoid.</p>
 <h2 id="rewards-from-execution-feedback">
   Rewards from execution feedback
   
   <a class="anchor" href="#rewards-from-execution-feedback">#</a>
   
 </h2>
-<p>In RL with verifiable rewards the reward is not learned — it is returned by the <strong>environment</strong>, an external check run on each generated answer. What that check <em>is</em> depends on the domain: verifying a math solution against its ground-truth answer, running unit tests for general code, or compiling and profiling a kernel on the target hardware. In every case the signal is objective and automatic rather than a human judgment or a learned proxy, and it is the environment — not the model — that decides the reward. This is exactly why <strong>math and code are the settings where verifiable rewards apply most naturally</strong>: a known answer or a unit-test suite is a cheap, objective checker, so the reward reflects ground truth directly rather than an approximation of it. Kernel generation inherits the same advantage — a reference implementation plus a profiler <em>is</em> such a checker — which is a large part of why RL post-training works so well here.</p>
-<p>For kernel generation, that external check yields three things — whether the kernel <strong>compiles</strong>, whether it is <strong>correct</strong> against a reference, and how <strong>fast</strong> it runs — and the reward is essentially a function of these. Concretely, a single rollout is scored by a short pipeline:</p>
-<ol>
-<li><strong>Compile</strong> the generated kernel; a failure to compile yields the lowest reward.</li>
-<li><strong>Run</strong> it against reference inputs and <strong>check correctness</strong> — compare outputs to the reference implementation within numerical tolerance.</li>
-<li><strong>Profile</strong> the correct kernel on the target hardware — measure its runtime and the speedup over a baseline.</li>
-</ol>
+<p>The reward is returned by the <strong>environment</strong>: executing a candidate kernel yields the three signals it is built from, namely whether the kernel <strong>compiles</strong>, whether it is <strong>correct</strong> against the reference, and how <strong>fast</strong> it runs (its runtime, and the speedup over a baseline). The rest of this section turns those signals into a scalar.</p>
 <p>The most basic execution-based reward is simply <strong>binary correctness</strong>: in settings such as math or coding, the environment returns 1 when the generated answer is verified correct (the right final answer, or all unit tests passing) and 0 otherwise,</p>
 
 <span>\[ r(x, y) = \begin{cases} 1, &amp; y \text{ is correct}, \\ 0, &amp; \text{otherwise}, \end{cases} \]</span>
-<p>For kernels, though, the environment returns far more than a pass/fail bit: the profiler exposes runtime, memory-bandwidth utilization, occupancy, and where the time is spent. This richer feedback lets us build a <strong>more fine-grained reward</strong> that scores not only correctness but <em>how fast</em> and <em>how efficient</em> the kernel is — the subject of Section 2.3.</p>
-<p>Whatever its granularity, the reward must <strong>align with the true objective of the task</strong>. RL optimizes exactly the scalar it is handed: the policy converges toward the optimal policy <em>for the reward</em>, which matches the kernel we actually want only if the reward faithfully captures it. A misaligned reward — one that scores a fast-but-slightly-wrong kernel highly, or one a kernel can appear to satisfy without genuinely being fast — is a proxy the policy will learn to exploit rather than the goal we intended. Designing a reward that captures &ldquo;correct and genuinely fast on the target hardware,&rdquo; and keeping the policy from gaming it, is precisely what Section 2.3 addresses.</p>
-<!-- 
-Two properties of this oracle shape everything about the training system. First, the reward is **high-fidelity and verifiable** — it reflects ground truth, not a learned proxy. Second, it is **expensive**: every rollout compiles and runs code, so the environment must be heavily sandboxed (kernels crash, hang, and exhaust memory), parallelized across many GPUs, and equipped with timeouts. In practice the *throughput of this environment*, not the policy update, is often the training bottleneck, and building a robust distributed kernel environment (e.g., *Dr. Kernel*'s KernelGYM) is a core engineering contribution in its own right. In the multi-turn and agentic settings, this environment is also exposed to the policy as callable **tools** — a compiler, a runner, a profiler — so kernel RL is at the same time an instance of *tool-use* RLVR, with the tools' output serving as both the model's feedback and the source of the reward. -->
+<p>For kernels, though, the environment returns far more than a pass/fail bit: the profiler exposes runtime, memory-bandwidth utilization, occupancy, and where the time is spent. This richer feedback lets us build a <strong>more fine-grained reward</strong> that scores not only correctness but <em>how fast</em> and <em>how efficient</em> the kernel is.</p>
+<p>Putting the three checks together, a kernel reward is <em>gated</em>: compilation is a prerequisite for any correctness credit, and correctness for any performance credit. Schematically,</p>
+
+<span>\[ r(x, y) = \begin{cases}
+ r_{\text{compile}}, &amp; y \text{ fails to compile}, \\
+ r_{\text{incorrect}}, &amp; y \text{ compiles but is incorrect}, \\
+ f\big(\mathrm{speedup}(x, y)\big), &amp; y \text{ compiles and is correct},
+\end{cases} \]</span>
+<p>with 
+<span>
+  \( r_{\text{compile}} \le r_{\text{incorrect}} \le 0 \)
+  </span>
+
+ penalizing the two failure modes and 
+<span>
+  \( f \)
+  </span>
+
+ a monotonically increasing function of the measured speedup over a baseline,</p>
+
+<span>\[ \mathrm{speedup}(x, y) = \frac{t_{\text{ref}}(x)}{t(x, y)}, \]</span>
+<p>where 
+<span>
+  \( t(x, y) \)
+  </span>
+
+ is the runtime of the generated kernel and 
+<span>
+  \( t_{\text{ref}}(x) \)
+  </span>
+
+ that of the baseline (the reference implementation, or an existing kernel to beat). The gating is what stops the policy from being paid for a fast-but-wrong kernel; the exact choice of 
+<span>
+  \( r_{\text{compile}} \)
+  </span>
+
+, 
+<span>
+  \( r_{\text{incorrect}} \)
+  </span>
+
+, and 
+<span>
+  \( f \)
+  </span>
+
+, and the reward-hacking pitfalls it opens up, is the reward-design question of Section 2.3.</p>
+<p>Whatever its granularity, the reward must <strong>align with the true objective of the task</strong>. RL optimizes exactly the scalar it is handed: the policy converges toward the optimal policy <em>for the reward</em>, which matches the kernel we actually want only if the reward faithfully captures it. A misaligned reward, one that scores a fast-but-slightly-wrong kernel highly, or one a kernel can appear to satisfy without genuinely being fast, is a proxy the policy will learn to exploit rather than the goal we intended. Designing a reward that captures &ldquo;correct and genuinely fast on the target hardware,&rdquo; and keeping the policy from gaming it, is precisely what Section 2.3 addresses.</p>
 <h2 id="curriculum-and-task-selection">
   Curriculum and task selection
   
   <a class="anchor" href="#curriculum-and-task-selection">#</a>
   
 </h2>
-<p>Given a pool of tasks, the quality of RL then hinges on <em>which of them the policy trains on and how they are sampled</em>. This matters because the execution reward is <strong>sparse and coarse</strong>: early in training a weak policy may compile nothing (uniformly zero reward, no gradient), and even later a task is often all-or-nothing across a sampled group — and when every sample in a GRPO group earns the <em>same</em> reward, the group-relative advantage 
+<p>Given a pool of tasks, the quality of RL then hinges on <em>which of them the policy trains on and how they are sampled</em>. This matters because the execution reward is <strong>sparse and coarse</strong>: early in training a weak policy may compile nothing (uniformly zero reward, no gradient), and even later a task is often all-or-nothing across a sampled group, and when every sample in a GRPO group earns the <em>same</em> reward, the group-relative advantage 
 <span>
   \( \hat{A}_i \)
   </span>
 
  is exactly zero, so the task contributes no learning signal.
 To keep the policy on tasks in its <em>learnable zone</em>, where at least some sampled kernels succeed and yield a non-zero advantage, curriculum or task selection for RL is important.</p>
+<p>This degeneracy is precise. GRPO centers each sample&rsquo;s reward on its group mean to form the advantage (Section 1.6),</p>
+
+<span>\[ \hat{A}_i = \frac{r_i - \bar{r}}{\sigma_r}, \qquad \bar{r} = \frac{1}{G}\sum_{j=1}^{G} r_j, \]</span>
+<p>so if every sample in the group earns the <em>same</em> reward, 
+<span>
+  \( r_1 = \dots = r_G \)
+  </span>
+
+, then 
+<span>
+  \( r_i - \bar{r} = 0 \)
+  </span>
+
+ for all 
+<span>
+  \( i \)
+  </span>
+
+ and the prompt contributes no gradient. A prompt is therefore informative only when its group has reward variance, 
+<span>
+  \( \sigma_r \gt 0 \)
+  </span>
+
+. For a binary correctness reward this is simply</p>
+
+<span>\[ 0 \lt \bar{p}(x) \lt 1, \qquad \bar{p}(x) = \frac{1}{G}\sum_{j=1}^{G} \mathbb{1}\big[\, y_j \text{ correct} \,\big], \]</span>
+<p>that is, the policy solves the task <em>sometimes but not always</em>. This band is exactly the &ldquo;learnable zone&rdquo;: trivially easy prompts (
+<span>
+  \( \bar{p} = 1 \)
+  </span>
+
+) and currently impossible ones (
+<span>
+  \( \bar{p} = 0 \)
+  </span>
+
+) both drop out of the gradient. Static curation aims the fixed training distribution at this band ahead of time; adaptive sampling (below) discards zero-variance groups on the fly.</p>
+<p>To make this concrete, take a group of 
+<span>
+  \( G = 4 \)
+  </span>
+
+ kernels sampled for one prompt and scored by the gated reward above (say 
+<span>
+  \( r_{\text{compile}} = -1 \)
+  </span>
+
+, 
+<span>
+  \( r_{\text{incorrect}} = -0.5 \)
+  </span>
+
+, and 
+<span>
+  \( f(\mathrm{speedup}) = \mathrm{speedup} \)
+  </span>
+
+). Early in training all four might fail to compile, 
+<span>
+  \( (r_1, \dots, r_4) = (-1, -1, -1, -1) \)
+  </span>
+
+: then 
+<span>
+  \( \bar{r} = -1 \)
+  </span>
+
+, 
+<span>
+  \( \sigma_r = 0 \)
+  </span>
+
+, every 
+<span>
+  \( \hat{A}_i = 0 \)
+  </span>
+
+, and the prompt produces no gradient. Once the policy can <em>sometimes</em> succeed, the group might read 
+<span>
+  \( (-1, -1, -0.5, 1.5) \)
+  </span>
+
+ (two fail to compile, one is incorrect, one is correct at a 1.5× speedup): now 
+<span>
+  \( \bar{r} = -0.25 \)
+  </span>
+
+ and 
+<span>
+  \( \sigma_r \gt 0 \)
+  </span>
+
+, so the fast correct kernel gets a positive advantage 
+<span>
+  \( \hat{A} = (1.5 - (-0.25))/\sigma_r \gt 0 \)
+  </span>
+
+ and is reinforced while the failures are pushed down. Curriculum and task selection exist to keep groups in this second regime.</p>
 <h3 id="static-curation">
   Static curation
   
   <a class="anchor" href="#static-curation">#</a>
   
 </h3>
-<p>Here the training distribution is fixed <em>ahead of time</em>, independently of the policy, by selecting or weighting tasks according to a <strong>difficulty estimate</strong>. That estimate can be <em>intrinsic</em> to the task (its operator count, or its category — a single-operator kernel versus a fused multi-operator one) or <em>model-relative</em> (how often a fixed base model already solves it); either way the goal is the same — concentrate the pool where the policy can actually learn. This shows up under a few familiar names: a <strong>curriculum</strong> that orders tasks easy-to-hard on a schedule, <strong>data mixing</strong> that fixes the proportions of easy versus hard categories, and <strong>difficulty filtering</strong> that drops tasks the base model almost always or never solves. Curriculum learning is a long-standing idea (<em>Bengio et al.</em>), and recent reasoning-RL systems apply it heavily to math and code — staging training from easy to hard (or from one domain to another) and filtering by the pass rate of a <em>fixed</em> model measured once offline (<em>Light-R1</em>; <em>Skywork-OR1</em>; and the code stage of <em>AceReason-Nemotron</em>), with kernel-RL work following suit (<em>DRTriton</em>; <em>TritonRL</em>).</p>
+<p>Here the training distribution is fixed <em>ahead of time</em>, independently of the policy, by selecting or weighting tasks according to a <strong>difficulty estimate</strong>. That estimate can be <em>intrinsic</em> to the task (its operator count, or its category, a single-operator kernel versus a fused multi-operator one) or <em>model-relative</em> (how often a fixed base model already solves it); either way the goal is the same: concentrate the pool where the policy can actually learn. This shows up under a few familiar names: a <strong>curriculum</strong> that orders tasks easy-to-hard on a schedule, <strong>data mixing</strong> that fixes the proportions of easy versus hard categories, and <strong>difficulty filtering</strong> that drops tasks the base model almost always or never solves. Curriculum learning is a long-standing idea [7], and recent reasoning-RL systems apply it heavily to math and code, staging training from easy to hard (or from one domain to another) and filtering by the pass rate of a <em>fixed</em> model measured once offline (Light-R1 [8]; Skywork-OR1 [10]; and the code stage of AceReason-Nemotron [9]), with kernel-RL work following suit (DRTriton [5]; TritonRL [2]).</p>
 <h3 id="adaptive-sampling">
   Adaptive sampling
   
   <a class="anchor" href="#adaptive-sampling">#</a>
   
 </h3>
-<p>The training distribution is instead shaped <em>continuously, from the current policy&rsquo;s own behavior</em>. The canonical instance is <strong>dynamic sampling</strong> (<em>DAPO</em>): at each step, groups whose completions are all-pass or all-fail carry zero advantage and are discarded, keeping only prompts that still produce a learning signal — so the effective difficulty band tracks the policy as it improves. Because the selection criterion — the policy&rsquo;s success rate — is exactly the one used offline, adaptive sampling is essentially the <em>online, per-step</em> version of difficulty filtering: the same idea, recomputed every update instead of frozen into a fixed dataset. Reasoning-RL systems use this online form directly: prompts are filtered by the <em>current</em> model&rsquo;s success rate at each step (<em>Bae et al.</em>), and prompts the current model already solves too often are dropped mid-training (<em>AceReason-Nemotron</em>, for its math stage — its code stage instead filters offline with a fixed model, the static counterpart). In kernel RL online filtering remains uncommon; a related instance filters rollouts by how much of the runtime bottleneck they cover rather than by advantage (<em>Dr. Kernel</em>).</p>
-<h2 id="multi-turn-rl">
-  Multi-turn RL
+<p>The training distribution is instead shaped <em>continuously, from the current policy&rsquo;s own behavior</em>. The canonical instance is <strong>dynamic sampling</strong> (DAPO [6]): at each step, groups whose completions are all-pass or all-fail carry zero advantage and are discarded, keeping only prompts that still produce a learning signal, so the effective difficulty band tracks the policy as it improves. Because the selection criterion, the policy&rsquo;s success rate, is exactly the one used offline, adaptive sampling is essentially the <em>online, per-step</em> version of difficulty filtering: the same idea, recomputed every update instead of frozen into a fixed dataset. Reasoning-RL systems use this online form directly: prompts are filtered by the <em>current</em> model&rsquo;s success rate at each step [11], and prompts the current model already solves too often are dropped mid-training (AceReason-Nemotron [9], for its math stage; its code stage instead filters offline with a fixed model, the static counterpart).</p>
+<p>In kernel RL, this online, advantage-based filtering remains uncommon, but the setting also admits a <em>kernel-specific</em> selection signal that generic text or math RL lacks. Instead of keeping a rollout because its group still has reward variance, one can prioritize it by <strong>how much of the end-to-end runtime the target operator accounts for</strong> (Dr. Kernel [3]). The intuition is Amdahl&rsquo;s law: optimizing a kernel that consumes, say, 40% of a model&rsquo;s runtime is far more valuable than one that consumes 0.5%, no matter how large its <em>local</em> speedup, so training compute is better spent on the dominant operators. This signal is essentially free here, because the environment already profiles every rollout to compute the reward, so per-operator timing is a by-product of scoring rather than extra work. Note this is a <em>selection</em> criterion (which tasks and rollouts to learn from), orthogonal to the reward itself; it can be combined with the advantage-based filtering above rather than replacing it.</p>
+<h2 id="multi-turn-rl-and-agentic-refinement">
+  Multi-turn RL and agentic refinement
   
-  <a class="anchor" href="#multi-turn-rl">#</a>
+  <a class="anchor" href="#multi-turn-rl-and-agentic-refinement">#</a>
   
 </h2>
-<p>Single-turn generation discards information — a kernel engineer rarely writes a kernel once; they compile it, read the error, profile the result, and revise. <strong>Multi-turn RL</strong> captures this by letting the policy act over several turns, each conditioned on the feedback from the previous one. This is the standard setup for <strong>tool-use agents</strong> that interleave reasoning with tool calls — issuing web searches, running code, or invoking a compiler and profiler; kernel refinement is one such case, where the tools are the compiler and the hardware (<em>Kevin</em>, <em>CUDA Agent</em>; <em>RAGEN/StarPO</em>, <em>Search-R1</em>). A recurring empirical finding is that, under a fixed compute budget, investing in iterative refinement over turns outperforms drawing many independent single-shot samples, because feedback across turns is more informative than one-shot diversity (<em>Kevin</em>).</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>        ┌──── context grows each turn:  x, (y_1, f_1), …, (y_{t-1}, f_{t-1}) ────┐
-</span></span><span style="display:flex;"><span>        │                                                                       │
-</span></span><span style="display:flex;"><span>        ▼                                                                       │
-</span></span><span style="display:flex;"><span>   [ policy π_θ ] ──▶ answer y_t ──▶ [ execute ] ──▶ feedback f_t ──────────────┘
-</span></span><span style="display:flex;"><span>                                      (compiler error · correctness · profiling)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>   after T turns  ──▶  final answer&#39;s outcome = reward r  ──▶  policy-gradient update
-</span></span></code></pre></div><p>Here each turn feeds the previous attempts and their feedback back into the policy, so the model revises rather than restarts; the reward is applied once the trajectory ends (single-turn RL is just the special case 
-<span>
-  \( T = 1 \)
-  </span>
-
-).</p>
-<p>Formally, write the <strong>history</strong> entering turn 
-<span>
-  \( t \)
-  </span>
-
- as 
-<span>
-  \( h_t = (x,\, y_1, f_1,\, \dots,\, y_{t-1}, f_{t-1}) \)
-  </span>
-
- — the prompt together with every earlier attempt and its feedback. The policy samples the next attempt from 
-<span>
-  \( y_t \sim \pi_\theta(\cdot \mid h_t) \)
-  </span>
-
-, the environment returns feedback 
-<span>
-  \( f_t \)
-  </span>
-
-, and the objective is the expected return of the whole trajectory 
-<span>
-  \( \tau = (y_1, \dots, y_T) \)
-  </span>
-
-:</p>
-
-<span>\[ J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\Big[\, \sum_{t=1}^{T} r_t \,\Big], \]</span>
-<p>where 
-<span>
-  \( r_t \)
-  </span>
-
- is the reward at turn 
-<span>
-  \( t \)
-  </span>
-
-. In the common <strong>outcome-reward</strong> setting the environment scores only the <em>final</em> answer — 
-<span>
-  \( r_T = r(x, y_T) \)
-  </span>
-
- and 
-<span>
-  \( r_t = 0 \)
-  </span>
-
- for 
-<span>
-  \( t \lt T \)
-  </span>
-
- — so the entire trajectory is judged by the last kernel it produces. Handing out <strong>per-turn (process) rewards</strong> instead is the alternative, and how a single terminal reward is then spread back over the turns is exactly the credit-assignment question below.</p>
-<p>Training over multi-turn trajectories raises two recurring issues beyond the single-turn case — keeping the growing context manageable, and assigning credit across turns.</p>
-<h3 id="context-management">
-  Context management
-  
-  <a class="anchor" href="#context-management">#</a>
-  
-</h3>
-<p>Every turn appends the previous attempt and its (often long) feedback — compiler diagnostics, correctness diffs, full profiler dumps — to the prompt. Left unchecked the context explodes within a few turns (a handful of full reasoning traces can reach tens of thousands of tokens), so multi-turn RL borrows the standard toolkit that long-horizon agents use to keep it bounded:</p>
-<ul>
-<li><strong>Truncation / windowing.</strong> Keep only the most recent few turns and drop older ones outright. Simplest, but on its own it discards information that later turns may still need.</li>
-<li><strong>Summarization (compaction).</strong> Replace older turns — or just their verbose reasoning — with a short, model-generated summary, while keeping the durable artifacts (the kernel and its evaluation result). This preserves continuity far better than plain truncation and is the common choice: for example, <em>Kevin</em> discards each turn&rsquo;s full chain-of-thought but has the model <em>summarize</em> the changes it made, carrying that summary plus the kernel and feedback forward (without it, the context reaches 50–100k tokens within a few turns). End-to-end summarization has also been studied as a general multi-turn-RL technique (<em>Scaling Multi-turn RL with Summarization</em>).</li>
-<li><strong>Observation compression.</strong> Compress the tool output itself — surface the first error or the top profiler bottlenecks rather than the raw logs — since the environment&rsquo;s feedback is often the bulkiest part of a turn.</li>
-<li><strong>External memory / retrieval.</strong> Offload the history to an external store and retrieve only the relevant pieces on demand (<em>MemGPT</em>), trading context length for retrieval machinery.</li>
-</ul>
-<p>These are typically cascaded — compress observations first, window next, summarize as a last resort — to preserve the <em>state</em> needed to make progress (the current best attempt and why it fell short) at a fraction of the token cost.</p>
-<h3 id="credit-assignment">
-  Credit assignment
-  
-  <a class="anchor" href="#credit-assignment">#</a>
-  
-</h3>
-<p>Credit assignment is a core problem in <em>any</em> long-horizon or multi-turn RL — for kernels, but equally for general code and math reasoning: when the reward lands only at the <em>end</em> of a trajectory (you must finish and run a kernel to score it), that terminal signal has to be propagated back to the tokens, turns, and decisions that actually earned it. The main design axis is the <strong>granularity</strong> of the attribution, from finest to coarsest:</p>
-<ul>
-<li><strong>Token-level.</strong> The finest grain assigns credit per token, by estimating each step&rsquo;s value with Monte-Carlo rollouts (<em>VinePPO</em>) or with a learned <strong>process reward model</strong> that scores intermediate steps — trained on human step labels (<em>PRM</em>) or on automatically generated ones (<em>Math-Shepherd</em>). It is the most informative but far the most expensive, and seldom needed for kernels.</li>
-<li><strong>Turn-level.</strong> Each turn gets its own advantage, usually from a <strong>reward-to-go</strong> — a discounted sum of the current and future turns&rsquo; rewards, 
-<span>
-  \( G_t = \sum_{l \ge 0} \gamma^l\, r_{t+l} \)
-  </span>
-
- — combined with a value baseline, most commonly via <strong>generalized advantage estimation</strong> (<em>GAE</em>), so an early revision that <em>enabled</em> a later success is credited for it (<em>Kevin</em>; <em>Dr. Kernel</em>; <em>CUDA Agent</em>). A related concern is de-biasing the baseline: the standard fix is a leave-one-out estimate that excludes a sample from its own baseline (<em>RLOO</em>), which <em>Dr. Kernel</em> extends to the turn level.</li>
-<li><strong>Trajectory-level.</strong> The coarsest grain gives <em>every</em> turn of the trajectory the same single advantage — one score for the whole multi-turn rollout — which is simplest and lowest-variance but cannot tell which turn (let alone which step) actually earned the reward. Turn-level is exactly this signal subdivided per turn.</li>
-</ul>
-<p>Finer credit assignment lowers the variance of the learning signal but adds cost and its own estimation error, so kernel systems in practice sit mostly at the turn levels.</p>
+<p>So far the policy gets <strong>one</strong> attempt per task: sample a kernel, run it, receive a terminal reward. But a human kernel engineer rarely writes a kernel once; they compile it, read the error, profile the result, and revise. Letting the policy act over several feedback-conditioned turns is <strong>multi-turn RL</strong>, and it is the bridge to the agentic systems of Section 3. Because it is the natural home for that material, we develop multi-turn RL (its trajectory objective, context management, and cross-turn credit assignment) in <strong>Section 3.1</strong>, alongside the single-turn baseline it extends.</p>
 <h2 id="references">
   References
   
@@ -885,39 +862,24 @@ To keep the policy on tasks in its <em>learnable zone</em>, where at least some 
 </h2>
 <p><strong>RL post-training for kernel generation.</strong></p>
 <ol>
-<li>C. Baronio, P. Marsella, B. Pan, S. Guo, and S. Alberti. <em>Kevin: Multi-Turn RL for Generating CUDA Kernels.</em> arXiv:2507.11948, 2025. <a href="https://arxiv.org/abs/2507.11948">arxiv.org/abs/2507.11948</a></li>
 <li>S. Li, Z. Wang, Y. He, Y. Li, Q. Shi, J. Li, Y. Hu, W. Che, X. Han, Z. Liu, and M. Sun. <em>AutoTriton: Automatic Triton Programming with Reinforcement Learning in LLMs.</em> arXiv:2507.05687, 2025. <a href="https://arxiv.org/abs/2507.05687">arxiv.org/abs/2507.05687</a></li>
 <li>J. Woo, S. Zhu, A. Nie, Z. Jia, Y. Wang, and Y. Park. <em>TritonRL: Training LLMs to Think and Code Triton Without Cheating.</em> arXiv:2510.17891, 2025. <a href="https://arxiv.org/abs/2510.17891">arxiv.org/abs/2510.17891</a></li>
 <li>W. Liu, J. Xu, Y. Li, L. Zheng, T. Li, Q. Liu, and J. He. <em>Dr. Kernel: Reinforcement Learning Done Right for Triton Kernel Generations.</em> arXiv:2602.05885, 2026. <a href="https://arxiv.org/abs/2602.05885">arxiv.org/abs/2602.05885</a></li>
 <li>W. Dai, H. Wu, Q. Yu, H. Gao, J. Li, C. Jiang, W. Lou, Y. Song, H. Yu, J. Chen, W. Ma, Y. Zhang, J. Liu, M. Wang, X. Liu, and H. Zhou. <em>CUDA Agent: Large-Scale Agentic RL for High-Performance CUDA Kernel Generation.</em> arXiv:2602.24286, 2026. <a href="https://arxiv.org/abs/2602.24286">arxiv.org/abs/2602.24286</a></li>
 <li>S. Guo, M. Lin, and T. Yang. <em>DRTriton: Large-Scale Synthetic Data Driven Reinforcement Learning for Triton Kernel Generation.</em> arXiv:2603.21465, 2026. <a href="https://arxiv.org/abs/2603.21465">arxiv.org/abs/2603.21465</a></li>
 </ol>
-<p><strong>Reinforcement-learning algorithms and foundations.</strong></p>
-<ol start="7">
-<li>J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov. <em>Proximal Policy Optimization Algorithms.</em> arXiv:1707.06347, 2017. <a href="https://arxiv.org/abs/1707.06347">arxiv.org/abs/1707.06347</a></li>
-<li>Z. Shao, P. Wang, Q. Zhu, R. Xu, J. Song, M. Zhang, Y. Li, Y. Wu, and D. Guo. <em>DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models</em> (introduces GRPO). arXiv:2402.03300, 2024. <a href="https://arxiv.org/abs/2402.03300">arxiv.org/abs/2402.03300</a></li>
-<li>Z. Liu, C. Chen, W. Li, et al. <em>Understanding R1-Zero-Like Training: A Critical Perspective</em> (introduces Dr. GRPO). arXiv:2503.20783, 2025. <a href="https://arxiv.org/abs/2503.20783">arxiv.org/abs/2503.20783</a></li>
+<p><em>(The core RL objective and the PPO / GRPO algorithms are covered, with references, in Section 1.6. Multi-turn RL and its references are in Section 3.1.)</em></p>
+<p><strong>Curriculum and task selection.</strong></p>
+<ol start="6">
 <li>Q. Yu, Z. Zhang, R. Zhu, et al. <em>DAPO: An Open-Source LLM Reinforcement Learning System at Scale.</em> arXiv:2503.14476, 2025. <a href="https://arxiv.org/abs/2503.14476">arxiv.org/abs/2503.14476</a></li>
-<li>DeepSeek-AI. <em>DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning.</em> arXiv:2501.12948, 2025. <a href="https://arxiv.org/abs/2501.12948">arxiv.org/abs/2501.12948</a></li>
-<li>L. Ouyang, J. Wu, X. Jiang, et al. <em>Training Language Models to Follow Instructions with Human Feedback.</em> arXiv:2203.02155, 2022. <a href="https://arxiv.org/abs/2203.02155">arxiv.org/abs/2203.02155</a></li>
-<li>J. Schulman, P. Moritz, S. Levine, M. Jordan, and P. Abbeel. <em>High-Dimensional Continuous Control Using Generalized Advantage Estimation</em> (GAE). arXiv:1506.02438, 2015. <a href="https://arxiv.org/abs/1506.02438">arxiv.org/abs/1506.02438</a></li>
-<li>A. Ahmadian, C. Cremer, M. Gallé, et al. <em>Back to Basics: Revisiting REINFORCE-Style Optimization for Learning from Human Feedback in LLMs</em> (RLOO). arXiv:2402.14740, 2024. <a href="https://arxiv.org/abs/2402.14740">arxiv.org/abs/2402.14740</a></li>
-<li>A. Kazemnejad, M. Aghajohari, E. Portelance, et al. <em>VinePPO: Unlocking RL Potential for LLM Reasoning through Refined Credit Assignment.</em> arXiv:2410.01679, 2024. <a href="https://arxiv.org/abs/2410.01679">arxiv.org/abs/2410.01679</a></li>
-<li>H. Lightman, V. Kosaraju, Y. Burda, et al. <em>Let&rsquo;s Verify Step by Step</em> (process reward models). arXiv:2305.20050, 2023. <a href="https://arxiv.org/abs/2305.20050">arxiv.org/abs/2305.20050</a></li>
-<li>P. Wang, L. Li, Z. Shao, et al. <em>Math-Shepherd: Verify and Reinforce LLMs Step-by-step without Human Annotations.</em> arXiv:2312.08935, 2024. <a href="https://arxiv.org/abs/2312.08935">arxiv.org/abs/2312.08935</a></li>
 <li>Y. Bengio, J. Louradour, R. Collobert, and J. Weston. <em>Curriculum Learning.</em> ICML, 2009. <a href="https://dl.acm.org/doi/10.1145/1553374.1553380">dl.acm.org/doi/10.1145/1553374.1553380</a></li>
 <li>L. Wen, Y. Cai, F. Xiao, et al. <em>Light-R1: Curriculum SFT, DPO and RL for Long CoT from Scratch and Beyond.</em> arXiv:2503.10460, 2025. <a href="https://arxiv.org/abs/2503.10460">arxiv.org/abs/2503.10460</a></li>
 <li>NVIDIA. <em>AceReason-Nemotron: Advancing Math and Code Reasoning through Reinforcement Learning.</em> arXiv:2505.16400, 2025. <a href="https://arxiv.org/abs/2505.16400">arxiv.org/abs/2505.16400</a></li>
 <li>Skywork AI. <em>Skywork Open Reasoner 1 Technical Report.</em> arXiv:2505.22312, 2025. <a href="https://arxiv.org/abs/2505.22312">arxiv.org/abs/2505.22312</a></li>
 <li>S. Bae, et al. <em>Online Difficulty Filtering for Reasoning-Oriented Reinforcement Learning.</em> arXiv:2504.03380, 2025. <a href="https://arxiv.org/abs/2504.03380">arxiv.org/abs/2504.03380</a></li>
-<li>Z. Wang, K. Wang, Q. Ma, et al. <em>RAGEN: Understanding Self-Evolution in LLM Agents via Multi-Turn Reinforcement Learning</em> (StarPO). arXiv:2504.20073, 2025. <a href="https://arxiv.org/abs/2504.20073">arxiv.org/abs/2504.20073</a></li>
-<li>B. Jin, H. Zeng, Z. Yue, et al. <em>Search-R1: Training LLMs to Reason and Leverage Search Engines with Reinforcement Learning.</em> arXiv:2503.09516, 2025. <a href="https://arxiv.org/abs/2503.09516">arxiv.org/abs/2503.09516</a></li>
-<li><em>A Practitioner&rsquo;s Guide to Multi-turn Agentic Reinforcement Learning.</em> arXiv:2510.01132, 2025. <a href="https://arxiv.org/abs/2510.01132">arxiv.org/abs/2510.01132</a></li>
-<li><em>Scaling LLM Multi-turn RL with End-to-end Summarization.</em> arXiv:2510.06727, 2025. <a href="https://arxiv.org/abs/2510.06727">arxiv.org/abs/2510.06727</a></li>
-<li>C. Packer, S. Wooders, K. Lin, et al. <em>MemGPT: Towards LLMs as Operating Systems.</em> arXiv:2310.08560, 2023. <a href="https://arxiv.org/abs/2310.08560">arxiv.org/abs/2310.08560</a></li>
 </ol>
 <p><strong>Datasets and benchmarks.</strong></p>
-<ol start="28">
+<ol start="12">
 <li>A. Ouyang, S. Guo, S. Arora, A. L. Zhang, W. Hu, C. Ré, and A. Mirhoseini. <em>KernelBench: Can LLMs Write Efficient GPU Kernels?</em> arXiv:2502.10517, 2025. <a href="https://arxiv.org/abs/2502.10517">arxiv.org/abs/2502.10517</a></li>
 <li>J. Li, X. Han, et al. <em>TritonBench: Benchmarking Large Language Model Capabilities for Generating Triton Operators.</em> arXiv:2502.14752, 2025. <a href="https://arxiv.org/abs/2502.14752">arxiv.org/abs/2502.14752</a></li>
 <li>S. Paliskara and M. Saroufim. <em>KernelBook.</em> Hugging Face Datasets (GPUMODE/KernelBook), 2025. <a href="https://huggingface.co/datasets/GPUMODE/KernelBook">huggingface.co/datasets/GPUMODE/KernelBook</a></li>
@@ -994,14 +956,7 @@ To keep the policy on tasks in its <em>learnable zone</em>, where at least some 
   <ul>
     <li><a href="#example-rl-workflow-for-kernel-optimization">Example: RL workflow for kernel optimization</a></li>
     <li><a href="#data">Data</a></li>
-    <li><a href="#rl-formulation">RL formulation</a></li>
-    <li><a href="#policy-gradient-optimization">Policy-gradient optimization</a>
-      <ul>
-        <li><a href="#ppo">PPO</a></li>
-        <li><a href="#grpo">GRPO</a></li>
-        <li><a href="#kl-regularization-to-the-reference-policy">KL regularization to the reference policy</a></li>
-      </ul>
-    </li>
+    <li><a href="#rl-formulation-for-kernels">RL formulation for kernels</a></li>
     <li><a href="#rewards-from-execution-feedback">Rewards from execution feedback</a></li>
     <li><a href="#curriculum-and-task-selection">Curriculum and task selection</a>
       <ul>
@@ -1009,12 +964,7 @@ To keep the policy on tasks in its <em>learnable zone</em>, where at least some 
         <li><a href="#adaptive-sampling">Adaptive sampling</a></li>
       </ul>
     </li>
-    <li><a href="#multi-turn-rl">Multi-turn RL</a>
-      <ul>
-        <li><a href="#context-management">Context management</a></li>
-        <li><a href="#credit-assignment">Credit assignment</a></li>
-      </ul>
-    </li>
+    <li><a href="#multi-turn-rl-and-agentic-refinement">Multi-turn RL and agentic refinement</a></li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>

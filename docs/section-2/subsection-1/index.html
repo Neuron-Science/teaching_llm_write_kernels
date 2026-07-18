@@ -26,7 +26,7 @@ Section 1 assembled the target of this tutorial. It laid out the accelerator har
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-1/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.031218deba9c6ddede47b1dfb08118837945de97efe00c9497fb7650e494acb4.js" integrity="sha256-AxIY3rqcbd7eR7HfsIEYg3lF3pfv4AyUl/t2UOSUrLQ=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.4904cee82bd1c002d6b8fbb5ca9deb4b4dda6d481fca68547ff13ccf71953538.js" integrity="sha256-SQTO6CvRwALWuPu1yp3rS03abUgfymhUf/E8z3GVNTg=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-1/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -473,15 +473,9 @@ https://github.com/alex-shpak/hugo-book
         <li><a href="#data-augmentation">Data augmentation</a></li>
       </ul>
     </li>
-    <li><a href="#sft-on-llms">SFT on LLMs</a>
-      <ul>
-        <li><a href="#large-language-models-as-kernel-generators">Large language models as kernel generators</a></li>
-        <li><a href="#the-training-objective">The training objective</a></li>
-        <li><a href="#token-level-cross-entropy">Token-level cross-entropy</a></li>
-      </ul>
-    </li>
+    <li><a href="#training-on-the-kernel-corpus">Training on the kernel corpus</a></li>
     <li><a href="#limitations">Limitations</a></li>
-    <li><a href="#references">References</a></li>
+    <li><a href="#further-reading">Further Reading</a></li>
   </ul>
 </nav>
 
@@ -973,168 +967,36 @@ https://github.com/alex-shpak/hugo-book
 </span></span></code></pre></div><p>lets one model serve every backend while generating the right dialect on demand, instead of silently blending CUDA, Triton, and NKI syntax. The same tag also organizes training: because backends are unevenly represented (abundant CUDA/Triton data, scarce NKI — the low-resource-DSL problem from Section 1.3), the corpus can be balanced or up-weighted by backend so the plentiful targets do not drown out the scarce ones.</p>
 </li>
 </ul>
-<h2 id="sft-on-llms">
-  SFT on LLMs
+<h2 id="training-on-the-kernel-corpus">
+  Training on the kernel corpus
   
-  <a class="anchor" href="#sft-on-llms">#</a>
+  <a class="anchor" href="#training-on-the-kernel-corpus">#</a>
   
 </h2>
-<p>Everything so far has been about <em>assembling</em> the corpus 
+<p>With the corpus 
 <span>
   \( \mathcal{D}_{SFT} \)
   </span>
 
- — sampling candidates, filtering them for quality, and enriching each pair with reasoning traces, varied configurations, and metadata. We now turn to what SFT actually <em>does</em> with that corpus: the model it trains, the objective it optimizes, and the mechanics of a single training step. The rest of this section makes that precise.</p>
-<h3 id="large-language-models-as-kernel-generators">
-  Large language models as kernel generators
-  
-  <a class="anchor" href="#large-language-models-as-kernel-generators">#</a>
-  
-</h3>
-<p>We cast kernel generation as conditional sequence modeling and fine-tune an autoregressive language model 
+ assembled and enriched, the training step is the standard SFT recipe of Section 1.5, now with kernels as the targets. We fine-tune an autoregressive policy 
 <span>
   \( \pi_\theta \)
   </span>
 
- with parameters 
+ by maximum likelihood, minimizing the token-level negative log-likelihood of each reference kernel 
 <span>
-  \( \theta \)
+  \( y^{(i)} \)
   </span>
 
-. Given a prompt 
+ given its task prompt 
 <span>
-  \( x \)
-  </span>
-
-, the model assigns a probability to a candidate kernel 
-<span>
-  \( y \)
-  </span>
-
- by the chain rule of probability, one token at a time:</p>
-
-<span>\[ \pi_\theta(y \mid x) \;=\; \prod_{t=1}^{|y|} \pi_\theta\!\big(y_t \mid x, \, y_{&lt;t}\big), \]</span>
-<p>where 
-<span>
-  \( y_{\lt t} = (y_1, \dots, y_{t-1}) \)
-  </span>
-
- is the prefix of already-generated tokens (with 
-<span>
-  \( y_{\lt 1} \)
-  </span>
-
- empty). Each factor 
-<span>
-  \( \pi_\theta(\,\cdot \mid x, y_{\lt t}) \)
-  </span>
-
- is a categorical distribution over the vocabulary 
-<span>
-  \( \mathcal{V} \)
-  </span>
-
-, obtained by a softmax over the model&rsquo;s output logits 
-<span>
-  \( z_t \in \mathbb{R}^{|\mathcal{V}|} \)
-  </span>
-
- at position 
-<span>
-  \( t \)
+  \( x^{(i)} \)
   </span>
 
 :</p>
 
-<span>\[ \pi_\theta(v \mid x, y_{&lt;t}) \;=\; \frac{\exp\big(z_t[v]\big)}{\sum_{v&#39; \in \mathcal{V}} \exp\big(z_t[v&#39;]\big)}, \qquad v \in \mathcal{V}. \]</span>
-<p>Because 
-<span>
-  \( z_t \)
-  </span>
-
- depends on the full context 
-<span>
-  \( (x, y_{\lt t}) \)
-  </span>
-
- through the transformer, every token is predicted conditioned on the entire prompt and all previously generated tokens.</p>
-<h3 id="the-training-objective">
-  The training objective
-  
-  <a class="anchor" href="#the-training-objective">#</a>
-  
-</h3>
-<p>SFT fits 
-<span>
-  \( \theta \)
-  </span>
-
- by <strong>maximum likelihood estimation</strong> (MLE) on the corpus 
-<span>
-  \( \mathcal{D}_{SFT} \)
-  </span>
-
-: we choose the parameters that make the reference kernels as probable as possible,</p>
-
-<span>\[ \theta^{\star} \;=\; \arg\max_{\theta} \; \prod_{i=1}^{N} \pi_\theta\!\big(y^{(i)} \mid x^{(i)}\big). \]</span>
-<p>Taking the logarithm turns the product into a sum, and negating turns maximization into minimization, giving the <strong>negative log-likelihood</strong> loss</p>
-
-<span>\[ \mathcal{L}_{\text{SFT}}(\theta) \;=\; -\,\frac{1}{N}\sum_{i=1}^{N} \log \pi_\theta\!\big(y^{(i)} \mid x^{(i)}\big). \]</span>
-<p>Expanding each sequence likelihood with the autoregressive factorization above exposes the per-token structure:</p>
-
-<span>\[ \mathcal{L}_{\text{SFT}}(\theta) \;=\; -\,\frac{1}{N}\sum_{i=1}^{N} \sum_{t=1}^{|y^{(i)}|} \log \pi_\theta\!\big(y^{(i)}_t \mid x^{(i)}, \, y^{(i)}_{&lt;t}\big), \]</span>
-<p>or, as an expectation over the data distribution (dropping the example index for readability),</p>
-
-<span>\[ \mathcal{L}_{\text{SFT}}(\theta) \;=\; \mathbb{E}_{(x,y)\sim\mathcal{D}_{SFT}}\!\left[\, -\sum_{t=1}^{|y|} \log \pi_\theta\big(y_t \mid x, y_{&lt;t}\big) \right]. \]</span>
-<h3 id="token-level-cross-entropy">
-  Token-level cross-entropy
-  
-  <a class="anchor" href="#token-level-cross-entropy">#</a>
-  
-</h3>
-<p>Each inner term is the <strong>cross-entropy</strong> between the one-hot target 
-<span>
-  \( e_{y_t} \in \{0,1\}^{|\mathcal{V}|} \)
-  </span>
-
- and the model&rsquo;s predicted distribution:</p>
-
-<span>\[ -\log \pi_\theta(y_t \mid x, y_{&lt;t}) \;=\; -\sum_{v \in \mathcal{V}} e_{y_t}[v]\,\log \pi_\theta(v \mid x, y_{&lt;t}). \]</span>
-<p>Two properties of this objective are worth making explicit:</p>
-<ol>
-<li>
-<p><strong>Teacher forcing.</strong> At every position the model is conditioned on the <em>ground-truth</em> prefix 
-<span>
-  \( y_{\lt t} \)
-  </span>
-
- — the reference tokens up to 
-<span>
-  \( t \)
-  </span>
-
- — rather than on its own past predictions. The entire target sequence is scored in a <em>single</em> forward pass under a causal mask, with no autoregressive sampling during training, which is what lets the loss decompose into 
-<span>
-  \( |y| \)
-  </span>
-
- independent, densely-supervised terms per example.</p>
-</li>
-<li>
-<p><strong>Exposure bias.</strong> Because training always supplies the correct prefix while inference must consume the model&rsquo;s own (possibly erroneous) generations, SFT is subject to the well-known train/inference <em>exposure bias</em> — a mismatch that the later RL stage, which trains on the model&rsquo;s own rollouts, helps to address.</p>
-</li>
-</ol>
-<!-- **Implementation note.** In practice this objective is realized as a *masked next-token negative log-likelihood*. A training framework runs one forward pass over the concatenated prompt-and-response sequence, shifts the predictions by one position to align each output with the next reference token, and applies the loss only on the *response* tokens through a loss mask — the prompt tokens are attended to as context but are never used as targets — before averaging the surviving per-token losses. For instance, verl's SFT loss gathers the reference-token log-probabilities 
-<span>
-  \( \log \pi_\theta(y_t \mid x, y_{\lt t}) \)
-  </span>
-
-, keeps only the response positions via a `response_mask`, and normalizes by the number of supervised tokens — exactly the 
-<span>
-  \( \mathcal{L}_{\text{SFT}} \)
-  </span>
-
- above. -->
+<span>\[ \mathcal{L}_{\text{SFT}}(\theta) \;=\; -\,\frac{1}{N}\sum_{i=1}^{N} \sum_{t=1}^{|y^{(i)}|} \log \pi_\theta\!\big(y^{(i)}_t \mid x^{(i)}, \, y^{(i)}_{\lt t}\big). \]</span>
+<p>As in Section 1.5, the loss is applied only to the kernel (completion) tokens under a loss mask, and it is teacher-forced: every position conditions on the <em>ground-truth</em> prefix rather than the model&rsquo;s own past tokens. For kernels, the effect is exactly the two-fold grounding described at the start of this section, i.e., the model absorbs the target DSL&rsquo;s syntax and API surface (the <code>@triton.jit</code> / <code>nl.load</code> idioms, valid launch configurations) and shifts its prior toward the region of well-formed, idiomatic kernels. The reasoning-augmented targets from above train it to reproduce the optimization reasoning before committing to code.</p>
 <h2 id="limitations">
   Limitations
   
@@ -1157,10 +1019,10 @@ https://github.com/alex-shpak/hugo-book
 </li>
 </ul>
 <p>In short, SFT is the right way to <em>ground</em> a model in a kernel language: it teaches valid syntax, correct APIs, and idiomatic structure, and it moves the model&rsquo;s prior into the neighborhood of good kernels — a strong and usually necessary starting point. What it cannot do is push <em>past</em> the corpus. Because its only signal is token-level imitation of fixed references, it can neither discover kernels faster than the ones it was shown nor optimize toward the metric that ultimately matters — measured performance on real hardware. Closing that gap requires a different kind of signal: instead of asking &ldquo;does this match the reference tokens?&rdquo;, we compile and run each generated kernel and reward it for <em>actually being correct and fast</em>. That is exactly the shift from imitation to <strong>reinforcement learning from execution feedback</strong>, the subject of Section 2.2, where the model learns from its own rollouts against a hardware-grounded reward rather than from a static corpus.</p>
-<h2 id="references">
-  References
+<h2 id="further-reading">
+  Further Reading
   
-  <a class="anchor" href="#references">#</a>
+  <a class="anchor" href="#further-reading">#</a>
   
 </h2>
 <p><strong>SFT-based kernel generation.</strong></p>
@@ -1251,15 +1113,9 @@ https://github.com/alex-shpak/hugo-book
         <li><a href="#data-augmentation">Data augmentation</a></li>
       </ul>
     </li>
-    <li><a href="#sft-on-llms">SFT on LLMs</a>
-      <ul>
-        <li><a href="#large-language-models-as-kernel-generators">Large language models as kernel generators</a></li>
-        <li><a href="#the-training-objective">The training objective</a></li>
-        <li><a href="#token-level-cross-entropy">Token-level cross-entropy</a></li>
-      </ul>
-    </li>
+    <li><a href="#training-on-the-kernel-corpus">Training on the kernel corpus</a></li>
     <li><a href="#limitations">Limitations</a></li>
-    <li><a href="#references">References</a></li>
+    <li><a href="#further-reading">Further Reading</a></li>
   </ul>
 </nav>
 

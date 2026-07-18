@@ -31,7 +31,7 @@ The reward is the only channel through which &ldquo;what we actually want&rdquo;
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-3/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.031218deba9c6ddede47b1dfb08118837945de97efe00c9497fb7650e494acb4.js" integrity="sha256-AxIY3rqcbd7eR7HfsIEYg3lF3pfv4AyUl/t2UOSUrLQ=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.4904cee82bd1c002d6b8fbb5ca9deb4b4dda6d481fca68547ff13ccf71953538.js" integrity="sha256-SQTO6CvRwALWuPu1yp3rS03abUgfymhUf/E8z3GVNTg=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-3/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -536,7 +536,7 @@ https://github.com/alex-shpak/hugo-book
   \( r(x, y) = \sum_k w_k\, s_k(x, y) \)
   </span>
 
- — add up the component signals, e.g. correctness plus speedup (<em>Kevin</em>) or correctness alone (<em>AutoTriton</em>). Simple and dense, but every term is an independent surface to game, and a large weight on speed can dominate correctness.</li>
+ — add up the component signals, e.g. correctness plus speedup (Kevin [4]) or correctness alone (AutoTriton [7]). Simple and dense, but every term is an independent surface to game, and a large weight on speed can dominate correctness.</li>
 <li><strong>Discrete milestone / gating.</strong> Bucket the outcome into ordered tiers so partial progress is rewarded without unbounded incentives:</li>
 </ul>
 
@@ -554,11 +554,11 @@ https://github.com/alex-shpak/hugo-book
 );"></script>
 
 <span>\[ r(x, y) = \begin{cases} 0, &amp; \text{fails to compile}, \\ 1, &amp; \text{correct}, \\ 2, &amp; \text{correct and faster than baseline}. \end{cases} \]</span>
-<p>This is robust to outliers and low-variance, and correctness strictly gates any performance reward (<em>CUDA Agent</em>).</p>
+<p>This is robust to outliers and low-variance, and correctness strictly gates any performance reward (CUDA Agent [2]).</p>
 <ul>
 <li><strong>Conditional gating.</strong> A stricter version of the above: performance is scored only once correctness passes, and efficiency signals only once a speed threshold passes — so the policy cannot trade correctness for speed.</li>
-<li><strong>Hierarchical decomposition.</strong> Split the trajectory into parts and reward them differently — for instance a high-level optimization <em>plan</em> vs. the low-level <em>code</em> — attaching speed-oriented credit to the plan and correctness credit to the implementation (<em>TritonRL</em>).</li>
-<li><strong>Length shaping.</strong> A concave length penalty (short kernels for easy tasks, longer allowed for hard ones) discourages padding and rambling without punishing genuinely complex kernels (<em>Composer 2</em>).</li>
+<li><strong>Hierarchical decomposition.</strong> Split the trajectory into parts and reward them differently — for instance a high-level optimization <em>plan</em> vs. the low-level <em>code</em> — attaching speed-oriented credit to the plan and correctness credit to the implementation (TritonRL [1]).</li>
+<li><strong>Length shaping.</strong> A concave length penalty (short kernels for easy tasks, longer allowed for hard ones) discourages padding and rambling without punishing genuinely complex kernels (Composer 2 [10]).</li>
 </ul>
 <!-- Two related knobs act at the *optimizer* level rather than in 
 <span>
@@ -572,7 +572,7 @@ https://github.com/alex-shpak/hugo-book
   <a class="anchor" href="#reward-hacking">#</a>
   
 </h2>
-<p>Because a verifiable reward is an <em>automated checker</em>, RL will find and exploit any gap between &ldquo;passing the checker&rdquo; and &ldquo;actually being a fast, correct kernel.&rdquo; This is <strong>reward hacking</strong> — a long-studied pathology of RL in general, in which an agent maximizes the literal reward at the expense of the objective it was meant to proxy (<em>Amodei et al.</em>; <em>Skalse et al.</em>) — and it is the dominant failure mode of kernel RL. Since the reward is only a <em>proxy</em> for a good kernel, the policy can drive it up without genuinely optimizing anything: it superficially satisfies the check while cheating underneath.</p>
+<p>Because a verifiable reward is an <em>automated checker</em>, RL will find and exploit any gap between &ldquo;passing the checker&rdquo; and &ldquo;actually being a fast, correct kernel.&rdquo; This is <strong>reward hacking</strong> — a long-studied pathology of RL in general, in which an agent maximizes the literal reward at the expense of the objective it was meant to proxy [8, 9] — and it is the dominant failure mode of kernel RL. Since the reward is only a <em>proxy</em> for a good kernel, the policy can drive it up without genuinely optimizing anything: it superficially satisfies the check while cheating underneath.</p>
 <p>To make this concrete, fix one task — a matrix multiply 
 <span>
   \( C = AB \)
@@ -656,7 +656,7 @@ https://github.com/alex-shpak/hugo-book
   \( f_{\mathrm{ref}} \)
   </span>
 
-, or read a non-zeroed buffer — closing exactly the memory loophole that <em>Sakana</em>&rsquo;s system was caught exploiting. It is the only defense against evaluator tampering, since no reward term can detect an attack on the thing computing the reward.</p>
+, or read a non-zeroed buffer — closing exactly the memory loophole that Sakana&rsquo;s system [6] was caught exploiting. It is the only defense against evaluator tampering, since no reward term can detect an attack on the thing computing the reward.</p>
 <p><strong>② Robust correctness</strong> <em>(correctness gate — vs. faking correctness)</em>. Score correctness on 
 <span>
   \( I \)
@@ -676,10 +676,10 @@ https://github.com/alex-shpak/hugo-book
   </span>
 
  each evaluation also blocks the <em>input-memoization</em> trick — caching an output the first time and replaying it whenever the same input recurs.</p>
-<p><strong>③ Genuine-kernel verification</strong> <em>(genuine-kernel gate — vs. not-a-kernel)</em>. Confirm the work is actually done <em>by the kernel</em>. A <strong>kernel-coverage</strong> ratio — the fraction of runtime spent inside the custom kernel — exposes fallbacks and partial kernelization (<em>Dr. Kernel</em>):</p>
+<p><strong>③ Genuine-kernel verification</strong> <em>(genuine-kernel gate — vs. not-a-kernel)</em>. Confirm the work is actually done <em>by the kernel</em>. A <strong>kernel-coverage</strong> ratio — the fraction of runtime spent inside the custom kernel — exposes fallbacks and partial kernelization (Dr. Kernel [3]):</p>
 
 <span>\[ \rho(y) = \frac{t_{\text{custom-kernel}}}{t_{\text{total}}}, \qquad \text{flag as not-a-kernel if } \rho(y) &lt; \rho_{\min} \]</span>
-<p>This pairs with a static verifier (a rule-based check for real <code>@triton.jit</code> kernels and forbidden framework calls) and an LLM judge for semantic correctness (<em>TritonRL</em>), plus, on accelerators, profile checks such as a matmul with an idle tensor engine but heavy DMA.</p>
+<p>This pairs with a static verifier (a rule-based check for real <code>@triton.jit</code> kernels and forbidden framework calls) and an LLM judge for semantic correctness (TritonRL [1]), plus, on accelerators, profile checks such as a matmul with an idle tensor engine but heavy DMA.</p>
 <p><strong>④ Robust timing</strong> <em>(timing gate — vs. faking speed)</em>. Time the kernel 
 <span>
   \( R \)
@@ -690,7 +690,7 @@ https://github.com/alex-shpak/hugo-book
   \( B \)
   </span>
 
- buckets, and take the median of the per-bucket means — resistant to noise and to warm-up/caching spikes (median-of-buckets, <em>CUDA-L1</em>):</p>
+ buckets, and take the median of the per-bucket means — resistant to noise and to warm-up/caching spikes (median-of-buckets, CUDA-L1 [5]):</p>
 
 <span>\[ \hat{t}(y) = \operatorname{median}_{1 \le b \le B} \Big( \tfrac{1}{|b|}\!\sum_{r \in b} t_r \Big), \qquad \mathrm{speedup}(y) = \frac{\hat{t}(\mathrm{baseline})}{\hat{t}(y)} \]</span>
 <!-- 
