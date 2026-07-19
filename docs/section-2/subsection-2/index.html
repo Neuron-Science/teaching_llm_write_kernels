@@ -26,7 +26,7 @@ Section 2.1 left us with an SFT model that is grounded in a kernel language (it 
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-2/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.4904cee82bd1c002d6b8fbb5ca9deb4b4dda6d481fca68547ff13ccf71953538.js" integrity="sha256-SQTO6CvRwALWuPu1yp3rS03abUgfymhUf/E8z3GVNTg=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.18bfc85b5cb2087da294896b5edd2baeb4171666afd32fe8a642990be1fa8c55.js" integrity="sha256-GL/IW1yyCH2ilIlrXt0rrrQXFmav0y/opkKZC&#43;H6jFU=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-2/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -532,7 +532,7 @@ https://github.com/alex-shpak/hugo-book
 <p>The <strong>sandbox</strong> that produces this reward is a piece of infrastructure worth designing deliberately, because it executes untrusted, model-generated code on real accelerators:</p>
 <ul>
 <li><strong>Isolation.</strong> Each candidate runs in a separate process (or container) with a hard timeout and memory cap, so a kernel that hangs, deadlocks, or corrupts device state cannot stall or crash training; it is simply killed and scored as a failure.</li>
-<li><strong>Determinism and fairness.</strong> Correctness is checked against fixed test inputs at a set tolerance, and timing uses warm-up runs plus repeated trials (reporting, e.g., the median) on a pinned hardware target, so the speedup signal is reproducible rather than noisy.</li>
+<li><strong>Determinism and fairness.</strong> Correctness is checked against fixed test inputs at a set tolerance, and timing uses warm-up runs plus repeated trials (reporting, e.g., the median) on a pinned hardware target, so the speedup signal is reproducible rather than noisy. TritonRL [2], for instance, grades correctness on 5 random test inputs and takes each kernel&rsquo;s runtime as the mean of 10 timed runs.</li>
 <li><strong>Throughput.</strong> Because RL needs a reward for every rollout, the sandbox is typically pooled across many workers/devices and caches compilation. In practice the throughput of this environment, not the policy update, is often what limits training, so building a robust distributed kernel environment (for example Dr. Kernel&rsquo;s KernelGYM [3]) is an engineering contribution in its own right.</li>
 </ul>
 <p>In the multi-turn and agentic settings (Section 3.1), this same environment is exposed to the policy as callable <strong>tools</strong> (a compiler, a runner, a profiler), so kernel RL doubles as an instance of <em>tool-use</em> RLVR, with the tools&rsquo; output serving as both the model&rsquo;s feedback and the source of the reward.</p>
@@ -616,7 +616,7 @@ https://github.com/alex-shpak/hugo-book
 <p>Because the reference and test inputs <em>are</em> the reward oracle, a task is only as good as that check, and its quality directly bounds the training signal:</p>
 <ul>
 <li><strong>A trustworthy reference.</strong> The reference must be unambiguously correct (even if slow), since every generated kernel is graded against it; a buggy reference wrongly rewards kernels for being wrong.</li>
-<li><strong>Representative, adversarial test inputs.</strong> Correctness is only ever checked on the provided inputs, so they must exercise the shapes, dtypes, and edge cases that matter (e.g., non-power-of-two <code>N</code>, tail masking, extreme values). Thin or too-forgiving tests are exactly what let a model <em>reward hack</em>, passing the check without implementing the operator (Section 2.3), so the tests double as the corpus&rsquo;s integrity guarantee.</li>
+<li><strong>Representative, adversarial test inputs.</strong> Correctness is only ever checked on the provided inputs, so they must exercise the shapes, dtypes, and edge cases that matter (e.g., non-power-of-two <code>N</code>, tail masking, extreme values). Thin or too-forgiving tests are exactly what let a model <em>reward hack</em>, passing the check without implementing the operator (Section 2.3), so the tests double as the corpus&rsquo;s integrity guarantee. Rather than hand-write them, systems often synthesize several input configurations per task and keep only those that execute correctly against the reference; TritonRL [2] generates varied input shapes this way and reports better robustness to unseen shapes as a result.</li>
 <li><strong>A meaningful performance baseline.</strong> The speed reward is <em>relative</em> to a baseline (the PyTorch reference, or an existing kernel to beat), so a fair, well-tuned baseline is what makes &ldquo;faster&rdquo; mean something rather than rewarding a kernel for merely outrunning an artificially slow reference.</li>
 </ul>
 <h2 id="rl-formulation-for-kernels">
@@ -704,7 +704,12 @@ https://github.com/alex-shpak/hugo-book
   \( t_{\text{ref}}(x) \)
   </span>
 
- that of the baseline (the reference implementation, or an existing kernel to beat). The gating is what stops the policy from being paid for a fast-but-wrong kernel; the exact choice of 
+ that of the baseline (the reference implementation, or an existing kernel to beat). The gating is what stops the policy from being paid for a fast-but-wrong kernel. Production systems often add a further outer gate on top of compilation and correctness: TritonRL [2], for instance, multiplies both reward branches by a validity check (syntax plus a functionality test that the code is a genuine Triton kernel rather than a wrapper around a framework op) and bounds the speed term with a clip at 
+<span>
+  \( 2\times \)
+  </span>
+
+, so a kernel earns speed credit only once it is valid and correct, and no single extreme measurement can dominate. The exact choice of 
 <span>
   \( r_{\text{compile}} \)
   </span>
@@ -838,7 +843,7 @@ To keep the policy on tasks in its <em>learnable zone</em>, where at least some 
   <a class="anchor" href="#static-curation">#</a>
   
 </h3>
-<p>Here the training distribution is fixed <em>ahead of time</em>, independently of the policy, by selecting or weighting tasks according to a <strong>difficulty estimate</strong>. That estimate can be <em>intrinsic</em> to the task (its operator count, or its category, a single-operator kernel versus a fused multi-operator one) or <em>model-relative</em> (how often a fixed base model already solves it); either way the goal is the same: concentrate the pool where the policy can actually learn. This shows up under a few familiar names: a <strong>curriculum</strong> that orders tasks easy-to-hard on a schedule, <strong>data mixing</strong> that fixes the proportions of easy versus hard categories, and <strong>difficulty filtering</strong> that drops tasks the base model almost always or never solves. Curriculum learning is a long-standing idea [7], and recent reasoning-RL systems apply it heavily to math and code, staging training from easy to hard (or from one domain to another) and filtering by the pass rate of a <em>fixed</em> model measured once offline (Light-R1 [8]; Skywork-OR1 [10]; and the code stage of AceReason-Nemotron [9]), with kernel-RL work following suit (DRTriton [5]; TritonRL [2]).</p>
+<p>Here the training distribution is fixed <em>ahead of time</em>, independently of the policy, by selecting or weighting tasks according to a <strong>difficulty estimate</strong>. That estimate can be <em>intrinsic</em> to the task (its operator count, or its category, a single-operator kernel versus a fused multi-operator one) or <em>model-relative</em> (how often a fixed base model already solves it); either way the goal is the same: concentrate the pool where the policy can actually learn. This shows up under a few familiar names: a <strong>curriculum</strong> that orders tasks easy-to-hard on a schedule, <strong>data mixing</strong> that fixes the proportions of easy versus hard categories, and <strong>difficulty filtering</strong> that drops tasks the base model almost always or never solves. Curriculum learning is a long-standing idea [7], and recent reasoning-RL systems apply it heavily to math and code, staging training from easy to hard (or from one domain to another) and filtering by the pass rate of a <em>fixed</em> model measured once offline (Light-R1 [8]; Skywork-OR1 [10]; and the code stage of AceReason-Nemotron [9]), with kernel-RL work following suit (DRTriton [5]; TritonRL [2]). TritonRL, for instance, uses an LLM labeler (Qwen3-235B-Instruct) to sort tasks into the KernelBench [12] tiers (single-operator, operator-fusion, full-architecture) and then, notably, finds that training its RL stage <em>exclusively</em> on the single-operator tier gives the best correctness and match-or-beat-reference rate on <em>both</em> single-operator and fusion evaluations: fusion tasks succeed so rarely that their groups are almost always zero-variance (above) and contribute little signal, while single-operator skill appears to transfer upward. The lesson is not that easy tasks are always better, but that a task earns its place in the mixture only while the policy still solves it <em>sometimes</em>, keeping its groups inside the learnable band.</p>
 <h3 id="adaptive-sampling">
   Adaptive sampling
   

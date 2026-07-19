@@ -26,7 +26,7 @@ Supervised fine-tuning (Section 1.5) teaches a model to imitate a fixed corpus, 
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-6/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.4904cee82bd1c002d6b8fbb5ca9deb4b4dda6d481fca68547ff13ccf71953538.js" integrity="sha256-SQTO6CvRwALWuPu1yp3rS03abUgfymhUf/E8z3GVNTg=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.18bfc85b5cb2087da294896b5edd2baeb4171666afd32fe8a642990be1fa8c55.js" integrity="sha256-GL/IW1yyCH2ilIlrXt0rrrQXFmav0y/opkKZC&#43;H6jFU=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/subsection-6/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -575,7 +575,7 @@ https://github.com/alex-shpak/hugo-book
   \( r(x, y) \)
   </span>
 
- can be obtained only once the <em>entire</em> response has been produced (and, for verifiable domains, checked); so that there are no intermediate per-token rewards. This creates the central <strong>credit-assignment</strong> problem: a whole response earns a <em>single</em> scalar, yet that scalar gives no direct indication of <em>which</em> of the hundreds of token-level actions deserve the credit or blame. A slow kernel, for instance, might be 390 good tokens undone by one bad block-size choice, or wrong throughout; the reward is the same number in both cases. Separating the decisions that mattered from those that were incidental is precisely what the advantage estimators below (PPO&rsquo;s value network, GRPO&rsquo;s group-relative baseline) are designed to do.</p>
+ can be obtained only once the <em>entire</em> response has been produced (and, for verifiable domains, checked); so that there are no intermediate per-token rewards. This creates the central <strong>credit-assignment</strong> problem: a whole response earns a <em>single</em> scalar, yet that scalar gives no direct indication of <em>which</em> of the hundreds of token-level actions deserve the credit or blame. A slow kernel, for instance, might be 390 good tokens undone by one bad block-size choice, or wrong throughout; the reward is the same number in both cases. Separating the decisions that mattered from those that were incidental is precisely what the advantage estimators below are designed to do, though they operate at different granularities: PPO&rsquo;s value network produces a <em>per-position</em> advantage, whereas GRPO&rsquo;s group-relative baseline scores a whole response against its siblings, leaving credit <em>within</em> a response uniform. Sharpening credit below the response level (for instance by decomposing the reward across token classes such as reasoning vs. code) is a further step, taken up in Section 2.</p>
 <p>To keep the policy from drifting too far from a reference model 
 <span>
   \( \pi_{\text{ref}} \)
@@ -891,7 +891,7 @@ https://github.com/alex-shpak/hugo-book
   \( \theta \)
   </span>
 
- drifts.</p>
+ drifts. (This clipping of the probability <em>ratio</em> is distinct from clipping the <em>reward</em> itself, a separate stabilization device: some verifiable-reward systems bound the reward&rsquo;s magnitude, e.g. capping a speedup reward, so that a single rare extreme value cannot dominate the update.)</p>
 <p><strong>The cost.</strong> PPO is robust and is the algorithm behind much of RLHF, but it is expensive: the value network is a second model roughly the size of the policy, so it roughly doubles memory and adds its own training instability (a bad critic yields misleading advantages). That overhead is the specific pain point the next algorithm removes.</p>
 <h3 id="grpo-group-relative-policy-optimization">
   GRPO: Group Relative Policy Optimization
@@ -956,7 +956,7 @@ https://github.com/alex-shpak/hugo-book
   \( \hat{A}_i \)
   </span>
 
-, since there is no critic to produce a per-token value. The group&rsquo;s rollouts thus do double duty: they are both the samples the gradient is averaged over <em>and</em> the samples whose mean provides the baseline, which is precisely what lets GRPO drop the value network. Everything else is inherited from PPO: GRPO plugs this 
+, since there is no critic to produce a per-token value. This uniform assignment can be relaxed without reintroducing a critic: one can partition a response into token classes and run a separate group-relative objective on each, giving the classes different advantages. TritonRL [5] does exactly this for kernels, crediting the reasoning (plan) tokens and the code tokens with distinct rewards; we return to it in Section 2. The group&rsquo;s rollouts thus do double duty: they are both the samples the gradient is averaged over <em>and</em> the samples whose mean provides the baseline, which is precisely what lets GRPO drop the value network. Everything else is inherited from PPO: GRPO plugs this 
 <span>
   \( \hat{A}_i \)
   </span>
@@ -994,7 +994,12 @@ https://github.com/alex-shpak/hugo-book
   \( \operatorname{std}(\{r_1, \dots, r_G\}) \)
   </span>
 
- rescales advantages to unit variance per prompt. It is a normalization choice, not a necessity: dropping it (together with the sequence-length normalization) removes a subtle bias toward longer or harder responses (Dr. GRPO [3]). The essential idea, the group mean as baseline, does not depend on it.</p>
+ rescales advantages to unit variance per prompt. It is a normalization choice, not a necessity: dropping it (together with the sequence-length normalization) removes a subtle bias toward longer or harder responses (Dr. GRPO [3]). The essential idea, the group mean as baseline, does not depend on it: the kernel-generation system TritonRL [5], for example, uses the mean-only advantage 
+<span>
+  \( \hat{A}_i = r_i - \operatorname{mean}(\{r_1, \dots, r_G\}) \)
+  </span>
+
+ with no division by the standard deviation.</p>
 <h3 id="kl-regularization-to-the-reference-policy">
   KL regularization to the reference policy
   
@@ -1070,6 +1075,7 @@ https://github.com/alex-shpak/hugo-book
 <li>Z. Shao, P. Wang, Q. Zhu, R. Xu, J. Song, X. Bi, et al. <em>DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models</em> (introduces GRPO). arXiv:2402.03300, 2024. <a href="https://arxiv.org/abs/2402.03300">arxiv.org/abs/2402.03300</a></li>
 <li>Z. Liu, C. Chen, W. Li, P. Qi, T. Pang, C. Du, W. S. Lee, and M. Lin. <em>Understanding R1-Zero-Like Training: A Critical Perspective</em> (Dr. GRPO). arXiv:2503.20783, 2025. <a href="https://arxiv.org/abs/2503.20783">arxiv.org/abs/2503.20783</a></li>
 <li>Q. Yu, Z. Zhang, R. Zhu, Y. Yuan, et al. <em>DAPO: An Open-Source LLM Reinforcement Learning System at Scale.</em> arXiv:2503.14476, 2025. <a href="https://arxiv.org/abs/2503.14476">arxiv.org/abs/2503.14476</a></li>
+<li>J. Woo, S. Zhu, A. Nie, Z. Jia, Y. Wang, and Y. Park. <em>TritonRL: Training LLMs to Think and Code Triton Without Cheating.</em> arXiv:2510.17891, 2025. <a href="https://arxiv.org/abs/2510.17891">arxiv.org/abs/2510.17891</a></li>
 </ol>
 </article>
  

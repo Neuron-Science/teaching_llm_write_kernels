@@ -15,38 +15,13 @@
   #
   
 
-[Placeholder overview for Section 2. This section covers how base language models are
-adapted into capable kernel generators through post-training: supervised fine-tuning on
-kernel corpora, dataset construction and curation, and reinforcement learning driven by
-execution feedback and performance signals.]
-
-  Contents of this section
-  
-  #
-  
-
-
-  2.1 Supervised Fine-Tuning on Kernel Corpora
-  
-  #
-  
-
-[Placeholder description.]
-
-  2.2 Reinforcement Learning from Execution Feedback
-  
-  #
-  
-
-[Placeholder description.]">
+This section applies the post-training machinery of Section 1 to kernels. We start with supervised fine-tuning on kernel corpora, which grounds a base model in a kernel language but is capped by the demonstrations it imitates. We then turn to reinforcement learning from execution feedback, which lets the model learn from compiling and timing its own kernels and so surpass that ceiling, and close with how such a reward is designed and how models learn to cheat it.">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
 <meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/">
   <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
   <meta property="og:title" content="Post-Training LLMs for Kernel Generation">
-  <meta property="og:description" content="Post-Training LLMs for Kernel Generation # Overview # [Placeholder overview for Section 2. This section covers how base language models are adapted into capable kernel generators through post-training: supervised fine-tuning on kernel corpora, dataset construction and curation, and reinforcement learning driven by execution feedback and performance signals.]
-Contents of this section # 2.1 Supervised Fine-Tuning on Kernel Corpora # [Placeholder description.]
-2.2 Reinforcement Learning from Execution Feedback # [Placeholder description.]">
+  <meta property="og:description" content="Post-Training LLMs for Kernel Generation # Overview # This section applies the post-training machinery of Section 1 to kernels. We start with supervised fine-tuning on kernel corpora, which grounds a base model in a kernel language but is capped by the demonstrations it imitates. We then turn to reinforcement learning from execution feedback, which lets the model learn from compiling and timing its own kernels and so surpass that ceiling, and close with how such a reward is designed and how models learn to cheat it.">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
 <title>Post-Training LLMs for Kernel Generation | Teaching LLMs to Write System Kernels</title>
@@ -55,7 +30,7 @@ Contents of this section # 2.1 Supervised Fine-Tuning on Kernel Corpora # [Place
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.4904cee82bd1c002d6b8fbb5ca9deb4b4dda6d481fca68547ff13ccf71953538.js" integrity="sha256-SQTO6CvRwALWuPu1yp3rS03abUgfymhUf/E8z3GVNTg=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.18bfc85b5cb2087da294896b5edd2baeb4171666afd32fe8a642990be1fa8c55.js" integrity="sha256-GL/IW1yyCH2ilIlrXt0rrrQXFmav0y/opkKZC&#43;H6jFU=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -528,10 +503,7 @@ https://github.com/alex-shpak/hugo-book
   <a class="anchor" href="#overview">#</a>
   
 </h2>
-<p>[Placeholder overview for Section 2. This section covers how base language models are
-adapted into capable kernel generators through post-training: supervised fine-tuning on
-kernel corpora, dataset construction and curation, and reinforcement learning driven by
-execution feedback and performance signals.]</p>
+<p>This section applies the post-training machinery of Section 1 to kernels. We start with supervised fine-tuning on kernel corpora, which grounds a base model in a kernel language but is capped by the demonstrations it imitates. We then turn to reinforcement learning from execution feedback, which lets the model learn from compiling and timing its own kernels and so surpass that ceiling, and close with how such a reward is designed and how models learn to cheat it.</p>
 <h2 id="contents-of-this-section">
   <strong>Contents of this section</strong>
   
@@ -544,21 +516,21 @@ execution feedback and performance signals.]</p>
   <a class="anchor" href="#21-supervised-fine-tuning-on-kernel-corpora">#</a>
   
 </h3>
-<p>[Placeholder description.]</p>
+<p>Building a <em>(task, kernel)</em> corpus, through sampling, filtering, and augmentation, and training a base model to imitate it, along with the limits of imitation.</p>
 <h3 id="22-reinforcement-learning-from-execution-feedback">
   <a href="/llm_kernel_writing/docs/section-2/subsection-2/">2.2 Reinforcement Learning from Execution Feedback</a>
   
   <a class="anchor" href="#22-reinforcement-learning-from-execution-feedback">#</a>
   
 </h3>
-<p>[Placeholder description.]</p>
+<p>Casting kernel generation as RL: prompt-only tasks, the compile-correct-fast reward from running each kernel, and the curriculum that keeps training on solvable tasks.</p>
 <h3 id="23-rl-for-kernel-optimization-and-reward-hacking">
   <a href="/llm_kernel_writing/docs/section-2/subsection-3/">2.3 RL for Kernel Optimization and Reward Hacking</a>
   
   <a class="anchor" href="#23-rl-for-kernel-optimization-and-reward-hacking">#</a>
   
 </h3>
-<p>[Placeholder description.]</p>
+<p>Designing the reward from execution signals, the ways models game it, and the verification pipeline that keeps the reward honest.</p>
 </article>
  
       

@@ -33,14 +33,14 @@ In the single-turn setting of Section 2.2, the policy gets exactly one attempt a
   \( r(x, y) \)
   
 
- (compile, check, time), and a policy-gradient step follows. It is simple and effective, and it is the foundation the multi-turn case extends. Its limitation is that it discards information: when a kernel fails to compile or runs slowly, the concrete evidence of why, the compiler diagnostic, the failing test, the profile, is thrown away, and the next sample starts from scratch rather than from that feedback.">
+ (compile, check, time), and a policy-gradient step follows. It is simple and effective, and it is the foundation the multi-turn case extends. Its limitation is that it discards information: when a kernel fails to compile or runs slowly, the concrete evidence of why, the compiler diagnostic, the failing test, the profile, is thrown away, and the next sample starts from scratch rather than from that feedback. A second, subtler limitation is internal to each attempt: the environment returns one scalar for the whole response, so the reward cannot say which part of a long generation earned it. A response that reasons out a genuinely fast strategy but then commits a single low-level indexing error is scored the same as one whose approach was wrong throughout, and the good reasoning is penalized along with the faulty code. This within-response credit-assignment problem exists even for a single attempt, and the token-class decomposition discussed below is designed to address it.">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
 <meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/llm_kernel_writing/docs/section-3/subsection-1/">
   <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
   <meta property="og:title" content="3.1 Single-Turn and Multi-Turn RL for Kernel Optimization">
   <meta property="og:description" content="Single-Turn and Multi-Turn RL for Kernel Optimization # Section 2.2 set up reinforcement learning for kernels in its simplest form. This section situates that setup on a spectrum, from single-turn to multi-turn RL, and develops the multi-turn (agentic) case that the rest of Section 3 builds on.
-Single-turn RL: one attempt per task # In the single-turn setting of Section 2.2, the policy gets exactly one attempt at each task: given a prompt \( x \) it samples a kernel \( y \sim \pi_\theta(\cdot \mid x) \) , the environment returns a single terminal reward \( r(x, y) \) (compile, check, time), and a policy-gradient step follows. It is simple and effective, and it is the foundation the multi-turn case extends. Its limitation is that it discards information: when a kernel fails to compile or runs slowly, the concrete evidence of why, the compiler diagnostic, the failing test, the profile, is thrown away, and the next sample starts from scratch rather than from that feedback.">
+Single-turn RL: one attempt per task # In the single-turn setting of Section 2.2, the policy gets exactly one attempt at each task: given a prompt \( x \) it samples a kernel \( y \sim \pi_\theta(\cdot \mid x) \) , the environment returns a single terminal reward \( r(x, y) \) (compile, check, time), and a policy-gradient step follows. It is simple and effective, and it is the foundation the multi-turn case extends. Its limitation is that it discards information: when a kernel fails to compile or runs slowly, the concrete evidence of why, the compiler diagnostic, the failing test, the profile, is thrown away, and the next sample starts from scratch rather than from that feedback. A second, subtler limitation is internal to each attempt: the environment returns one scalar for the whole response, so the reward cannot say which part of a long generation earned it. A response that reasons out a genuinely fast strategy but then commits a single low-level indexing error is scored the same as one whose approach was wrong throughout, and the good reasoning is penalized along with the faulty code. This within-response credit-assignment problem exists even for a single attempt, and the token-class decomposition discussed below is designed to address it.">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
 <title>3.1 Single-Turn and Multi-Turn RL for Kernel Optimization | Teaching LLMs to Write System Kernels</title>
@@ -49,7 +49,7 @@ Single-turn RL: one attempt per task # In the single-turn setting of Section 2.2
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-3/subsection-1/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.4904cee82bd1c002d6b8fbb5ca9deb4b4dda6d481fca68547ff13ccf71953538.js" integrity="sha256-SQTO6CvRwALWuPu1yp3rS03abUgfymhUf/E8z3GVNTg=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.18bfc85b5cb2087da294896b5edd2baeb4171666afd32fe8a642990be1fa8c55.js" integrity="sha256-GL/IW1yyCH2ilIlrXt0rrrQXFmav0y/opkKZC&#43;H6jFU=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-3/subsection-1/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -540,7 +540,7 @@ https://github.com/alex-shpak/hugo-book
   \( r(x, y) \)
   </span>
 
- (compile, check, time), and a policy-gradient step follows. It is simple and effective, and it is the foundation the multi-turn case extends. Its limitation is that it <em>discards information</em>: when a kernel fails to compile or runs slowly, the concrete evidence of <em>why</em>, the compiler diagnostic, the failing test, the profile, is thrown away, and the next sample starts from scratch rather than from that feedback.</p>
+ (compile, check, time), and a policy-gradient step follows. It is simple and effective, and it is the foundation the multi-turn case extends. Its limitation is that it <em>discards information</em>: when a kernel fails to compile or runs slowly, the concrete evidence of <em>why</em>, the compiler diagnostic, the failing test, the profile, is thrown away, and the next sample starts from scratch rather than from that feedback. A second, subtler limitation is internal to each attempt: the environment returns <em>one</em> scalar for the whole response, so the reward cannot say <em>which part</em> of a long generation earned it. A response that reasons out a genuinely fast strategy but then commits a single low-level indexing error is scored the same as one whose approach was wrong throughout, and the good reasoning is penalized along with the faulty code. This <em>within-response</em> credit-assignment problem exists even for a single attempt, and the token-class decomposition discussed below is designed to address it.</p>
 <h2 id="multi-turn-rl">
   Multi-turn RL
   
@@ -661,6 +661,41 @@ https://github.com/alex-shpak/hugo-book
 <li><strong>Trajectory-level.</strong> The coarsest grain gives <em>every</em> turn of the trajectory the same single advantage — one score for the whole multi-turn rollout — which is simplest and lowest-variance but cannot tell which turn (let alone which step) actually earned the reward. Turn-level is exactly this signal subdivided per turn.</li>
 </ul>
 <p>Finer credit assignment lowers the variance of the learning signal but adds cost and its own estimation error, so kernel systems in practice sit mostly at the turn levels.</p>
+<p><strong>A second axis: attribution by token class.</strong> The granularity ladder above subdivides a trajectory <em>temporally</em>, by token, by turn, or as a whole. An orthogonal move is to subdivide a <em>single</em> response by the <strong>role</strong> of its tokens. TritonRL&rsquo;s <strong>hierarchical reward decomposition (HRD)</strong> [14] does this for kernels: it splits one response into a high-level <em>planning</em> span (the reasoning trace) and a low-level <em>coding</em> span (the emitted kernel) and gives each span its own reward and its own group-relative advantage, rather than one scalar for the whole response. Because it decomposes a <em>single</em> response, it applies even to a single attempt (TritonRL is single-turn) and sits off the token/turn/trajectory ladder rather than at a point on it, directly addressing the within-response credit problem noted at the start of this section.</p>
+<p>The two spans are rewarded <em>asymmetrically</em> (Section 2.3): the plan tokens receive the speedup reward and the code tokens the correctness reward. The asymmetry is deliberate. Because the code is written <em>conditioned on</em> the plan, charging the code for a slow plan would punish a faithful implementation of an inherently suboptimal strategy, so correctness-only on the code decouples that confound while the speedup pressure lands on the plan, where the strategy is actually chosen. Rewarding both spans for speedup instead lowers the match-or-beat-reference rate from 36% to 33% on single-operator tasks [14]. The two spans then co-evolve under one weighted objective,</p>
+
+<span>\[ \mathcal{J}(\theta) = \mathbb{E}\big[\, \alpha\, \mathcal{J}^{\text{plan}}(\theta) + \mathcal{J}^{\text{code}}(\theta) \,\big], \]</span>
+<p>where 
+<span>
+  \( \mathcal{J}^{\text{plan}} \)
+  </span>
+
+ and 
+<span>
+  \( \mathcal{J}^{\text{code}} \)
+  </span>
+
+ are group-relative objectives computed over the plan and code tokens respectively, and the weight 
+<span>
+  \( \alpha \)
+  </span>
+
+ sets how fast the planning policy updates relative to the coding policy. A large 
+<span>
+  \( \alpha \)
+  </span>
+
+ near 1 lets the plan shift faster than the code can stabilize against, while 
+<span>
+  \( \alpha = 0 \)
+  </span>
+
+ freezes the plan; a small value (
+<span>
+  \( \alpha \approx 0.1 \)
+  </span>
+
+) works best, letting the plan drift slowly enough for the code policy to keep pace.</p>
 <h2 id="references">
   References
   
@@ -681,6 +716,7 @@ https://github.com/alex-shpak/hugo-book
 <li>A. Kazemnejad, M. Aghajohari, E. Portelance, et al. <em>VinePPO: Unlocking RL Potential for LLM Reasoning through Refined Credit Assignment.</em> arXiv:2410.01679, 2024. <a href="https://arxiv.org/abs/2410.01679">arxiv.org/abs/2410.01679</a></li>
 <li>H. Lightman, V. Kosaraju, Y. Burda, et al. <em>Let&rsquo;s Verify Step by Step</em> (process reward models). arXiv:2305.20050, 2023. <a href="https://arxiv.org/abs/2305.20050">arxiv.org/abs/2305.20050</a></li>
 <li>P. Wang, L. Li, Z. Shao, et al. <em>Math-Shepherd: Verify and Reinforce LLMs Step-by-step without Human Annotations.</em> arXiv:2312.08935, 2024. <a href="https://arxiv.org/abs/2312.08935">arxiv.org/abs/2312.08935</a></li>
+<li>J. Woo, S. Zhu, A. Nie, Z. Jia, Y. Wang, and Y. Park. <em>TritonRL: Training LLMs to Think and Code Triton Without Cheating.</em> arXiv:2510.17891, 2025. <a href="https://arxiv.org/abs/2510.17891">arxiv.org/abs/2510.17891</a></li>
 </ol>
 </article>
  

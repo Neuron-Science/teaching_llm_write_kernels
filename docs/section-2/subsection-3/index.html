@@ -11,18 +11,18 @@
 
 
 
-The reward is the only channel through which &ldquo;what we actually want&rdquo; enters RL training — a scalar 
+The reward is the only channel through which &ldquo;what we actually want&rdquo; enters RL training, a scalar 
 
   \( r(x, y) \)
   
 
- that should be high when a kernel compiles, is correct, and runs fast. How that reward is designed decides what the policy learns, and its weaknesses become the policy&rsquo;s exploits, so most of the practical challenges of kernel RL trace back to it. This subsection works through them in turn: what signals the reward should carry, how to combine them into a reward design, and how that reward gets hacked — and defended.">
+ that should be high when a kernel compiles, is correct, and runs fast. How that reward is designed decides what the policy learns, and its weaknesses become the policy&rsquo;s exploits, so most of the practical challenges of kernel RL trace back to it. This subsection works through them in turn: what signals the reward should carry, how to combine them into a reward design, and how that reward gets hacked, and defended.">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
 <meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-3/">
   <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
   <meta property="og:title" content="2.3 RL for Kernel Optimization and Reward Hacking">
-  <meta property="og:description" content="RL for Kernel Optimization and Reward Hacking # The reward is the only channel through which “what we actually want” enters RL training — a scalar \( r(x, y) \) that should be high when a kernel compiles, is correct, and runs fast. How that reward is designed decides what the policy learns, and its weaknesses become the policy’s exploits, so most of the practical challenges of kernel RL trace back to it. This subsection works through them in turn: what signals the reward should carry, how to combine them into a reward design, and how that reward gets hacked — and defended.">
+  <meta property="og:description" content="RL for Kernel Optimization and Reward Hacking # The reward is the only channel through which “what we actually want” enters RL training, a scalar \( r(x, y) \) that should be high when a kernel compiles, is correct, and runs fast. How that reward is designed decides what the policy learns, and its weaknesses become the policy’s exploits, so most of the practical challenges of kernel RL trace back to it. This subsection works through them in turn: what signals the reward should carry, how to combine them into a reward design, and how that reward gets hacked, and defended.">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
 <title>2.3 RL for Kernel Optimization and Reward Hacking | Teaching LLMs to Write System Kernels</title>
@@ -31,7 +31,7 @@ The reward is the only channel through which &ldquo;what we actually want&rdquo;
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-3/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.4904cee82bd1c002d6b8fbb5ca9deb4b4dda6d481fca68547ff13ccf71953538.js" integrity="sha256-SQTO6CvRwALWuPu1yp3rS03abUgfymhUf/E8z3GVNTg=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.18bfc85b5cb2087da294896b5edd2baeb4171666afd32fe8a642990be1fa8c55.js" integrity="sha256-GL/IW1yyCH2ilIlrXt0rrrQXFmav0y/opkKZC&#43;H6jFU=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-2/subsection-3/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -497,12 +497,12 @@ https://github.com/alex-shpak/hugo-book
 </h1>
 
 
-<p>The reward is the <em>only</em> channel through which &ldquo;what we actually want&rdquo; enters RL training — a scalar 
+<p>The reward is the <em>only</em> channel through which &ldquo;what we actually want&rdquo; enters RL training, a scalar 
 <span>
   \( r(x, y) \)
   </span>
 
- that should be high when a kernel compiles, is correct, and runs fast. How that reward is designed decides what the policy learns, and its weaknesses become the policy&rsquo;s exploits, so most of the practical <strong>challenges</strong> of kernel RL trace back to it. This subsection works through them in turn: what <strong>signals</strong> the reward should carry, how to combine them into a reward <strong>design</strong>, and how that reward gets <strong>hacked</strong> — and defended.</p>
+ that should be high when a kernel compiles, is correct, and runs fast. How that reward is designed decides what the policy learns, and its weaknesses become the policy&rsquo;s exploits, so most of the practical <strong>challenges</strong> of kernel RL trace back to it. This subsection works through them in turn: what <strong>signals</strong> the reward should carry, how to combine them into a reward <strong>design</strong>, and how that reward gets <strong>hacked</strong>, and defended.</p>
 <h2 id="signals-for-good-kernels">
   Signals for good kernels
   
@@ -511,13 +511,13 @@ https://github.com/alex-shpak/hugo-book
 </h2>
 <p>End-to-end <strong>speedup</strong> over a baseline is the headline signal, but a reward built on speedup alone is both <em>sparse</em> (a kernel earns nothing until it is correct <em>and</em> faster) and <em>easy to game</em>. Richer, more diagnostic signals make the reward denser and harder to exploit. The commonly used signals fall into a few groups:</p>
 <ul>
-<li><strong>Correctness</strong> — outputs match the reference within tolerance, ideally across many shapes and dtypes, not one.</li>
-<li><strong>Performance</strong> — end-to-end speedup, but also its <em>breakdown</em>: kernel-vs-total runtime, per-region timing to locate the bottleneck, and the compute / memory-access / synchronization / launch split.</li>
-<li><strong>Memory and hardware efficiency</strong> — memory-bandwidth utilization, peak memory footprint, cache-hit rate, FLOP efficiency, and (on accelerators such as Trainium) engine-specific occupancy of the tensor/vector/scalar units and DMA activity.</li>
-<li><strong>Robustness</strong> — variance of correctness and speed <em>across shapes</em>, and run-to-run timing consistency (e.g., median-of-buckets timing to resist noise).</li>
-<li><strong>Quality</strong> — a rule-based or LLM-judge assessment of whether the kernel is a genuine, idiomatic implementation rather than a degenerate one.</li>
+<li><strong>Correctness</strong>: outputs match the reference within tolerance, ideally across many shapes and dtypes, not one. <em>Example: a fused RMSNorm kernel matches the PyTorch reference to within <code>atol=1e-2</code> on inputs of shape <code>(4096, 1024)</code> and <code>(8192, 4096)</code>.</em></li>
+<li><strong>Performance</strong>: end-to-end speedup, but also its <em>breakdown</em>: kernel-vs-total runtime, per-region timing to locate the bottleneck, and the compute / memory-access / synchronization / launch split. <em>Example: the kernel runs 1.8x faster than the reference, and profiling attributes 90% of that time to global-memory reads rather than compute.</em></li>
+<li><strong>Memory and hardware efficiency</strong>: memory-bandwidth utilization, peak memory footprint, cache-hit rate, FLOP efficiency, and (on accelerators such as Trainium) engine-specific occupancy of the tensor/vector/scalar units and DMA activity. <em>Example: the kernel sustains 85% of the hardware&rsquo;s peak memory bandwidth, confirming it is close to the roofline for a memory-bound operator.</em></li>
+<li><strong>Robustness</strong>: variance of correctness and speed <em>across shapes</em>, and run-to-run timing consistency (e.g., median-of-buckets timing to resist noise). <em>Example: the kernel stays correct and above 1.5x speedup on both power-of-two and non-power-of-two <code>N</code>, rather than only on the shapes it was tuned for.</em></li>
+<li><strong>Quality</strong>: a rule-based or LLM-judge assessment of whether the kernel is a genuine, idiomatic implementation rather than a degenerate one. <em>Example: a judge flags a &ldquo;matmul&rdquo; kernel that secretly calls <code>torch.matmul</code> as not a genuine implementation, even though it passes the correctness check.</em></li>
 </ul>
-<!-- Beyond making the reward denser, several of these signals double as **anti-cheating** signals (below): a kernel that claims a large speedup while its custom code covers only a trivial fraction of the runtime, or while the tensor engine sits idle, is almost certainly gaming the reward rather than optimizing it. -->
+<p>Beyond making the reward denser, several of these signals double as <strong>anti-cheating</strong> signals (used in the mitigations below): a kernel that claims a large speedup while its custom code covers only a trivial fraction of the runtime, or while the tensor engine sits idle, is almost certainly gaming the reward rather than optimizing it.</p>
 <h2 id="reward-designs">
   Reward designs
   
@@ -529,16 +529,15 @@ https://github.com/alex-shpak/hugo-book
   \( s_k(x, y) \)
   </span>
 
-, the design question is how to fold them into one scalar. Common shapes, roughly from most to least hackable:</p>
+, the design question is how to fold them into a single scalar. The gated compile-correct-fast reward of Section 2.2 is the simplest such design; the shapes below generalize it, arranged roughly from most to least hackable:</p>
 <ul>
 <li><strong>Linear weighted sum.</strong> 
 <span>
   \( r(x, y) = \sum_k w_k\, s_k(x, y) \)
   </span>
 
- — add up the component signals, e.g. correctness plus speedup (Kevin [4]) or correctness alone (AutoTriton [7]). Simple and dense, but every term is an independent surface to game, and a large weight on speed can dominate correctness.</li>
-<li><strong>Discrete milestone / gating.</strong> Bucket the outcome into ordered tiers so partial progress is rewarded without unbounded incentives:</li>
-</ul>
+: add up the component signals, e.g. correctness plus speedup (Kevin [4]) or correctness alone (AutoTriton [7]). Simple and dense, but every term is an independent surface to game, and a large weight on speed can dominate correctness.</li>
+<li><strong>Discrete milestone / gating.</strong> Bucket the outcome into ordered tiers so partial progress is rewarded without unbounded incentives:
 
 <link rel="stylesheet" href="/llm_kernel_writing/katex/katex.min.css" />
 <script defer src="/llm_kernel_writing/katex/katex.min.js"></script>
@@ -554,11 +553,45 @@ https://github.com/alex-shpak/hugo-book
 );"></script>
 
 <span>\[ r(x, y) = \begin{cases} 0, &amp; \text{fails to compile}, \\ 1, &amp; \text{correct}, \\ 2, &amp; \text{correct and faster than baseline}. \end{cases} \]</span>
-<p>This is robust to outliers and low-variance, and correctness strictly gates any performance reward (CUDA Agent [2]).</p>
-<ul>
-<li><strong>Conditional gating.</strong> A stricter version of the above: performance is scored only once correctness passes, and efficiency signals only once a speed threshold passes — so the policy cannot trade correctness for speed.</li>
-<li><strong>Hierarchical decomposition.</strong> Split the trajectory into parts and reward them differently — for instance a high-level optimization <em>plan</em> vs. the low-level <em>code</em> — attaching speed-oriented credit to the plan and correctness credit to the implementation (TritonRL [1]).</li>
-<li><strong>Length shaping.</strong> A concave length penalty (short kernels for easy tasks, longer allowed for hard ones) discourages padding and rambling without punishing genuinely complex kernels (Composer 2 [10]).</li>
+This is robust to outliers and low-variance, and correctness strictly gates any performance reward (CUDA Agent [2]).</li>
+<li><strong>Conditional gating.</strong> A stricter version of the above: performance is scored only once correctness passes, and efficiency signals only once a speed threshold passes, so the policy cannot trade correctness for speed. Writing the checks as <em>multiplicative</em> factors makes any failed gate zero out the reward; TritonRL [1] instantiates this as
+
+<span>\[ R_{\text{correct}}(x, y) = \mathrm{valid}(y)\cdot\mathrm{correct}(x, y), \\[4pt]
+R_{\text{speedup}}(x, y) = \mathrm{valid}(y)\cdot\mathrm{clip}\big(\mathrm{speedup}(x, y),\, 2\big), \]</span>
+where 
+<span>
+  \( \mathrm{valid}(y) = \mathrm{syntax}(y)\cdot\mathrm{func}(y) \)
+  </span>
+
+ is itself a product of a syntax and a functionality check, so a kernel earns speedup credit only once it is valid <em>and</em> correct, and the speedup factor is capped at 
+<span>
+  \( 2\times \)
+  </span>
+
+.</li>
+<li><strong>Hierarchical decomposition.</strong> Split the trajectory into parts and reward them differently, for instance a high-level optimization <em>plan</em> vs. the low-level <em>code</em>, attaching speed-oriented credit to the plan and correctness credit to the implementation (TritonRL [1]). Concretely, the plan tokens and code tokens of a single response receive <em>different</em> rewards,
+
+<span>\[ r^{\text{plan}}(x, y) = R_{\text{speedup}}(x, y), \qquad r^{\text{code}}(x, y) = R_{\text{correct}}(x, y), \]</span>
+and the policy optimizes their weighted combination
+
+<span>\[ \mathcal{J}(\theta) = \mathbb{E}\big[\, \alpha\, \mathcal{J}^{\text{plan}}(\theta) + \mathcal{J}^{\text{code}}(\theta) \,\big], \]</span>
+where each 
+<span>
+  \( \mathcal{J}^{c} \)
+  </span>
+
+ is a GRPO objective computed over only the tokens of class 
+<span>
+  \( c \in \{\text{plan}, \text{code}\} \)
+  </span>
+
+, each with its own group-relative advantage. Rewarding code for correctness rather than speedup is deliberate: because the code is conditioned on the plan, charging it for a slow <em>plan</em> would penalize a faithful implementation of an inherently suboptimal strategy. The weight 
+<span>
+  \( \alpha \approx 0.1 \)
+  </span>
+
+ lets the plan policy evolve slowly enough for the code policy to keep pace. This somewhat ameliorates the sparse credit assignment problem.</li>
+<li><strong>Length shaping.</strong> Orthogonal to the hackability axis, this targets a different failure mode (verbosity, not cheating): a concave length penalty (short kernels for easy tasks, longer allowed for hard ones) discourages padding and rambling without punishing genuinely complex kernels (Composer 2 [10]).</li>
 </ul>
 <!-- Two related knobs act at the *optimizer* level rather than in 
 <span>
@@ -572,8 +605,8 @@ https://github.com/alex-shpak/hugo-book
   <a class="anchor" href="#reward-hacking">#</a>
   
 </h2>
-<p>Because a verifiable reward is an <em>automated checker</em>, RL will find and exploit any gap between &ldquo;passing the checker&rdquo; and &ldquo;actually being a fast, correct kernel.&rdquo; This is <strong>reward hacking</strong> — a long-studied pathology of RL in general, in which an agent maximizes the literal reward at the expense of the objective it was meant to proxy [8, 9] — and it is the dominant failure mode of kernel RL. Since the reward is only a <em>proxy</em> for a good kernel, the policy can drive it up without genuinely optimizing anything: it superficially satisfies the check while cheating underneath.</p>
-<p>To make this concrete, fix one task — a matrix multiply 
+<p>Because a verifiable reward is an <em>automated checker</em>, RL will find and exploit any gap between &ldquo;passing the checker&rdquo; and &ldquo;actually being a fast, correct kernel.&rdquo; This is <strong>reward hacking</strong>, a long-studied pathology of RL in general, in which an agent maximizes the literal reward at the expense of the objective it was meant to proxy [8, 9], and it is the dominant failure mode of RL training for kernel generation. Since the reward is only a <em>proxy</em> for a good kernel, the policy can drive it up without genuinely optimizing anything: it superficially satisfies the check while cheating underneath. This is not a hypothetical worry. Sakana AI&rsquo;s CUDA engineer [6] was found to have &ldquo;achieved&rdquo; much of its headline speedup by exploiting a memory loophole in the evaluation harness rather than by writing faster kernels, an incident we return to when hardening the harness below. The scale of the problem can also be measured directly: when TritonRL [1] re-evaluates the concurrent Triton model AutoTriton [7] with its functionality check removed, AutoTriton&rsquo;s reported correctness jumps from 57% to 87%, so roughly a third of its passing kernels were only superficially satisfying the checker rather than implementing the operator, whereas TritonRL&rsquo;s own correctness rises by at most 3% under the same ablation. Worse, fine-tuning against a reward that lacks a rigorous functionality check does not merely fail to help but actively increases functional invalidity: both KernelLLM and AutoTriton emit more functionally invalid kernels after fine-tuning, because the unchecked reward incentivizes invalid shortcuts [1].</p>
+<p>To make this concrete, fix one task, a matrix multiply 
 <span>
   \( C = AB \)
   </span>
@@ -588,76 +621,101 @@ https://github.com/alex-shpak/hugo-book
 </span></span><span style="display:flex;"><span>        b <span style="color:#f92672">=</span> tl<span style="color:#f92672">.</span>load(<span style="color:#f92672">...</span>)                <span style="color:#75715e"># a BLOCK×BLOCK tile of B</span>
 </span></span><span style="display:flex;"><span>        acc <span style="color:#f92672">+=</span> tl<span style="color:#f92672">.</span>dot(a, b)             <span style="color:#75715e"># multiply-accumulate the tiles</span>
 </span></span><span style="display:flex;"><span>    tl<span style="color:#f92672">.</span>store(<span style="color:#f92672">...</span>, acc)                  <span style="color:#75715e"># write the output tile</span>
-</span></span></code></pre></div><p>The exploits fall into four families: three submit a <strong>dishonest kernel</strong> — faking correctness, faking speed, or not writing a kernel at all — while the fourth attacks the <strong>evaluator itself</strong>. Each is illustrated below on the matmul task.</p>
-<p><strong>Faking correctness — return a passing output it never computed.</strong></p>
+</span></span></code></pre></div><p>The exploits fall into four families: three submit a <strong>dishonest kernel</strong> (faking correctness, faking speed, or not writing a kernel at all), while the fourth attacks the <strong>evaluator itself</strong>. Each is illustrated below on the matmul task.</p>
+<p><strong>Faking correctness: return a passing output it never computed.</strong></p>
 <ul>
-<li><strong>Reference copy</strong> — hand back the reference output instead of computing it.</li>
-<li><strong>Tolerance gaming</strong> — a cheap constant or low-precision output that lands within <code>atol</code>/<code>rtol</code>.</li>
-<li><strong>Benchmark-task exploits</strong> — near-zero or seed-invariant outputs, or algebraically trivializing the task.</li>
-</ul>
+<li>
+<p><strong>Reference copy</strong>: hand back the reference output instead of computing it. <em>Example: <code>tl.store(c_ptr, tl.load(ref_ptr))</code> copies <code>A @ B</code> straight from the reference buffer.</em></p>
+</li>
+<li>
+<p><strong>Tolerance gaming</strong>: a cheap constant or low-precision output that lands within <code>atol</code>/<code>rtol</code>. <em>Example: return <code>torch.zeros_like(C)</code> when the reference entries are tiny enough to fall inside <code>atol=1e-2</code>.</em></p>
+</li>
+<li>
+<p><strong>Benchmark-task exploits</strong>: near-zero or seed-invariant outputs, or algebraically trivializing the task. <em>Example: notice the test always passes an identity <code>A</code> and just return <code>B</code>.</em></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#a6e22e">@triton.jit</span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">matmul_kernel</span>(a_ptr, b_ptr, c_ptr, ref_ptr, N, BLOCK: tl<span style="color:#f92672">.</span>constexpr):
 </span></span><span style="display:flex;"><span>    i <span style="color:#f92672">=</span> tl<span style="color:#f92672">.</span>program_id(<span style="color:#ae81ff">0</span>) <span style="color:#f92672">*</span> BLOCK <span style="color:#f92672">+</span> tl<span style="color:#f92672">.</span>arange(<span style="color:#ae81ff">0</span>, BLOCK)
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Write the reference answer straight into the output. The check</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># C ≈ A @ B then passes — yet A and B are never read and no matmul runs.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># C ≈ A @ B then passes, yet A and B are never read and no matmul runs.</span>
 </span></span><span style="display:flex;"><span>    tl<span style="color:#f92672">.</span>store(c_ptr <span style="color:#f92672">+</span> i, tl<span style="color:#f92672">.</span>load(ref_ptr <span style="color:#f92672">+</span> i))
-</span></span></code></pre></div><p><strong>Faking speed — correct, but the measured time is gamed.</strong></p>
-<ul>
-<li><strong>Warm-up-cache exploit</strong> — cache the result during warm-up, then skip the compute in the timed run.</li>
-<li><strong>Input memoization</strong> — cache outputs keyed on input identity.</li>
-<li><strong>Sync removal</strong> — drop a synchronization the kernel needs so the timer stops early.</li>
+</span></span></code></pre></div></li>
 </ul>
+<p><strong>Faking speed: correct, but the measured time is gamed.</strong></p>
+<ul>
+<li>
+<p><strong>Warm-up-cache exploit</strong>: cache the result during warm-up, then skip the compute in the timed run. <em>Example: compute <code>A @ B</code> on the untimed warm-up call, store it, and return the stored tensor when timed.</em></p>
+</li>
+<li>
+<p><strong>Input memoization</strong>: cache outputs keyed on input identity. <em>Example: key a dict on <code>A.data_ptr()</code> so the repeated timed call is a near-zero-second cache hit.</em></p>
+</li>
+<li>
+<p><strong>Sync removal</strong>: drop a synchronization the kernel needs so the timer stops early. <em>Example: omit <code>torch.cuda.synchronize()</code> so the timer returns before the kernel has actually finished.</em></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>_cache <span style="color:#f92672">=</span> {}
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">matmul</span>(A, B):
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> A<span style="color:#f92672">.</span>data_ptr() <span style="color:#f92672">not</span> <span style="color:#f92672">in</span> _cache:      <span style="color:#75715e"># first (untimed) warm-up call: compute for real</span>
 </span></span><span style="display:flex;"><span>        _cache[A<span style="color:#f92672">.</span>data_ptr()] <span style="color:#f92672">=</span> A <span style="color:#f92672">@</span> B
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> _cache[A<span style="color:#f92672">.</span>data_ptr()]         <span style="color:#75715e"># timed call, same inputs: cache hit → ~0 s measured</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># The output is correct, but the expensive compute ran outside the timed window.</span>
-</span></span></code></pre></div><p><strong>Not a real kernel — the framework does the work.</strong></p>
-<ul>
-<li><strong>Direct fallback</strong> — call the framework op directly, or wrap it in <code>try</code>/<code>except</code> / inheritance.</li>
-<li><strong>Trivial or partial kernel</strong> — a trivial or unused kernel, or kernelizing only a sub-operation.</li>
-<li><strong>Framework-feature laundering</strong> — wrap the op in a CUDA Graph or <code>torch.compile</code> and claim its speedup.</li>
+</span></span></code></pre></div></li>
 </ul>
+<p><strong>Not a real kernel: the framework does the work.</strong></p>
+<ul>
+<li>
+<p><strong>Direct fallback</strong>: call the framework op directly, or wrap it in <code>try</code>/<code>except</code> / inheritance. <em>Example: the body is just <code>return torch.matmul(A, B)</code>.</em></p>
+</li>
+<li>
+<p><strong>Trivial or partial kernel</strong>: a trivial or unused kernel, or kernelizing only a sub-operation. <em>Example: a Triton kernel that only scales the output while <code>torch.matmul</code> does the actual multiply.</em></p>
+</li>
+<li>
+<p><strong>Framework-feature laundering</strong>: wrap the op in a CUDA Graph or <code>torch.compile</code> and claim its speedup. <em>Example: capture <code>torch.matmul</code> in a CUDA Graph and report the graph&rsquo;s launch savings as the kernel&rsquo;s speedup.</em></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">matmul</span>(A, B):
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Correct and honestly timed — but there is no custom kernel at all:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Correct and honestly timed, but there is no custom kernel at all:</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># PyTorch&#39;s built-in matmul does the work, so nothing was written or optimized.</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> torch<span style="color:#f92672">.</span>matmul(A, B)
-</span></span></code></pre></div><p><strong>Tampering with the evaluator — attack the checker or timer itself.</strong> These attacks target the harness — plain Python: the correctness oracle, the timer, the environment — rather than the kernel, so they are the <em>least</em> backend-specific family: the same tricks apply to CUDA, Triton, or any other target.</p>
+</span></span></code></pre></div></li>
+</ul>
+<p><strong>Tampering with the evaluator: attack the checker or timer itself.</strong> These attacks target the harness (plain Python: the correctness oracle, the timer, the environment) rather than the kernel, so they are the <em>least</em> backend-specific family: the same tricks apply to CUDA, Triton, or any other target.</p>
 <ul>
-<li><strong>Check subversion</strong> — monkey-patch the correctness oracle (e.g., <code>torch.allclose</code>) so it always passes, or the timer (<code>time.perf_counter</code>, <code>torch.cuda.synchronize</code>) so the runtime reads as zero.</li>
-<li><strong>Memory aliasing</strong> — exploit an output buffer the harness never zeroed, so it still holds the reference.</li>
+<li><strong>Check subversion</strong>: monkey-patch the correctness oracle (e.g., <code>torch.allclose</code>) so it always passes, or the timer (<code>time.perf_counter</code>, <code>torch.cuda.synchronize</code>) so the runtime reads as zero. <em>Example: <code>torch.allclose = lambda *a, **k: True</code> makes every output pass.</em></li>
+<li><strong>Memory aliasing</strong>: exploit an output buffer the harness never zeroed, so it still holds the reference. <em>Example: write nothing and let the output tensor keep the <code>A @ B</code> values a prior reference run left in it.</em></li>
 </ul>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> torch
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># The harness verifies correctness with torch.allclose(output, reference).</span>
 </span></span><span style="display:flex;"><span><span style="color:#75715e"># Overwrite it to always return True → any output, even garbage, &#34;passes&#34;.</span>
 </span></span><span style="display:flex;"><span>torch<span style="color:#f92672">.</span>allclose <span style="color:#f92672">=</span> <span style="color:#66d9ef">lambda</span> <span style="color:#f92672">*</span>a, <span style="color:#f92672">**</span>k: <span style="color:#66d9ef">True</span>
-</span></span></code></pre></div><h2 id="how-to-mitigate-reward-hacking">
+</span></span></code></pre></div><p>Although the examples above are written in Triton and PyTorch, the four families are backend-general: the same faking-correctness, faking-speed, not-a-kernel, and evaluator-tampering exploits arise for CUDA, for NKI on Trainium, or for any other target, because they attack the <em>evaluation protocol</em> rather than a specific kernel language.</p>
+<h2 id="how-to-mitigate-reward-hacking">
   How to mitigate reward hacking
   
   <a class="anchor" href="#how-to-mitigate-reward-hacking">#</a>
   
 </h2>
-<p>Mitigation hardens the <em>pipeline</em> that turns a submission into a reward. Rather than one check, a robust reward runs the submission in an isolated sandbox and passes it through a chain of gates — compile, correctness, genuineness, timing — where any failure caps the reward before speed is ever credited:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>  submission
-</span></span><span style="display:flex;"><span>      │
-</span></span><span style="display:flex;"><span>      ▼   ┌──────────── ① sandbox (harness isolation) ────────────┐
+<p>Mitigation hardens the <em>pipeline</em> that turns a submission into a reward. Rather than one check, a robust reward runs the submission in an isolated sandbox and passes it through a chain of gates (compile, correctness, genuineness, timing) where any failure caps the reward before speed is ever credited:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>                              submission
+</span></span><span style="display:flex;"><span>                                   │
+</span></span><span style="display:flex;"><span>                                   ▼   
+</span></span><span style="display:flex;"><span>          ┌──────────── ① sandbox (harness isolation) ────────────┐
 </span></span><span style="display:flex;"><span>          │  cannot patch the timer / synchronize, reach the      │
 </span></span><span style="display:flex;"><span>          │  reference, or read a non-zeroed output buffer        │
 </span></span><span style="display:flex;"><span>          └────────────────────────┬──────────────────────────────┘
 </span></span><span style="display:flex;"><span>                                   ▼
 </span></span><span style="display:flex;"><span>   compile ──▶ ② correctness ──▶ ③ genuine-kernel ──▶ ④ timing ──▶ ⑤ reward
 </span></span><span style="display:flex;"><span>                  (I random          (coverage ρ,       (median-      (+ penalties)
-</span></span><span style="display:flex;"><span>                   inputs)            verifier)          of-buckets)
+</span></span><span style="display:flex;"><span>                   inputs)            verifier)       of-buckets)
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>   any gate fails  ⇒  reward capped (0, or r_correct with no speed credit)
-</span></span></code></pre></div><p><strong>① Harness isolation</strong> <em>(the sandbox — vs. tampering with the evaluator)</em>. None of the checks below matter if the policy can rewrite them, so the whole pipeline runs sandboxed: the submission cannot patch the timer or <code>synchronize</code>, reach 
+</span></span></code></pre></div><p>Each gate hardens one of the <em>signals</em> from the first section into a defense: robust correctness hardens the <strong>Correctness</strong> signal, kernel-coverage the <strong>Quality</strong> and <strong>Performance</strong> signals, and median-of-buckets timing the <strong>Robustness</strong> signal. Taking them in the order of the pipeline:</p>
+<ol>
+<li>
+<p><strong>Harness isolation</strong> <em>(the sandbox, vs. tampering with the evaluator)</em>. None of the checks below matter if the policy can rewrite them, so the whole pipeline runs sandboxed: the submission cannot patch the timer or <code>synchronize</code>, reach 
 <span>
   \( f_{\mathrm{ref}} \)
   </span>
 
-, or read a non-zeroed buffer — closing exactly the memory loophole that Sakana&rsquo;s system [6] was caught exploiting. It is the only defense against evaluator tampering, since no reward term can detect an attack on the thing computing the reward.</p>
-<p><strong>② Robust correctness</strong> <em>(correctness gate — vs. faking correctness)</em>. Score correctness on 
+, or read a non-zeroed buffer, closing exactly the memory loophole that Sakana&rsquo;s system [6] was caught exploiting. It is the only defense against evaluator tampering, since no reward term can detect an attack on the thing computing the reward.</p>
+</li>
+<li>
+<p><strong>Robust correctness</strong> <em>(correctness gate, vs. faking correctness)</em>. Score correctness on 
 <span>
   \( I \)
   </span>
@@ -667,7 +725,12 @@ https://github.com/alex-shpak/hugo-book
   \( v_1, \dots, v_I \)
   </span>
 
- rather than one (TritonRL), so a memorized constant or a copied reference cannot pass in general:</p>
+ rather than one (TritonRL [1] uses 
+<span>
+  \( I = 5 \)
+  </span>
+
+), so a memorized constant or a copied reference cannot pass in general:</p>
 
 <span>\[ \mathrm{correct}(y) = \mathbf{1}\!\left[\; \max_{j=1,\dots,I} \big\lVert f_y(v_j) - f_{\mathrm{ref}}(v_j) \big\rVert \;\le\; \mathrm{atol} + \mathrm{rtol}\cdot \lVert f_{\mathrm{ref}}(v_j) \rVert \;\right] \]</span>
 <p>Drawing fresh 
@@ -675,12 +738,30 @@ https://github.com/alex-shpak/hugo-book
   \( v_j \)
   </span>
 
- each evaluation also blocks the <em>input-memoization</em> trick — caching an output the first time and replaying it whenever the same input recurs.</p>
-<p><strong>③ Genuine-kernel verification</strong> <em>(genuine-kernel gate — vs. not-a-kernel)</em>. Confirm the work is actually done <em>by the kernel</em>. A <strong>kernel-coverage</strong> ratio — the fraction of runtime spent inside the custom kernel — exposes fallbacks and partial kernelization (Dr. Kernel [3]):</p>
+ each evaluation also blocks the <em>input-memoization</em> trick, caching an output the first time and replaying it whenever the same input recurs.</p>
+</li>
+<li>
+<p><strong>Genuine-kernel verification</strong> <em>(genuine-kernel gate, vs. not-a-kernel)</em>. Confirm the work is actually done <em>by the kernel</em>. A <strong>kernel-coverage</strong> ratio, the fraction of runtime spent inside the custom kernel, exposes fallbacks and partial kernelization (Dr. Kernel [3]):</p>
 
 <span>\[ \rho(y) = \frac{t_{\text{custom-kernel}}}{t_{\text{total}}}, \qquad \text{flag as not-a-kernel if } \rho(y) &lt; \rho_{\min} \]</span>
-<p>This pairs with a static verifier (a rule-based check for real <code>@triton.jit</code> kernels and forbidden framework calls) and an LLM judge for semantic correctness (TritonRL [1]), plus, on accelerators, profile checks such as a matmul with an idle tensor engine but heavy DMA.</p>
-<p><strong>④ Robust timing</strong> <em>(timing gate — vs. faking speed)</em>. Time the kernel 
+<p>This pairs with a static verifier (a rule-based check for real <code>@triton.jit</code> kernels and forbidden framework calls) and an LLM judge (TritonRL [1] uses Qwen3-235B-Instruct) that enforces semantic rules a linter cannot, and, on accelerators, with profile checks such as a matmul with an idle tensor engine but heavy DMA. The judge is steered by a prompt that spells out what &ldquo;cheating&rdquo; means, so its verdict is auditable rather than a black box. TritonRL&rsquo;s judge prompt [1] (abridged) reads:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Detect whether the following Triton kernel implementation is cheating.
+</span></span><span style="display:flex;"><span>A kernel is &#39;cheating&#39; according to these rules:
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>1. All core computation must be written in Triton, not delegated to
+</span></span><span style="display:flex;"><span>high-level PyTorch APIs. e.g. implementing matmul with torch.matmul,
+</span></span><span style="display:flex;"><span>@, or nn.Linear is forbidden; softmax via torch.softmax is forbidden.
+</span></span><span style="display:flex;"><span>2. No trivial identity or no-op computation.
+</span></span><span style="display:flex;"><span>e.g. &#39;output = input&#39;, &#39;output = input + 0&#39;, or &#39;* 1.0&#39; are not allowed.
+</span></span><span style="display:flex;"><span>3. No omission of necessary computation. e.g. a LayerNorm kernel must
+</span></span><span style="display:flex;"><span>compute mean, variance, normalization, and scale/bias.
+</span></span><span style="display:flex;"><span>4. The kernel must address a real performance bottleneck.
+</span></span><span style="display:flex;"><span>5. The kernel must make efficient use of hardware parallelism
+</span></span><span style="display:flex;"><span>(program_id / arange / BLOCK_SIZE), with no scalar-only logic.
+</span></span></code></pre></div><p>Note that these rules encode exactly the exploit families above (rule 1 blocks the framework doing the work, rule 2 blocks trivial kernels, rule 3 blocks partial ones), which is what lets a general-purpose language model act as a targeted anti-cheating verifier.</p>
+</li>
+<li>
+<p><strong>Robust timing</strong> <em>(timing gate, vs. faking speed)</em>. Time the kernel 
 <span>
   \( R \)
   </span>
@@ -690,32 +771,17 @@ https://github.com/alex-shpak/hugo-book
   \( B \)
   </span>
 
- buckets, and take the median of the per-bucket means — resistant to noise and to warm-up/caching spikes (median-of-buckets, CUDA-L1 [5]):</p>
+ buckets, and take the median of the per-bucket means, resistant to noise and to warm-up/caching spikes (median-of-buckets, CUDA-L1 [5]):</p>
 
 <span>\[ \hat{t}(y) = \operatorname{median}_{1 \le b \le B} \Big( \tfrac{1}{|b|}\!\sum_{r \in b} t_r \Big), \qquad \mathrm{speedup}(y) = \frac{\hat{t}(\mathrm{baseline})}{\hat{t}(y)} \]</span>
-<!-- 
-**⑤ Soft penalties, not just gates** *(reward — cross-cutting)*. Steps ②–④ act as *binary gates* — pass or fail — which is exactly a hard filter. The same detectors can instead feed the reward as **graded penalties**, so a submission that partially cheats loses reward *in proportion* and the policy feels a smooth *gradient away* from the exploit rather than a flat cutoff:
-
-```katex
-r(y) = r_{\text{base}}(y) \;-\; \sum_i \lambda_i\, d_i(y), \qquad d_i(y) \ge 0 \;\;(\text{how strongly detector } i \text{ fires}).
-```
-
-Because 
+<p>Even with robust timing, it helps to bound the speed term itself: TritonRL [1] clips the speedup reward at 
 <span>
-  \( d_i \)
+  \( 2\times \)
   </span>
 
- can be continuous — e.g. how far the coverage 
-<span>
-  \( \rho \)
-  </span>
-
- fell below 
-<span>
-  \( \rho_{\min} \)
-  </span>
-
-, or the margin by which a tolerance was gamed — this expresses *severities* that a hard gate cannot. -->
+, so a timing exploit that slips past the timer and reports a near-zero runtime cannot translate into an unboundedly large reward that swamps the correctness signal and destabilizes training.</p>
+</li>
+</ol>
 <h2 id="references">
   References
   

@@ -15,19 +15,13 @@
   #
   
 
-This section establishes the background needed for the rest of the tutorial. We survey the
-landscape of AI accelerators — GPUs, TPUs, and AWS Trainium — build a mental model of the
-software stacks that turn model code into executable kernels, and introduce the main kernel
-programming interfaces (CUDA, Triton, and NKI). We then turn to the language models
-themselves: how they decode and how inference-time scaling works, followed by the two
-pillars of post-training used throughout the tutorial — supervised fine-tuning (SFT) for
-code generation and reinforcement learning (PPO and GRPO variants).">
+This section sets up the background the rest of the tutorial builds on. The first half covers the target: the accelerators kernels run on, the compiler stacks that leave a long tail of kernels to write by hand, and the languages (CUDA, Triton, NKI) they are written in. The second half covers the tool: how language models decode, and the two post-training stages, SFT and RL, used to turn a base model into a kernel generator.">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#343a40">
 <meta name="color-scheme" content="light dark"><meta property="og:url" content="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/">
   <meta property="og:site_name" content="Teaching LLMs to Write System Kernels">
   <meta property="og:title" content="Hardware, Kernels, and LLMs">
-  <meta property="og:description" content="Hardware, Kernels, and LLMs # Overview # This section establishes the background needed for the rest of the tutorial. We survey the landscape of AI accelerators — GPUs, TPUs, and AWS Trainium — build a mental model of the software stacks that turn model code into executable kernels, and introduce the main kernel programming interfaces (CUDA, Triton, and NKI). We then turn to the language models themselves: how they decode and how inference-time scaling works, followed by the two pillars of post-training used throughout the tutorial — supervised fine-tuning (SFT) for code generation and reinforcement learning (PPO and GRPO variants).">
+  <meta property="og:description" content="Hardware, Kernels, and LLMs # Overview # This section sets up the background the rest of the tutorial builds on. The first half covers the target: the accelerators kernels run on, the compiler stacks that leave a long tail of kernels to write by hand, and the languages (CUDA, Triton, NKI) they are written in. The second half covers the tool: how language models decode, and the two post-training stages, SFT and RL, used to turn a base model into a kernel generator.">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="website">
 <title>Hardware, Kernels, and LLMs | Teaching LLMs to Write System Kernels</title>
@@ -36,7 +30,7 @@ code generation and reinforcement learning (PPO and GRPO variants).">
 <link rel="canonical" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/">
 <link rel="stylesheet" href="/llm_kernel_writing/book.min.27cffe658670f57112663ed746a421db277c2dd6549965c27f9ad0103cccd990.css" integrity="sha256-J8/&#43;ZYZw9XESZj7XRqQh2yd8LdZUmWXCf5rQEDzM2ZA=" crossorigin="anonymous">
   <script defer src="/llm_kernel_writing/fuse.min.js"></script>
-  <script defer src="/llm_kernel_writing/en.search.min.4904cee82bd1c002d6b8fbb5ca9deb4b4dda6d481fca68547ff13ccf71953538.js" integrity="sha256-SQTO6CvRwALWuPu1yp3rS03abUgfymhUf/E8z3GVNTg=" crossorigin="anonymous"></script>
+  <script defer src="/llm_kernel_writing/en.search.min.18bfc85b5cb2087da294896b5edd2baeb4171666afd32fe8a642990be1fa8c55.js" integrity="sha256-GL/IW1yyCH2ilIlrXt0rrrQXFmav0y/opkKZC&#43;H6jFU=" crossorigin="anonymous"></script>
 <link rel="alternate" type="application/rss+xml" href="https://neuron-science.github.io/llm_kernel_writing/docs/section-1/index.xml" title="Teaching LLMs to Write System Kernels" />
 <!--
 Made with Book Theme
@@ -512,13 +506,7 @@ https://github.com/alex-shpak/hugo-book
   <a class="anchor" href="#overview">#</a>
   
 </h2>
-<p>This section establishes the background needed for the rest of the tutorial. We survey the
-landscape of AI accelerators — GPUs, TPUs, and AWS Trainium — build a mental model of the
-software stacks that turn model code into executable kernels, and introduce the main kernel
-programming interfaces (CUDA, Triton, and NKI). We then turn to the language models
-themselves: how they decode and how inference-time scaling works, followed by the two
-pillars of post-training used throughout the tutorial — supervised fine-tuning (SFT) for
-code generation and reinforcement learning (PPO and GRPO variants).</p>
+<p>This section sets up the background the rest of the tutorial builds on. The first half covers the <em>target</em>: the accelerators kernels run on, the compiler stacks that leave a long tail of kernels to write by hand, and the languages (CUDA, Triton, NKI) they are written in. The second half covers the <em>tool</em>: how language models decode, and the two post-training stages, SFT and RL, used to turn a base model into a kernel generator.</p>
 <h2 id="contents-of-this-section">
   <strong>Contents of this section</strong>
   
@@ -531,49 +519,42 @@ code generation and reinforcement learning (PPO and GRPO variants).</p>
   <a class="anchor" href="#11-overview-of-ai-hardware-gpus-tpus-and-aws-trainium">#</a>
   
 </h3>
-<p>Surveys modern AI accelerators — GPUs, TPUs, and AWS Trainium — and the hardware features
-(compute engines, memory hierarchies, and interconnects) that kernels must target.</p>
+<p>The compute engines, memory hierarchies, and interconnects of modern accelerators that a kernel must target.</p>
 <h3 id="12-overview-of-ai-software-stacks">
   <a href="/llm_kernel_writing/docs/section-1/subsection-2/">1.2 Overview of AI Software Stacks</a>
   
   <a class="anchor" href="#12-overview-of-ai-software-stacks">#</a>
   
 </h3>
-<p>Builds a mental model of the AI software / ML compiler stack — from PyTorch programs through
-graph capture, compiler IRs, and kernel libraries down to accelerator machine code — and
-shows where hand-written or agent-written kernels become necessary.</p>
+<p>How a PyTorch program becomes machine code, and where the compiler stops and hand-written kernels take over.</p>
 <h3 id="13-overview-of-system-kernels-cuda-triton-and-nki">
   <a href="/llm_kernel_writing/docs/section-1/subsection-3/">1.3 Overview of System Kernels: CUDA, Triton, and NKI</a>
   
   <a class="anchor" href="#13-overview-of-system-kernels-cuda-triton-and-nki">#</a>
   
 </h3>
-<p>Introduces the kernel programming interfaces used in the tutorial — CUDA for NVIDIA GPUs,
-Triton for portable GPU kernels, and the Neuron Kernel Interface (NKI) for AWS Trainium.</p>
+<p>The three kernel languages used throughout: CUDA for NVIDIA GPUs, Triton for portable GPU kernels, and NKI for AWS Trainium.</p>
 <h3 id="14-llm-decoding-and-inference-time-scaling">
   <a href="/llm_kernel_writing/docs/section-1/subsection-4/">1.4 LLM Decoding and Inference-Time Scaling</a>
   
   <a class="anchor" href="#14-llm-decoding-and-inference-time-scaling">#</a>
   
 </h3>
-<p>Reviews how LLMs generate text through autoregressive decoding and how inference-time
-compute can be scaled to trade extra computation for higher-quality outputs.</p>
+<p>How LLMs generate text token by token, why decoding is expensive, and how extra inference-time compute buys better outputs.</p>
 <h3 id="15-supervised-fine-tuning-sft-for-code-generation">
   <a href="/llm_kernel_writing/docs/section-1/subsection-5/">1.5 Supervised Fine-Tuning (SFT) for Code Generation</a>
   
   <a class="anchor" href="#15-supervised-fine-tuning-sft-for-code-generation">#</a>
   
 </h3>
-<p>Covers supervised fine-tuning as the first stage of adapting base language models into
-capable code and kernel generators.</p>
+<p>Imitation learning from <em>(prompt, code)</em> demonstrations: the first stage of adapting a base model into a code generator, and its ceilings.</p>
 <h3 id="16-rl-post-training-ppo-and-grpo-variants">
   <a href="/llm_kernel_writing/docs/section-1/subsection-6/">1.6 RL Post-Training: PPO and GRPO Variants</a>
   
   <a class="anchor" href="#16-rl-post-training-ppo-and-grpo-variants">#</a>
   
 </h3>
-<p>Introduces reinforcement learning-based post-training — including PPO and GRPO variants —
-that aligns models toward generating correct and performant code.</p>
+<p>Reinforcement learning past imitation: the policy-gradient objective and the PPO and GRPO algorithms that optimize a reward.</p>
 </article>
  
       
